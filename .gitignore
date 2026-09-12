@@ -1,0 +1,52 @@
+# Environment variables and secrets
+.env
+.env.*
+.env*.local
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Node dependencies and build artifacts
+node_modules/
+*/node_modules/
+.next/
+*/.next/
+dist/
+*/dist/
+build/
+*/build/
+coverage/
+*/coverage/
+.turbo/
+.cache/
+*.tsbuildinfo
+*/tsconfig.tsbuildinfo
+
+# Python artifacts
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*/.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# PostgreSQL database and runtime files
+tools/
+tools/pgdata/
+tools/pgsql/
+*.log
+logs/
+*.rdb
+
+# Scratch and temporary testing files
+scratch/
+
+# Operating system and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

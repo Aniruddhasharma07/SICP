@@ -1,0 +1,18 @@
+﻿/**
+ * SICP Societal Problem Intent Validation Enums
+ */
+export enum ProblemIntentClassification {
+  VALID_PROBLEM = 'VALID_PROBLEM',
+  UNCLEAR_PROBLEM = 'UNCLEAR_PROBLEM',
+  GIBBERISH = 'GIBBERISH',
+  NON_PROBLEM = 'NON_PROBLEM',
+  SPAM = 'SPAM',
+  TEST_INPUT = 'TEST_INPUT',
+  ABUSIVE_OR_UNSAFE = 'ABUSIVE_OR_UNSAFE',
+}
+
+export enum IntentNextAction {
+  CONTINUE_ANALYSIS = 'CONTINUE_ANALYSIS',
+  IMPROVE_SUBMISSION = 'IMPROVE_SUBMISSION',
+  BLOCKED = 'BLOCKED',
+}

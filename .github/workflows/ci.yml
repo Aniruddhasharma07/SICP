@@ -1,0 +1,80 @@
+name: SICP Continuous Integration
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-test:
+    name: Build, Typecheck & Automated Test Suite
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: sicp_user
+          POSTGRES_PASSWORD: sicp_password
+          POSTGRES_DB: sicp_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://sicp_user:sicp_password@localhost:5432/sicp_db?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-key-32-chars-long-abcdef
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-key-32-chars-long-12345
+      PORT: 5000
+      NEXT_PUBLIC_API_URL: http://localhost:5000
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Build Shared Types & Contracts
+        run: npm run build:shared
+
+      - name: Generate Prisma Client & Validate Schema
+        run: |
+          npx prisma validate --schema=backend/prisma/schema.prisma
+          npm run prisma:generate --prefix backend
+
+      - name: Strict Backend TypeScript Verification
+        run: npx tsc --noEmit --project backend/tsconfig.json
+
+      - name: Execute Backend Automated Test Suites
+        run: npm test --prefix backend
+
+      - name: Frontend Next.js Production Build
+        run: npm run build:frontend
