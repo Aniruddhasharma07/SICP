@@ -48,7 +48,7 @@ export class UniversityMatchingEngine {
     }
 
     const declinedOrgIds = new Set(
-      challenge.universityMatches
+      (challenge.universityMatches ?? [])
         .filter(m => m.status === MatchStatus.REJECTED)
         .map(m => m.universityOrgId)
     );
