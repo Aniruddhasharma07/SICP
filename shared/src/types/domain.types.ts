@@ -576,8 +576,80 @@ export interface SolutionMemoryDto {
   tags: string[];
   viewCount: number;
   reuseCount: number;
+  applications?: SolutionMemoryApplicationDto[];
+  effectivenessProfile?: EffectivenessProfileDto | null;
+  implementationCount?: number;
+  successCount?: number;
+  partialCount?: number;
+  failureCount?: number;
+  inconclusiveCount?: number;
+  guidanceVerdict?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SolutionMemoryApplicationDto {
+  id: string;
+  solutionMemoryId: string;
+  projectId: string;
+  projectTitle?: string | null;
+  challengeId: string;
+  challengeTitle?: string | null;
+  outcomeStatus: MemoryOutcomeStatus;
+  evidenceLevel: EvidenceLevel;
+  observedImpact?: string | null;
+  targetAchieved: boolean;
+  successFactors: string[];
+  failureFactors: string[];
+  failureReason?: string | null;
+  maintenanceIssues?: string | null;
+  adoptionIssues?: string | null;
+  unexpectedResults?: string | null;
+  contextConditions?: Record<string, unknown> | null;
+  verifiedById?: string | null;
+  verifiedAt: string;
+  createdAt: string;
+}
+
+export interface EffectivenessProfileDto {
+  implementationCount: number;
+  successCount: number;
+  partialCount: number;
+  failureCount: number;
+  inconclusiveCount: number;
+  successRate?: number | null;
+  commonSuccessFactors: string[];
+  commonFailureFactors: string[];
+  failurePatterns: string[];
+  applicableContexts: string[];
+  knownLimitations: string[];
+  overallEvidence: 'HIGHLY_EFFECTIVE' | 'EFFECTIVE' | 'MIXED' | 'INEFFECTIVE' | 'INCONCLUSIVE';
+}
+
+export interface RecordProjectOutcomeDto {
+  outcomeStatus: MemoryOutcomeStatus;
+  actualSolutionUsed?: string;
+  implementationResult?: string;
+  measurableImpact?: string;
+  targetAchieved?: boolean;
+  citizenVerificationNotes?: string;
+  governmentVerificationNotes?: string;
+  successFactors?: string[];
+  failureFactors?: string[];
+  failureReason?: string;
+  lessonsLearned?: string;
+  maintenanceIssues?: string;
+  adoptionIssues?: string;
+  unexpectedResults?: string;
+  contextConditions?: {
+    ruralUrban?: 'RURAL' | 'URBAN' | 'SEMI_URBAN';
+    geology?: string;
+    rainfall?: 'HIGH' | 'MODERATE' | 'LOW';
+    maintenanceCapacity?: 'HIGH' | 'MODERATE' | 'LOW';
+    populationScale?: number;
+    infrastructureDomain?: string;
+  };
+  existingSolutionMemoryId?: string | null;
 }
 
 export interface CreateSolutionMemoryDto {
@@ -624,13 +696,14 @@ export interface ReviewSolutionMemoryDto {
 export interface SolutionRetrievalFilterDto {
   query?: string;
   category?: string;
+  problemType?: ProblemType;
   district?: string;
   state?: string;
-  problemType?: ProblemType;
   outcomeStatus?: MemoryOutcomeStatus;
   reusabilityClass?: ReusabilityClass;
   evidenceLevel?: EvidenceLevel;
   status?: SolutionMemoryStatus;
+  search?: string;
   limit?: number;
   offset?: number;
 }
@@ -658,6 +731,20 @@ export interface HistoricalRecommendationDto {
   relevanceScore: number;
   matchBreakdown: MatchFactorBreakdownDto;
   explanation: string;
+  guidanceVerdict: 'RECOMMEND' | 'WARN' | 'CAUTION' | 'NO_MEMORY';
+  guidanceLabel: string;
+  historicalApplicationsCount?: number;
+  successCount?: number;
+  failureCount?: number;
+  partialCount?: number;
+  failurePattern?: string | null;
+  effectiveForContext?: string[];
+  lessEffectiveForContext?: string[];
+  verifiedImpact?: string | null;
+  lessonsLearned?: string | null;
+  whatWorked?: string | null;
+  whatFailed?: string | null;
+  knownLimitations?: string | null;
   historicalWarning?: string | null;
   recommendedPrerequisites?: string[] | null;
   sourceProjectId?: string | null;

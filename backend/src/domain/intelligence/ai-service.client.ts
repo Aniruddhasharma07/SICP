@@ -134,6 +134,40 @@ export interface EvidenceAnalysisResponse {
   modelVersion: string;
 }
 
+export interface PrecedentEvaluationItemDto {
+  memoryId: string;
+  verdict: 'RECOMMEND' | 'WARN' | 'CAUTION';
+  whySimilar: string;
+  whatPreviouslyWorked?: string | null;
+  underWhatConditions?: string | null;
+  impactAchieved?: string | null;
+  whyFailed?: string | null;
+  conditionsCausingFailure?: string | null;
+  knownRisks?: string | null;
+  applicabilityAssessment: string;
+  recommendedPrerequisites: string[];
+}
+
+export interface SolutionMemoryEvaluationRequestPayload {
+  problemCategory: string;
+  problemDescription: string;
+  rootCause?: string | null;
+  district?: string | null;
+  state?: string | null;
+  contextConditions?: Record<string, unknown>;
+  retrievedMemories: any[];
+}
+
+export interface SolutionMemoryEvaluationResponseDto {
+  guidanceVerdict: 'RECOMMEND' | 'WARN' | 'CAUTION' | 'NO_MEMORY';
+  precedents: PrecedentEvaluationItemDto[];
+  comparativeAnalysis?: string | null;
+  executiveSummary: string;
+  requiresHumanReview: boolean;
+  confidenceScore: number;
+  modelVersion: string;
+}
+
 export class AiServiceClient {
   private static get baseUrl(): string {
     return env.AI_SERVICE_URL.replace(/\/+$/, '');
@@ -258,6 +292,97 @@ export class AiServiceClient {
       payload,
       requestId
     );
+  }
+
+  public static async evaluateSolutionMemoryPrecedents(
+    payload: SolutionMemoryEvaluationRequestPayload,
+    requestId?: string
+  ): Promise<SolutionMemoryEvaluationResponseDto> {
+    try {
+      return await this.executeRequest<SolutionMemoryEvaluationResponseDto>(
+        '/api/v1/solution-memory/evaluate',
+        payload,
+        requestId
+      );
+    } catch (err) {
+      logger.warn(`[AI_SOLUTION_MEMORY_EVALUATION_FALLBACK] Falling back to deterministic evaluation: ${(err as Error).message}`);
+      return this.fallbackPrecedentEvaluation(payload);
+    }
+  }
+
+  private static fallbackPrecedentEvaluation(
+    payload: SolutionMemoryEvaluationRequestPayload
+  ): SolutionMemoryEvaluationResponseDto {
+    const precedents: PrecedentEvaluationItemDto[] = [];
+    let hasRecommend = false;
+    let hasWarn = false;
+
+    for (const mem of payload.retrievedMemories || []) {
+      const outcomeStatus = String(mem.outcomeStatus || 'UNDER_EVALUATION').toUpperCase();
+      const reusabilityClass = String(mem.reusabilityClass || '').toUpperCase();
+      const whatFailed = mem.whatFailed || mem.failureReason;
+      const whatWorked = mem.whatWorked || mem.observedImpact;
+      const title = mem.title || 'Historical Solution';
+
+      let verdict: 'RECOMMEND' | 'WARN' | 'CAUTION' = 'CAUTION';
+      let whyFailed: string | null = null;
+      let knownRisks: string | null = null;
+
+      if (['INEFFECTIVE', 'FAILED'].includes(outcomeStatus) || reusabilityClass === 'NOT_RECOMMENDED') {
+        verdict = 'WARN';
+        hasWarn = true;
+        whyFailed = whatFailed || 'Solution intervention encountered operational failure.';
+        knownRisks = `Risk of repeating failure mode: ${whyFailed}`;
+      } else if (['EFFECTIVE', 'SUCCESSFUL', 'SUCCESS'].includes(outcomeStatus) && reusabilityClass !== 'NOT_RECOMMENDED') {
+        verdict = 'RECOMMEND';
+        hasRecommend = true;
+        knownRisks = mem.limitations || null;
+      } else {
+        verdict = 'CAUTION';
+        whyFailed = whatFailed || null;
+        knownRisks = 'Mixed evidence or adaptation required.';
+      }
+
+      precedents.push({
+        memoryId: String(mem.id || mem.memoryId || ''),
+        verdict,
+        whySimilar: `Aligned on domain '${payload.problemCategory}' and root cause dynamics for '${title}'.`,
+        whatPreviouslyWorked: whatWorked || null,
+        underWhatConditions: 'Standard field conditions with verified operational oversight.',
+        impactAchieved: mem.impactSummary || whatWorked || null,
+        whyFailed,
+        conditionsCausingFailure: verdict === 'WARN' ? mem.limitations || null : null,
+        knownRisks,
+        applicabilityAssessment: `Precedent evaluated with ${verdict} verdict based on verified outcome.`,
+        recommendedPrerequisites: mem.recommendedPrerequisites || ['Verify localized operational and maintenance capacity.'],
+      });
+    }
+
+    let guidanceVerdict: 'RECOMMEND' | 'WARN' | 'CAUTION' | 'NO_MEMORY' = 'NO_MEMORY';
+    let executiveSummary = 'No relevant historical precedents found.';
+
+    if (precedents.length > 0) {
+      if (hasRecommend && !hasWarn) {
+        guidanceVerdict = 'RECOMMEND';
+        executiveSummary = 'Historical precedents indicate effective interventions under similar conditions. Recommended for technical evaluation.';
+      } else if (hasWarn && !hasRecommend) {
+        guidanceVerdict = 'WARN';
+        executiveSummary = 'Historical precedents encountered documented failure modes under similar conditions. Operational warning issued.';
+      } else {
+        guidanceVerdict = 'CAUTION';
+        executiveSummary = 'Mixed historical evidence observed. Some implementations succeeded while others encountered failure modes.';
+      }
+    }
+
+    return {
+      guidanceVerdict,
+      precedents,
+      comparativeAnalysis: `Evaluated ${precedents.length} historical solution precedents.`,
+      executiveSummary,
+      requiresHumanReview: true,
+      confidenceScore: 0.85,
+      modelVersion: 'deterministic-fallback',
+    };
   }
 }
 

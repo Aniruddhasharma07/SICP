@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { AiSolutionMemoryCard, PrecedentItem, SolutionMemoryEvaluationData } from './AiSolutionMemoryCard';
 
 export interface SimilarProblemItem {
   id: string;
@@ -62,6 +63,8 @@ interface AiIntelligenceAccordionProps {
   spatialData?: SpatialData;
   similarProblems?: SimilarProblemItem[];
   mergeRecommendation?: MergeRecommendationData;
+  solutionMemoryPrecedents?: PrecedentItem[];
+  solutionMemoryEvaluation?: SolutionMemoryEvaluationData | null;
   userRole?: string;
   isMerged?: boolean;
   canonicalChallengeId?: string;
@@ -117,6 +120,8 @@ export function AiIntelligenceAccordion({
     confidence: 92,
     rationale: 'High geospatial overlap (280m) combined with identical structural root cause. Merging preserves civic credit while focusing municipal resources on the shared culvert.',
   },
+  solutionMemoryPrecedents,
+  solutionMemoryEvaluation,
   userRole,
   isMerged = false,
   canonicalChallengeId,
@@ -129,11 +134,13 @@ export function AiIntelligenceAccordion({
     spatial: boolean;
     duplicates: boolean;
     merge: boolean;
+    solutionMemory: boolean;
   }>({
     rootCause: true,
     spatial: false,
     duplicates: true,
     merge: true,
+    solutionMemory: true,
   });
 
   const toggleSection = (key: keyof typeof openSections) => {
@@ -502,6 +509,52 @@ export function AiIntelligenceAccordion({
                     </div>
                   )}
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION 5: AI Solution Memory Precedents */}
+        <div>
+          <button
+            type="button"
+            onClick={() => toggleSection('solutionMemory')}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50/80 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <BrainCircuit className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">
+                  AI Solution Memory — Past Solutions • Success • Failure
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Institutional learning from verified field project deployments
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                {solutionMemoryPrecedents && solutionMemoryPrecedents.length > 0
+                  ? `${solutionMemoryPrecedents.length} Precedents`
+                  : 'Institutional Learning'}
+              </span>
+              {openSections.solutionMemory ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </div>
+          </button>
+
+          {openSections.solutionMemory && (
+            <div className="p-4 bg-slate-950 rounded-b-lg">
+              <AiSolutionMemoryCard
+                challengeId={challengeId}
+                precedents={solutionMemoryPrecedents || []}
+                evaluation={solutionMemoryEvaluation}
+              />
             </div>
           )}
         </div>

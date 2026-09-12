@@ -162,3 +162,35 @@ class EvidenceAnalysisResponse(BaseModel):
     notes: str = "Visual inspection preliminary finding. Physical municipal site inspection required."
     modelVersion: str = "gemini-1.5-flash"
 
+class SolutionMemoryEvaluationRequest(BaseModel):
+    problemTitle: str
+    problemDescription: str
+    problemCategory: str
+    rootCause: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    contextConditions: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    retrievedMemories: List[Dict[str, Any]] = Field(default_factory=list)
+
+class PrecedentEvaluationItem(BaseModel):
+    memoryId: str
+    verdict: str  # RECOMMEND | WARN | CAUTION
+    whySimilar: str
+    whatPreviouslyWorked: Optional[str] = None
+    underWhatConditions: Optional[str] = None
+    impactAchieved: Optional[str] = None
+    whyFailed: Optional[str] = None
+    conditionsCausingFailure: Optional[str] = None
+    knownRisks: Optional[str] = None
+    applicabilityAssessment: str
+    recommendedPrerequisites: List[str] = Field(default_factory=list)
+
+class SolutionMemoryEvaluationResponse(BaseModel):
+    guidanceVerdict: str  # RECOMMEND | WARN | CAUTION | NO_MEMORY
+    precedents: List[PrecedentEvaluationItem] = Field(default_factory=list)
+    comparativeAnalysis: Optional[str] = None
+    executiveSummary: str
+    requiresHumanReview: bool = True
+    confidenceScore: float = 0.85
+    modelVersion: str = "gemini-1.5-flash"
+

@@ -17,6 +17,7 @@ import {
 } from '@sicp/shared';
 import { AiServiceClient, AiAnalysisResponse } from './ai-service.client';
 import { DuplicateClusteringService } from './duplicate-clustering.service';
+import { SolutionRetrievalEngine } from './solution-retrieval.engine';
 import { AuditService } from '../../modules/audit/audit.service';
 
 export class ChallengeIntelligenceOrchestrator {
@@ -213,6 +214,45 @@ export class ChallengeIntelligenceOrchestrator {
       overallConfidence: analysisResult.confidenceScore || 0.82,
     };
 
+    // AI Solution Memory Precedent Retrieval & Evaluation
+    let solutionMemoryPrecedents: any = null;
+    try {
+      const retrievedMemories = await SolutionRetrievalEngine.retrieveRelevantSolutions({
+        challengeId,
+        title: challenge.title,
+        description: challenge.description,
+        category: primaryProblem.category || challenge.category,
+        problemType: primaryProblem.problemType,
+        latitude: challenge.latitude,
+        longitude: challenge.longitude,
+        district: challenge.district,
+        state: challenge.state,
+      });
+
+      if (retrievedMemories && retrievedMemories.length > 0) {
+        const precedentEvaluation = await AiServiceClient.evaluateSolutionMemoryPrecedents(
+          {
+            problemCategory: primaryProblem.category || challenge.category,
+            problemDescription: challenge.description,
+            rootCause: rootCauseHypotheses[0]?.cause || null,
+            district: challenge.district,
+            state: challenge.state,
+            retrievedMemories,
+          },
+          requestId
+        );
+
+        solutionMemoryPrecedents = {
+          retrievedMemories,
+          evaluation: precedentEvaluation,
+        };
+      }
+    } catch (memErr) {
+      logger.warn(
+        `[AI_SOLUTION_MEMORY] Precedent retrieval error for challenge ${challengeId}: ${(memErr as Error).message}`
+      );
+    }
+
     // 5. Persist AIAnalysis record
     await prisma.aIAnalysis.upsert({
       where: { challengeId },
@@ -222,6 +262,7 @@ export class ChallengeIntelligenceOrchestrator {
         rawResponse: {
           ...analysisResult,
           structuredAnalysis,
+          solutionMemoryPrecedents,
           isFallback,
         } as any,
         confidenceScore: structuredAnalysis.overallConfidence,
@@ -234,6 +275,7 @@ export class ChallengeIntelligenceOrchestrator {
         rawResponse: {
           ...analysisResult,
           structuredAnalysis,
+          solutionMemoryPrecedents,
           isFallback,
         } as any,
         confidenceScore: structuredAnalysis.overallConfidence,

@@ -20,12 +20,14 @@ import {
   ProjectStatus,
   OutcomeVerificationStatus,
   ProblemType,
+  RecordProjectOutcomeDto,
 } from '@sicp/shared';
 import { NotFoundError, ValidationError, ForbiddenError } from '../../utils/errors';
 import { AuditService } from '../audit/audit.service';
 import { QueueManager } from '../../jobs/queue.manager';
 import { SolutionRetrievalEngine } from '../../domain/intelligence/solution-retrieval.engine';
 import { KnowledgeAssistantEngine } from '../../domain/intelligence/knowledge-assistant.engine';
+import { AiServiceClient } from '../../domain/intelligence/ai-service.client';
 import { hasPermission } from '../../domain/permissions/permissions.matrix';
 import { logger } from '../../utils/logger';
 
@@ -192,6 +194,458 @@ export class SolutionService {
     });
 
     return this.mapToDto(memory);
+  }
+
+  /**
+   * Records a verified project outcome into the institutional Solution Memory loop.
+   */
+  public static async recordProjectOutcomeAndLearn(params: {
+    projectId: string;
+    dto: RecordProjectOutcomeDto;
+    actorId: string;
+    actorRole: UserRole;
+    requestId: string;
+  }): Promise<SolutionMemoryDto> {
+    const { projectId, dto, actorId, actorRole, requestId } = params;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        challenge: {
+          include: {
+            impact: true,
+          },
+        },
+        proposals: {
+          where: { status: 'APPROVED' },
+          orderBy: { version: 'desc' },
+          take: 1,
+        },
+        deployments: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        outcomeVerifications: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundError('Project', projectId);
+    }
+
+    // Determine target SolutionMemory: explicit existingSolutionMemoryId or one previously created for this project
+    let targetMemoryId = dto.existingSolutionMemoryId;
+    if (!targetMemoryId) {
+      const existingForProject = await prisma.solutionMemory.findFirst({
+        where: { projectId },
+      });
+      if (existingForProject) {
+        targetMemoryId = existingForProject.id;
+      }
+    }
+
+    const isSuccess = [
+      MemoryOutcomeStatus.EFFECTIVE,
+      MemoryOutcomeStatus.SUCCESSFUL,
+      MemoryOutcomeStatus.SUCCESS,
+    ].includes(dto.outcomeStatus as any);
+    const isFailure = [
+      MemoryOutcomeStatus.INEFFECTIVE,
+      MemoryOutcomeStatus.FAILED,
+    ].includes(dto.outcomeStatus as any);
+    const isPartial = [
+      MemoryOutcomeStatus.PARTIALLY_EFFECTIVE,
+      MemoryOutcomeStatus.PARTIAL_SUCCESS,
+    ].includes(dto.outcomeStatus as any);
+
+    if (targetMemoryId) {
+      const existingMemory = await prisma.solutionMemory.findUnique({
+        where: { id: targetMemoryId },
+        include: { applications: true },
+      });
+
+      if (!existingMemory) {
+        throw new NotFoundError('SolutionMemory', targetMemoryId);
+      }
+
+      // Upsert SolutionMemoryApplication idempotently
+      const existingApp = await prisma.solutionMemoryApplication.findUnique({
+        where: {
+          solutionMemoryId_projectId: {
+            solutionMemoryId: existingMemory.id,
+            projectId: project.id,
+          },
+        },
+      });
+
+      const appData = {
+        solutionMemoryId: existingMemory.id,
+        projectId: project.id,
+        challengeId: project.challengeId,
+        outcomeStatus: dto.outcomeStatus,
+        evidenceLevel: EvidenceLevel.VERIFIED,
+        observedImpact: dto.measurableImpact || dto.implementationResult || null,
+        targetAchieved: dto.targetAchieved ?? isSuccess,
+        successFactors: dto.successFactors || [],
+        failureFactors: dto.failureFactors || [],
+        failureReason: dto.failureReason || null,
+        maintenanceIssues: dto.maintenanceIssues || null,
+        adoptionIssues: dto.adoptionIssues || null,
+        unexpectedResults: dto.unexpectedResults || null,
+        contextConditions: (dto.contextConditions as any) || null,
+        verifiedById: actorId,
+        verifiedAt: new Date(),
+      };
+
+      if (existingApp) {
+        await prisma.solutionMemoryApplication.update({
+          where: { id: existingApp.id },
+          data: appData,
+        });
+      } else {
+        await prisma.solutionMemoryApplication.create({
+          data: appData,
+        });
+      }
+
+      // Recompute aggregated evidence across all historical applications
+      const allApps = await prisma.solutionMemoryApplication.findMany({
+        where: { solutionMemoryId: existingMemory.id },
+      });
+
+      const successApps = allApps.filter(a =>
+        [MemoryOutcomeStatus.EFFECTIVE, MemoryOutcomeStatus.SUCCESSFUL, MemoryOutcomeStatus.SUCCESS].includes(a.outcomeStatus as any)
+      );
+      const failureApps = allApps.filter(a =>
+        [MemoryOutcomeStatus.INEFFECTIVE, MemoryOutcomeStatus.FAILED].includes(a.outcomeStatus as any)
+      );
+      const partialApps = allApps.filter(a =>
+        [MemoryOutcomeStatus.PARTIALLY_EFFECTIVE, MemoryOutcomeStatus.PARTIAL_SUCCESS].includes(a.outcomeStatus as any)
+      );
+      const inconclusiveApps = allApps.filter(a =>
+        [MemoryOutcomeStatus.INCONCLUSIVE, MemoryOutcomeStatus.UNDER_EVALUATION, MemoryOutcomeStatus.INSUFFICIENT_EVIDENCE].includes(a.outcomeStatus as any)
+      );
+
+      const implementationCount = allApps.length;
+      const successCount = successApps.length;
+      const failureCount = failureApps.length;
+      const partialCount = partialApps.length;
+      const inconclusiveCount = inconclusiveApps.length;
+      const successRate = implementationCount > 0 ? (successCount / implementationCount) * 100 : null;
+
+      const commonSuccessFactors = Array.from(new Set(allApps.flatMap(a => a.successFactors || [])));
+      const commonFailureFactors = Array.from(new Set(allApps.flatMap(a => a.failureFactors || [])));
+      const failurePatterns = allApps.filter(a => a.failureReason).map(a => a.failureReason as string);
+
+      let overallEvidence: 'HIGHLY_EFFECTIVE' | 'EFFECTIVE' | 'MIXED' | 'INEFFECTIVE' | 'INCONCLUSIVE' = 'EFFECTIVE';
+      if (failureCount > 0 && successCount > 0) overallEvidence = 'MIXED';
+      else if (failureCount > 0 && successCount === 0) overallEvidence = 'INEFFECTIVE';
+      else if (successCount >= 3) overallEvidence = 'HIGHLY_EFFECTIVE';
+      else if (successCount > 0) overallEvidence = 'EFFECTIVE';
+      else overallEvidence = 'INCONCLUSIVE';
+
+      const effectivenessProfile = {
+        implementationCount,
+        successCount,
+        partialCount,
+        failureCount,
+        inconclusiveCount,
+        successRate,
+        commonSuccessFactors,
+        commonFailureFactors,
+        failurePatterns,
+        applicableContexts: existingMemory.tags || [],
+        knownLimitations: allApps.filter(a => a.maintenanceIssues).map(a => a.maintenanceIssues as string),
+        overallEvidence,
+      };
+
+      const { guidanceVerdict } = SolutionRetrievalEngine.determineGuidance(
+        (failureCount > 0 && successCount > 0) ? MemoryOutcomeStatus.PARTIALLY_EFFECTIVE : (failureCount > 0 ? MemoryOutcomeStatus.INEFFECTIVE : MemoryOutcomeStatus.EFFECTIVE),
+        (failureCount > 0 && successCount === 0) ? ReusabilityClass.NOT_RECOMMENDED : ((failureCount > 0 && successCount > 0) ? ReusabilityClass.REQUIRES_ADAPTATION : ReusabilityClass.HIGHLY_REUSABLE),
+        { successCount, failureCount, partialCount },
+        dto.failureReason || existingMemory.whatFailed
+      );
+
+      // Preserve historical evidence: do NOT overwrite past successes
+      let updatedWhatWorked = existingMemory.whatWorked;
+      if (dto.measurableImpact || dto.implementationResult) {
+        const newImpact = dto.measurableImpact || dto.implementationResult || '';
+        if (!updatedWhatWorked) {
+          updatedWhatWorked = newImpact || null;
+        } else if (isSuccess) {
+          updatedWhatWorked = `${updatedWhatWorked}; ${newImpact}`;
+        }
+      }
+
+      let updatedWhatFailed = existingMemory.whatFailed;
+      let updatedFutureWarnings = existingMemory.futureWarnings;
+      if (dto.failureReason) {
+        updatedWhatFailed = updatedWhatFailed ? `${updatedWhatFailed}; ${dto.failureReason}` : dto.failureReason;
+        updatedFutureWarnings = updatedFutureWarnings
+          ? `${updatedFutureWarnings} | Precedent Warning: ${dto.failureReason}`
+          : `Precedent Warning: ${dto.failureReason}`;
+      }
+
+      let updatedOutcomeStatus = existingMemory.outcomeStatus;
+      if (failureCount > 0 && successCount > 0) {
+        updatedOutcomeStatus = MemoryOutcomeStatus.PARTIALLY_EFFECTIVE;
+      } else if (failureCount > 0 && successCount === 0) {
+        updatedOutcomeStatus = MemoryOutcomeStatus.INEFFECTIVE;
+      } else if (successCount > 0 && failureCount === 0) {
+        updatedOutcomeStatus = MemoryOutcomeStatus.EFFECTIVE;
+      }
+
+      const updatedReusabilityScore = SolutionRetrievalEngine.calculateReusabilityScore({
+        outcomeStatus: updatedOutcomeStatus as MemoryOutcomeStatus,
+        evidenceLevel: EvidenceLevel.VERIFIED,
+        whatFailed: updatedWhatFailed,
+        limitations: existingMemory.limitations,
+      });
+      const updatedReusabilityClass = SolutionRetrievalEngine.mapScoreToReusabilityClass(
+        updatedReusabilityScore,
+        updatedOutcomeStatus as MemoryOutcomeStatus
+      );
+
+      const updatedMemory = await prisma.solutionMemory.update({
+        where: { id: existingMemory.id },
+        data: {
+          implementationCount,
+          successCount,
+          failureCount,
+          partialCount,
+          inconclusiveCount,
+          effectivenessProfile: effectivenessProfile as any,
+          guidanceVerdict,
+          whatWorked: updatedWhatWorked,
+          whatFailed: updatedWhatFailed,
+          futureWarnings: updatedFutureWarnings,
+          outcomeStatus: updatedOutcomeStatus,
+          reusabilityScore: updatedReusabilityScore,
+          reusabilityClass: updatedReusabilityClass,
+          reuseCount: { increment: 1 },
+          status: SolutionMemoryStatus.PUBLISHED,
+        },
+        include: {
+          project: true,
+          challenge: true,
+          applications: {
+            include: {
+              project: true,
+              challenge: true,
+            },
+          },
+        },
+      });
+
+      await AuditService.log({
+        actorId,
+        actorRole,
+        action: AuditAction.SOLUTION_EFFECTIVENESS_UPDATED,
+        resource: 'SolutionMemory',
+        resourceId: existingMemory.id,
+        previousState: {
+          implementationCount: existingMemory.implementationCount,
+          successCount: existingMemory.successCount,
+          failureCount: existingMemory.failureCount,
+        },
+        newState: {
+          implementationCount,
+          successCount,
+          failureCount,
+          guidanceVerdict,
+          overallEvidence,
+        },
+        reason: `Project ${projectId} outcome recorded into Solution Memory ${existingMemory.id}. Evidence updated.`,
+        requestId,
+      });
+
+      await AuditService.log({
+        actorId,
+        actorRole,
+        action: AuditAction.SOLUTION_OUTCOME_RECORDED,
+        resource: 'SolutionMemoryApplication',
+        resourceId: project.id,
+        previousState: null,
+        newState: appData,
+        reason: `Outcome application recorded for project ${projectId} with status ${dto.outcomeStatus}`,
+        requestId,
+      });
+
+      return this.mapToDto(updatedMemory);
+    }
+
+    // Novel Solution approach -> Create new SolutionMemory and initial Application
+    const challenge = project.challenge;
+    const proposal = project.proposals[0];
+    const technicalApproach = dto.actualSolutionUsed || proposal?.technicalApproach || project.description;
+    const title = `Solution: ${project.title}`;
+    const challengeCategory = challenge.category;
+    const problemType = (challenge.impact?.problemType as ProblemType) || null;
+    const problemSummary = challenge.description;
+    const rootCause = (challenge.impact?.inputs as any)?.rootCause || challenge.category;
+    const summary = `${project.title} addresses ${challenge.title} through ${technicalApproach.slice(0, 150)}...`;
+
+    const whatWorked = isSuccess ? (dto.measurableImpact || dto.implementationResult || 'Verified implementation targets met.') : null;
+    const whatFailed = dto.failureReason || (isFailure ? 'Intervention encountered operational failure.' : null);
+    const futureWarnings = whatFailed ? `Attention for future replications: ${whatFailed}` : null;
+    const limitations = dto.maintenanceIssues || dto.adoptionIssues || null;
+    const lessonsLearned = dto.lessonsLearned || `Project completed with outcome ${dto.outcomeStatus}. ${whatWorked || ''} ${whatFailed || ''}`.trim();
+
+    const successCount = isSuccess ? 1 : 0;
+    const failureCount = isFailure ? 1 : 0;
+    const partialCount = isPartial ? 1 : 0;
+    const inconclusiveCount = (!isSuccess && !isFailure && !isPartial) ? 1 : 0;
+    const implementationCount = 1;
+
+    const reusabilityScore = SolutionRetrievalEngine.calculateReusabilityScore({
+      outcomeStatus: dto.outcomeStatus,
+      evidenceLevel: EvidenceLevel.VERIFIED,
+      whatFailed,
+      limitations,
+    });
+    const reusabilityClass = SolutionRetrievalEngine.mapScoreToReusabilityClass(reusabilityScore, dto.outcomeStatus);
+
+    const { guidanceVerdict } = SolutionRetrievalEngine.determineGuidance(
+      dto.outcomeStatus,
+      reusabilityClass,
+      { successCount, failureCount, partialCount },
+      whatFailed
+    );
+
+    const effectivenessProfile = {
+      implementationCount: 1,
+      successCount,
+      partialCount,
+      failureCount,
+      inconclusiveCount,
+      successRate: isSuccess ? 100 : 0,
+      commonSuccessFactors: dto.successFactors || [],
+      commonFailureFactors: dto.failureFactors || [],
+      failurePatterns: whatFailed ? [whatFailed] : [],
+      applicableContexts: [challengeCategory, ...(dto.contextConditions ? [JSON.stringify(dto.contextConditions)] : [])],
+      knownLimitations: limitations ? [limitations] : [],
+      overallEvidence: isSuccess ? 'EFFECTIVE' : (isFailure ? 'INEFFECTIVE' : 'MIXED'),
+    };
+
+    const canonicalText = `${title}\nCategory: ${challengeCategory}\nProblem: ${problemSummary}\nRoot Cause: ${rootCause}\nApproach: ${technicalApproach}\nLessons: ${lessonsLearned}\nWhat Worked: ${whatWorked || 'None'}\nWhat Failed: ${whatFailed || 'None'}`;
+
+    const locationContext = {
+      district: challenge.district,
+      state: challenge.state,
+      latitude: challenge.latitude,
+      longitude: challenge.longitude,
+    };
+
+    const memory = await prisma.solutionMemory.create({
+      data: {
+        projectId: project.id,
+        challengeId: challenge.id,
+        title,
+        summary,
+        challengeCategory,
+        problemType: problemType ? String(problemType) : null,
+        problemSummary,
+        rootCause,
+        rootCauseSummary: rootCause,
+        technicalApproach,
+        solutionSummary: summary,
+        implementationSummary: technicalApproach,
+        impactSummary: dto.measurableImpact || dto.implementationResult || null,
+        lessonsLearned,
+        whatWorked,
+        whatFailed,
+        futureWarnings,
+        limitations,
+        reusabilityScore,
+        reusabilityClass,
+        reusabilityExplanation: `Computed initial score of ${reusabilityScore} based on field verification.`,
+        evidenceLevel: EvidenceLevel.VERIFIED,
+        status: SolutionMemoryStatus.PUBLISHED,
+        outcomeStatus: dto.outcomeStatus,
+        canonicalText,
+        embeddingStatus: EmbeddingStatus.PENDING,
+        locationContext: locationContext as any,
+        tags: [challengeCategory, ...(problemType ? [String(problemType)] : [])],
+        implementationCount: 1,
+        successCount,
+        partialCount,
+        failureCount,
+        inconclusiveCount,
+        effectivenessProfile: effectivenessProfile as any,
+        guidanceVerdict,
+      },
+    });
+
+    // Create initial Application row
+    await prisma.solutionMemoryApplication.create({
+      data: {
+        solutionMemoryId: memory.id,
+        projectId: project.id,
+        challengeId: challenge.id,
+        outcomeStatus: dto.outcomeStatus,
+        evidenceLevel: EvidenceLevel.VERIFIED,
+        observedImpact: dto.measurableImpact || dto.implementationResult || null,
+        targetAchieved: dto.targetAchieved ?? isSuccess,
+        successFactors: dto.successFactors || [],
+        failureFactors: dto.failureFactors || [],
+        failureReason: dto.failureReason || null,
+        maintenanceIssues: dto.maintenanceIssues || null,
+        adoptionIssues: dto.adoptionIssues || null,
+        unexpectedResults: dto.unexpectedResults || null,
+        contextConditions: (dto.contextConditions as any) || null,
+        verifiedById: actorId,
+        verifiedAt: new Date(),
+      },
+    });
+
+    try {
+      await QueueManager.enqueueEmbeddingGeneration(memory.id, canonicalText, requestId);
+    } catch (err) {
+      logger.warn(`Failed to enqueue embedding: ${(err as Error).message}`);
+    }
+
+    await AuditService.log({
+      actorId,
+      actorRole,
+      action: AuditAction.SOLUTION_MEMORY_CREATED,
+      resource: 'SolutionMemory',
+      resourceId: memory.id,
+      previousState: null,
+      newState: memory,
+      reason: `Solution memory created from verified project outcome for project ${projectId}`,
+      requestId,
+    });
+
+    await AuditService.log({
+      actorId,
+      actorRole,
+      action: AuditAction.SOLUTION_OUTCOME_RECORDED,
+      resource: 'SolutionMemoryApplication',
+      resourceId: project.id,
+      previousState: null,
+      newState: { outcomeStatus: dto.outcomeStatus },
+      reason: `Initial outcome application recorded for project ${projectId}`,
+      requestId,
+    });
+
+    const fullMemory = await prisma.solutionMemory.findUnique({
+      where: { id: memory.id },
+      include: {
+        project: true,
+        challenge: true,
+        applications: {
+          include: {
+            project: true,
+            challenge: true,
+          },
+        },
+      },
+    });
+
+    return this.mapToDto(fullMemory || memory);
   }
 
   /**
@@ -461,6 +915,15 @@ export class SolutionService {
         project: true,
         challenge: true,
         reviewer: true,
+        applications: {
+          include: {
+            project: true,
+            challenge: true,
+          },
+          orderBy: {
+            verifiedAt: 'desc',
+          },
+        },
       },
     });
 
@@ -547,6 +1010,12 @@ export class SolutionService {
           project: true,
           challenge: true,
           reviewer: true,
+          applications: {
+            include: {
+              project: true,
+              challenge: true,
+            },
+          },
         },
         orderBy: [{ reusabilityScore: 'desc' }, { createdAt: 'desc' }],
         skip: offset,
@@ -605,6 +1074,70 @@ export class SolutionService {
       },
       userRole
     );
+  }
+
+  /**
+   * Evaluates historical solution precedents for a challenge using hybrid search and Gemini.
+   */
+  public static async evaluatePrecedents(params: {
+    challengeId: string;
+    userRole?: UserRole;
+    requestId?: string;
+  }) {
+    const { challengeId, userRole, requestId } = params;
+    const challenge = await prisma.challenge.findUnique({
+      where: { id: challengeId },
+      include: { impact: true },
+    });
+
+    if (!challenge) {
+      throw new NotFoundError('Challenge', challengeId);
+    }
+
+    const retrievedMemories = await SolutionRetrievalEngine.retrieveRelevantSolutions(
+      {
+        challengeId: challenge.id,
+        title: challenge.title,
+        description: challenge.description,
+        category: challenge.category,
+        problemType: challenge.impact?.problemType,
+        latitude: challenge.latitude,
+        longitude: challenge.longitude,
+        district: challenge.district,
+        state: challenge.state,
+      },
+      userRole
+    );
+
+    if (!retrievedMemories || retrievedMemories.length === 0) {
+      return {
+        guidanceVerdict: 'NO_MEMORY',
+        precedents: [],
+        comparativeAnalysis: 'No sufficiently relevant historical solution memories found in the SICP institutional repository.',
+        executiveSummary: 'This challenge presents a novel problem configuration without verified historical precedents. Research team will formulate a novel solution.',
+        requiresHumanReview: true,
+        confidenceScore: 1.0,
+        modelVersion: 'deterministic-fallback',
+        retrievedMemories: [],
+      };
+    }
+
+    const evaluation = await AiServiceClient.evaluateSolutionMemoryPrecedents(
+      {
+        problemCategory: challenge.category,
+        problemDescription: challenge.description,
+        rootCause: (challenge.impact?.inputs as any)?.rootCause || null,
+        district: challenge.district,
+        state: challenge.state,
+        retrievedMemories,
+      },
+      requestId
+    );
+
+    return {
+      ...evaluation,
+      retrievedMemories,
+    };
   }
 
   /**
@@ -893,6 +1426,37 @@ export class SolutionService {
       tags: memory.tags || [],
       viewCount: memory.viewCount,
       reuseCount: memory.reuseCount,
+      applications: memory.applications
+        ? memory.applications.map((app: any) => ({
+            id: app.id,
+            solutionMemoryId: app.solutionMemoryId,
+            projectId: app.projectId,
+            projectTitle: app.project?.title || null,
+            challengeId: app.challengeId,
+            challengeTitle: app.challenge?.title || null,
+            outcomeStatus: app.outcomeStatus as MemoryOutcomeStatus,
+            evidenceLevel: app.evidenceLevel as EvidenceLevel,
+            observedImpact: app.observedImpact,
+            targetAchieved: app.targetAchieved,
+            successFactors: app.successFactors || [],
+            failureFactors: app.failureFactors || [],
+            failureReason: app.failureReason,
+            maintenanceIssues: app.maintenanceIssues,
+            adoptionIssues: app.adoptionIssues,
+            unexpectedResults: app.unexpectedResults,
+            contextConditions: app.contextConditions,
+            verifiedById: app.verifiedById,
+            verifiedAt: app.verifiedAt?.toISOString ? app.verifiedAt.toISOString() : String(app.verifiedAt),
+            createdAt: app.createdAt?.toISOString ? app.createdAt.toISOString() : String(app.createdAt),
+          }))
+        : undefined,
+      effectivenessProfile: memory.effectivenessProfile || null,
+      implementationCount: memory.implementationCount ?? 0,
+      successCount: memory.successCount ?? 0,
+      partialCount: memory.partialCount ?? 0,
+      failureCount: memory.failureCount ?? 0,
+      inconclusiveCount: memory.inconclusiveCount ?? 0,
+      guidanceVerdict: memory.guidanceVerdict || null,
       createdAt: memory.createdAt.toISOString(),
       updatedAt: memory.updatedAt.toISOString(),
     };

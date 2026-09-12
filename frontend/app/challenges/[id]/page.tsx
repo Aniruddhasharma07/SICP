@@ -14,6 +14,7 @@ import { PriorityScoreCard } from '../../../src/components/common/PriorityScoreC
 import { AiIntelligenceAccordion } from '../../../src/components/intelligence/AiIntelligenceAccordion';
 import { RootCauseFlowDiagram } from '../../../src/components/intelligence/RootCauseFlowDiagram';
 import { ContextAwareAiDrawer } from '../../../src/components/intelligence/ContextAwareAiDrawer';
+import { AiSolutionMemoryCard } from '../../../src/components/intelligence/AiSolutionMemoryCard';
 import { useAuth } from '../../../src/lib/auth-context';
 import { apiClient } from '../../../src/lib/api-client';
 import {
@@ -85,6 +86,7 @@ export default function ChallengeDetailPage({ params }: { params: Promise<{ id: 
 
   // Phase 6 Historical Solution Memory State
   const [historicalSolutions, setHistoricalSolutions] = useState<HistoricalRecommendationDto[]>([]);
+  const [historicalEvaluation, setHistoricalEvaluation] = useState<any | null>(null);
   const [loadingHistorical, setLoadingHistorical] = useState(false);
 
   // Merge modal
@@ -132,13 +134,28 @@ export default function ChallengeDetailPage({ params }: { params: Promise<{ id: 
 
   const fetchHistorical = async () => {
     setLoadingHistorical(true);
-    const res = await apiClient.request<HistoricalRecommendationDto[]>(
-      `/api/v1/solutions/historical/challenge/${resolvedParams.id}`
-    );
-    if (res.success && res.data) {
-      setHistoricalSolutions(res.data);
+    try {
+      const evalRes = await apiClient.request<any>(
+        `/api/v1/solutions/historical/challenge/${resolvedParams.id}/evaluated`
+      );
+      if (evalRes.success && evalRes.data) {
+        setHistoricalEvaluation(evalRes.data);
+        if (evalRes.data.retrievedMemories) {
+          setHistoricalSolutions(evalRes.data.retrievedMemories);
+        }
+      } else {
+        const res = await apiClient.request<HistoricalRecommendationDto[]>(
+          `/api/v1/solutions/historical/challenge/${resolvedParams.id}`
+        );
+        if (res.success && res.data) {
+          setHistoricalSolutions(res.data);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingHistorical(false);
     }
-    setLoadingHistorical(false);
   };
 
   const fetchFeedback = async () => {
@@ -881,6 +898,33 @@ export default function ChallengeDetailPage({ params }: { params: Promise<{ id: 
             )}
           </CardContent>
         </Card>
+
+        {/* AI Solution Memory - Past Solutions • Success • Failure */}
+        <AiSolutionMemoryCard
+          challengeId={challenge.id}
+          precedents={historicalSolutions.map(s => ({
+            memoryId: s.memoryId,
+            title: s.title,
+            category: s.challengeCategory,
+            verdict: (s.guidanceVerdict || (s.reusabilityClass === 'NOT_RECOMMENDED' ? 'WARN' : 'RECOMMEND')) as any,
+            whySimilar: s.explanation || 'Aligned on domain and root cause dynamics.',
+            whatPreviouslyWorked: s.whatWorked || s.verifiedImpact,
+            underWhatConditions: s.effectiveForContext?.join(', '),
+            impactAchieved: s.verifiedImpact,
+            whyFailed: s.whatFailed || s.failurePattern,
+            conditionsCausingFailure: s.lessEffectiveForContext?.join(', '),
+            knownRisks: s.historicalWarning,
+            recommendedPrerequisites: s.recommendedPrerequisites || [],
+            historicalApplicationsCount: s.historicalApplicationsCount || 1,
+            successCount: s.successCount,
+            failureCount: s.failureCount,
+            partialCount: s.partialCount,
+            failurePattern: s.failurePattern,
+            relevanceScore: s.relevanceScore,
+          }))}
+          evaluation={historicalEvaluation}
+          isLoading={loadingHistorical}
+        />
 
         {/* Relationship Intelligence & Clustering Cockpit */}
         <Card className="border-blue-200 bg-white">

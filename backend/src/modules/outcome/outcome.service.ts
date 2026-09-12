@@ -13,11 +13,13 @@ import {
   ReviewOutcomeVerificationDto,
   InnovationOutcomeDto,
   CreateInnovationOutcomeDto,
+  MemoryOutcomeStatus,
 } from '@sicp/shared';
 import { NotFoundError, ValidationError, ConflictError } from '../../utils/errors';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notification/notification.service';
 import { RecurrenceDetectionEngine } from '../../domain/intelligence/recurrence-detection.engine';
+import { SolutionService } from '../solution/solution.service';
 import { logger } from '../../utils/logger';
 
 export class OutcomeService {
@@ -238,6 +240,38 @@ export class OutcomeService {
 
       return created;
     });
+
+    // AI Solution Memory Learning Loop: Feed verified outcome back into institutional memory
+    try {
+      let memoryOutcomeStatus: MemoryOutcomeStatus = MemoryOutcomeStatus.UNDER_EVALUATION;
+      if (dto.status === OutcomeVerificationStatus.VERIFIED) {
+        memoryOutcomeStatus = MemoryOutcomeStatus.EFFECTIVE;
+      } else if (dto.status === OutcomeVerificationStatus.VERIFIED_WITH_LIMITATIONS) {
+        memoryOutcomeStatus = MemoryOutcomeStatus.PARTIALLY_EFFECTIVE;
+      } else if (dto.status === OutcomeVerificationStatus.NOT_VERIFIED) {
+        memoryOutcomeStatus = MemoryOutcomeStatus.INEFFECTIVE;
+      }
+
+      await SolutionService.recordProjectOutcomeAndLearn({
+        projectId,
+        dto: {
+          outcomeStatus: memoryOutcomeStatus,
+          measurableImpact: dto.observedSummary,
+          targetAchieved: dto.status === OutcomeVerificationStatus.VERIFIED,
+          failureReason:
+            dto.status === OutcomeVerificationStatus.NOT_VERIFIED
+              ? dto.limitations || dto.followUpAction || 'Outcome targets were not met.'
+              : undefined,
+          maintenanceIssues: dto.limitations,
+          lessonsLearned: dto.notes || dto.observedSummary,
+        },
+        actorId,
+        actorRole,
+        requestId,
+      });
+    } catch (learnErr) {
+      logger.warn(`[AI_SOLUTION_MEMORY] Automatic learning loop error: ${(learnErr as Error).message}`);
+    }
 
     return this.mapVerificationToDto(verification);
   }

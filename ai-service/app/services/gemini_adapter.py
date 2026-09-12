@@ -23,7 +23,10 @@ from app.schemas.analysis import (
     KnowledgeSynthesisRequest,
     KnowledgeSynthesisResponse,
     EvidenceAnalysisRequest,
-    EvidenceAnalysisResponse
+    EvidenceAnalysisResponse,
+    SolutionMemoryEvaluationRequest,
+    PrecedentEvaluationItem,
+    SolutionMemoryEvaluationResponse
 )
 from app.schemas.relationship import (
     RelationshipAnalysisRequest,
@@ -1555,3 +1558,185 @@ Return a JSON object adhering strictly to this schema:
                 return GeminiAdapter._intent_fallback(request)
             logger.error(f"[AI_INTENT_ERROR]: {str(e)}")
             raise RuntimeError(f"Gemini intent validation failed: {str(e)}")
+
+    @staticmethod
+    async def evaluate_solution_memory_precedents(
+        request: SolutionMemoryEvaluationRequest
+    ) -> SolutionMemoryEvaluationResponse:
+        # If no memories were retrieved, return NO_MEMORY directly (honest zero-fabrication)
+        if not request.retrievedMemories or len(request.retrievedMemories) == 0:
+            return SolutionMemoryEvaluationResponse(
+                guidanceVerdict="NO_MEMORY",
+                precedents=[],
+                comparativeAnalysis="No sufficiently relevant historical solution memory found. Academic and technical teams should evaluate an original solution.",
+                executiveSummary="No sufficiently relevant historical solution memory found in SICP institutional records.",
+                requiresHumanReview=True,
+                confidenceScore=0.9,
+                modelVersion="deterministic"
+            )
+
+        # Build prompt for Gemini to compare retrieved evidence against current problem
+        if not settings.GEMINI_API_KEY or len(settings.GEMINI_API_KEY.strip()) == 0:
+            return GeminiAdapter._deterministic_precedent_evaluation(request)
+
+        try:
+            from google import genai
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+            memories_formatted = json.dumps(request.retrievedMemories, indent=2)
+            context_formatted = json.dumps(request.contextConditions or {}, indent=2)
+
+            prompt = f"""You are the Institutional Precedent & Solution Memory Evaluator for SICP (Societal Innovation Collaboration Portal).
+Your role is to analyze retrieved historical solution records and determine if they should be RECOMMENDED, WARNED against, or evaluated with CAUTION for the following current civic problem.
+
+CURRENT PROBLEM:
+Title: {request.problemTitle}
+Description: {request.problemDescription}
+Category: {request.problemCategory}
+Root Cause: {request.rootCause or 'Unspecified'}
+Location: {request.district or 'Unknown'}, {request.state or 'Unknown'}
+Operational Context: {context_formatted}
+
+RETRIEVED HISTORICAL SOLUTION MEMORIES (FROM SICP PGVECTOR DATABASE):
+{memories_formatted}
+
+CRITICAL RULES:
+1. Ground your evaluation strictly and exclusively in the provided historical memories. NEVER invent fake projects, outcomes, or statistics.
+2. For each retrieved memory, assess whether it is:
+   - "RECOMMEND": The historical precedent worked effectively under similar root-cause and operational conditions.
+   - "WARN": The historical precedent previously failed, or produced poor results due to conditions (e.g. maintenance hurdles) that are relevant to this problem.
+   - "CAUTION": The historical precedent showed mixed results, or requires specific adaptations/prerequisites.
+3. If a memory previously failed, clearly articulate the failure reason, conditions that caused failure, and operational risks.
+4. Evaluate contextual applicability: explain under what conditions this approach works vs. where it is less effective.
+
+Return strictly valid JSON adhering to this schema:
+{{
+  "guidanceVerdict": "RECOMMEND" or "WARN" or "CAUTION",
+  "precedents": [
+    {{
+      "memoryId": "string from retrieved memory",
+      "verdict": "RECOMMEND" or "WARN" or "CAUTION",
+      "whySimilar": "Clear explanation of similarity in root-cause, category, or context",
+      "whatPreviouslyWorked": "Summary of what worked previously (or null if failed)",
+      "underWhatConditions": "Conditions under which the solution succeeded",
+      "impactAchieved": "Verified impact from historical record",
+      "whyFailed": "Reason for failure if applicable (or null)",
+      "conditionsCausingFailure": "Environmental/operational factors causing failure",
+      "knownRisks": "Specific risks if attempting replication",
+      "applicabilityAssessment": "Nuanced assessment of whether this applies to the current problem",
+      "recommendedPrerequisites": ["Prerequisite 1", "Prerequisite 2"]
+    }}
+  ],
+  "comparativeAnalysis": "Comparative analysis across retrieved precedents if multiple exist",
+  "executiveSummary": "Concise executive guidance for government officers and university researchers",
+  "requiresHumanReview": true,
+  "confidenceScore": 0.85
+}}
+"""
+            response, used_model = GeminiAdapter._generate_with_failover(
+                client=client,
+                prompt=prompt,
+                config={'response_mime_type': 'application/json'},
+                operation_name="AI_SOLUTION_MEMORY_EVALUATION"
+            )
+
+            raw_text = response.text.strip()
+            parsed = json.loads(raw_text)
+
+            precedents = []
+            for item in parsed.get("precedents", []):
+                precedents.append(PrecedentEvaluationItem(
+                    memoryId=str(item.get("memoryId", "")),
+                    verdict=str(item.get("verdict", "CAUTION")),
+                    whySimilar=str(item.get("whySimilar", "")),
+                    whatPreviouslyWorked=item.get("whatPreviouslyWorked"),
+                    underWhatConditions=item.get("underWhatConditions"),
+                    impactAchieved=item.get("impactAchieved"),
+                    whyFailed=item.get("whyFailed"),
+                    conditionsCausingFailure=item.get("conditionsCausingFailure"),
+                    knownRisks=item.get("knownRisks"),
+                    applicabilityAssessment=str(item.get("applicabilityAssessment", "")),
+                    recommendedPrerequisites=item.get("recommendedPrerequisites", [])
+                ))
+
+            return SolutionMemoryEvaluationResponse(
+                guidanceVerdict=parsed.get("guidanceVerdict", "CAUTION"),
+                precedents=precedents,
+                comparativeAnalysis=parsed.get("comparativeAnalysis"),
+                executiveSummary=parsed.get("executiveSummary", "Precedent analysis synthesized from SICP Solution Memory."),
+                requiresHumanReview=True,
+                confidenceScore=float(parsed.get("confidenceScore", 0.85)),
+                modelVersion=used_model
+            )
+        except Exception as e:
+            if GeminiAdapter._is_rate_limit_or_quota(e):
+                logger.warning("[AI_SOLUTION_MEMORY_RATE_LIMIT] Quota reached. Using deterministic evaluation.")
+                return GeminiAdapter._deterministic_precedent_evaluation(request)
+            logger.error(f"[AI_SOLUTION_MEMORY_ERROR]: {str(e)}")
+            return GeminiAdapter._deterministic_precedent_evaluation(request)
+
+    @staticmethod
+    def _deterministic_precedent_evaluation(request: SolutionMemoryEvaluationRequest) -> SolutionMemoryEvaluationResponse:
+        precedents = []
+        overall_has_warn = False
+        overall_has_recommend = False
+
+        for mem in request.retrievedMemories:
+            mem_id = str(mem.get("id") or mem.get("memoryId") or "")
+            outcome_status = str(mem.get("outcomeStatus", "UNDER_EVALUATION")).upper()
+            reusability_class = str(mem.get("reusabilityClass", "")).upper()
+            what_failed = mem.get("whatFailed") or mem.get("failureReason")
+            what_worked = mem.get("whatWorked") or mem.get("observedImpact")
+            title = mem.get("title", "Historical Solution")
+
+            if outcome_status in ["INEFFECTIVE", "FAILED"] or reusability_class == "NOT_RECOMMENDED":
+                verdict = "WARN"
+                overall_has_warn = True
+                why_failed = what_failed or "Solution intervention did not achieve verified success."
+                known_risks = f"High risk of repeating failure mode: {why_failed}"
+            elif outcome_status in ["EFFECTIVE", "SUCCESSFUL", "SUCCESS"] and reusability_class != "NOT_RECOMMENDED":
+                verdict = "RECOMMEND"
+                overall_has_recommend = True
+                why_failed = None
+                known_risks = mem.get("limitations")
+            else:
+                verdict = "CAUTION"
+                why_failed = what_failed
+                known_risks = "Mixed or preliminary outcome record. Adaptation required."
+
+            precedents.append(PrecedentEvaluationItem(
+                memoryId=mem_id,
+                verdict=verdict,
+                whySimilar=f"Aligned on domain '{request.problemCategory}' and root cause dynamics for '{title}'.",
+                whatPreviouslyWorked=what_worked,
+                underWhatConditions=mem.get("contextConditions", {}).get("geology") or "Standard field conditions with verified operational oversight.",
+                impactAchieved=mem.get("impactSummary") or what_worked,
+                whyFailed=why_failed,
+                conditionsCausingFailure=mem.get("limitations") if verdict == "WARN" else None,
+                knownRisks=known_risks,
+                applicabilityAssessment=f"Precedent evaluated with {verdict} verdict based on historical verified outcome.",
+                recommendedPrerequisites=mem.get("recommendedPrerequisites") or ["Verify localized operational and maintenance capacity."]
+            ))
+
+        if overall_has_recommend and not overall_has_warn:
+            guidance = "RECOMMEND"
+            summary = "Historical precedents indicate effective interventions under similar conditions. Recommended for technical evaluation."
+        elif overall_has_warn and not overall_has_recommend:
+            guidance = "WARN"
+            summary = "Historical precedents encountered documented failure modes under similar conditions. Operational warning issued."
+        elif overall_has_recommend and overall_has_warn:
+            guidance = "CAUTION"
+            summary = "Mixed historical evidence observed. Some implementations succeeded while others encountered failure modes."
+        else:
+            guidance = "CAUTION"
+            summary = "Historical evidence requires careful adaptation to local community conditions."
+
+        return SolutionMemoryEvaluationResponse(
+            guidanceVerdict=guidance,
+            precedents=precedents,
+            comparativeAnalysis=f"Evaluated {len(precedents)} historical solution precedents against current societal problem context.",
+            executiveSummary=summary,
+            requiresHumanReview=True,
+            confidenceScore=0.88,
+            modelVersion="deterministic-fallback"
+        )

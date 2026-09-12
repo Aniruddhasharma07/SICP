@@ -9,7 +9,9 @@ from app.schemas.analysis import (
     KnowledgeSynthesisRequest,
     KnowledgeSynthesisResponse,
     EvidenceAnalysisRequest,
-    EvidenceAnalysisResponse
+    EvidenceAnalysisResponse,
+    SolutionMemoryEvaluationRequest,
+    SolutionMemoryEvaluationResponse
 )
 from app.schemas.relationship import (
     RelationshipAnalysisRequest,
@@ -174,6 +176,28 @@ async def analyze_evidence(request: EvidenceAnalysisRequest):
             detail={
                 "code": "AI_EVIDENCE_ANALYSIS_FAILED",
                 "message": f"Evidence analysis failed: {str(e)}"
+            }
+        )
+
+@router.post("/solution-memory/evaluate", response_model=SolutionMemoryEvaluationResponse)
+async def evaluate_solution_memory(request: SolutionMemoryEvaluationRequest):
+    try:
+        result = await GeminiAdapter.evaluate_solution_memory_precedents(request)
+        return result
+    except AiUnavailableException as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "code": "AI_UNAVAILABLE",
+                "message": str(e)
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "AI_SOLUTION_MEMORY_EVALUATION_FAILED",
+                "message": f"Solution memory evaluation failed: {str(e)}"
             }
         )
 

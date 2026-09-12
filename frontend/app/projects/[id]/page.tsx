@@ -204,6 +204,15 @@ export default function ProjectCockpitPage({ params }: { params: Promise<{ id: s
   const [outTarget, setOutTarget] = useState('');
   const [outObserved, setOutObserved] = useState('');
   const [outFollowUp, setOutFollowUp] = useState('');
+  const [outSuccessFactors, setOutSuccessFactors] = useState('');
+  const [outFailureFactors, setOutFailureFactors] = useState('');
+  const [outFailureReason, setOutFailureReason] = useState('');
+  const [outLessonsLearned, setOutLessonsLearned] = useState('');
+  const [outMaintenanceIssues, setOutMaintenanceIssues] = useState('');
+  const [outTargetAchieved, setOutTargetAchieved] = useState(true);
+  const [outContextRuralUrban, setOutContextRuralUrban] = useState<'RURAL' | 'URBAN' | 'SEMI_URBAN'>('RURAL');
+  const [outContextRainfall, setOutContextRainfall] = useState<'HIGH' | 'MODERATE' | 'LOW'>('MODERATE');
+  const [outContextMaintenanceCapacity, setOutContextMaintenanceCapacity] = useState<'HIGH' | 'MODERATE' | 'LOW'>('MODERATE');
 
   // Innovation Outcome Modal
   const [showInnovationModal, setShowInnovationModal] = useState(false);
@@ -613,10 +622,24 @@ export default function ProjectCockpitPage({ params }: { params: Promise<{ id: s
           targetSummary: outTarget,
           observedSummary: outObserved,
           followUpAction: outFollowUp,
+          limitations: outMaintenanceIssues || undefined,
+          notes: outLessonsLearned || undefined,
+          targetAchieved: outTargetAchieved,
+          successFactors: outSuccessFactors ? outSuccessFactors.split(',').map(s => s.trim()).filter(Boolean) : [],
+          failureFactors: outFailureFactors ? outFailureFactors.split(',').map(s => s.trim()).filter(Boolean) : [],
+          failureReason: outFailureReason || undefined,
+          contextConditions: {
+            ruralUrban: outContextRuralUrban,
+            rainfall: outContextRainfall,
+            maintenanceCapacity: outContextMaintenanceCapacity,
+          },
         }),
       });
       if (res.success) {
-        setStatusMessage({ type: 'success', text: `Official outcome verification recorded: ${outStatus}` });
+        setStatusMessage({
+          type: 'success',
+          text: `Official outcome verification recorded (${outStatus}). Outcome recorded as learning for future similar problems.`,
+        });
         setShowVerifyModal(false);
         fetchProject();
       }
@@ -2238,40 +2261,192 @@ export default function ProjectCockpitPage({ params }: { params: Promise<{ id: s
       {/* Outcome Verification Modal */}
       {showVerifyModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <CardTitle className="text-base">Official Government Outcome Verification</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleVerifyOutcome} className="space-y-3 text-xs">
+          <Card className="max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="w-5 h-5 text-indigo-600" />
                 <div>
-                  <label className="font-semibold block mb-1">Verdict Status</label>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Official Government Outcome Verification
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500">
+                    Verifies field outcome and stores structured learning into the AI Solution Memory loop.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <form onSubmit={handleVerifyOutcome} className="space-y-4 text-xs">
+                <div>
+                  <label className="font-semibold block mb-1 text-slate-700">Verdict Status</label>
                   <select
                     value={outStatus}
                     onChange={e => setOutStatus(e.target.value as any)}
-                    className="w-full border rounded p-2"
+                    className="w-full border border-slate-300 rounded-lg p-2 text-xs font-medium"
                   >
-                    <option value="VERIFIED">VERIFIED (Resolves challenge and marks project completed)</option>
-                    <option value="VERIFIED_WITH_LIMITATIONS">VERIFIED_WITH_LIMITATIONS</option>
-                    <option value="NOT_VERIFIED">NOT_VERIFIED (Requires follow-up action)</option>
+                    <option value="VERIFIED">VERIFIED (Resolves challenge, marks project completed, tags Worked Before — Recommend)</option>
+                    <option value="VERIFIED_WITH_LIMITATIONS">VERIFIED_WITH_LIMITATIONS (Tags Mixed Results — Caution)</option>
+                    <option value="NOT_VERIFIED">NOT_VERIFIED (Tags Failed Before — Warn)</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="font-semibold block mb-1">Observed Outcome Summary</label>
-                  <Textarea value={outObserved} onChange={e => setOutObserved(e.target.value)} required />
+                  <label className="font-semibold block mb-1 text-slate-700">Observed Outcome Summary</label>
+                  <Textarea
+                    value={outObserved}
+                    onChange={e => setOutObserved(e.target.value)}
+                    placeholder="Describe field inspection observations, metric changes, and community impact..."
+                    className="text-xs min-h-[60px]"
+                    required
+                  />
                 </div>
+
                 {outStatus === 'NOT_VERIFIED' && (
                   <div>
-                    <label className="font-semibold block mb-1 text-red-600">Mandatory Follow-up Action Plan</label>
-                    <Input value={outFollowUp} onChange={e => setOutFollowUp(e.target.value)} required />
+                    <label className="font-semibold block mb-1 text-rose-700">
+                      Mandatory Follow-up Action Plan
+                    </label>
+                    <Input
+                      value={outFollowUp}
+                      onChange={e => setOutFollowUp(e.target.value)}
+                      placeholder="Required remediation steps to prevent zero dead ends..."
+                      className="border-rose-300 text-xs"
+                      required
+                    />
                   </div>
                 )}
-                <div className="flex justify-end gap-2 pt-2">
+
+                {/* Structured Institutional Learning Section */}
+                <div className="p-3 bg-indigo-50/50 border border-indigo-200 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-indigo-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                      Structured AI Solution Memory Learning
+                    </span>
+                    <label className="flex items-center gap-1.5 text-indigo-900 font-semibold cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={outTargetAchieved}
+                        onChange={e => setOutTargetAchieved(e.target.checked)}
+                        className="rounded border-indigo-300 text-indigo-600"
+                      />
+                      <span>Target Achieved</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="font-semibold block mb-1 text-slate-700">
+                      Success Factors (comma-separated)
+                    </label>
+                    <Input
+                      value={outSuccessFactors}
+                      onChange={e => setOutSuccessFactors(e.target.value)}
+                      placeholder="e.g. Community buy-in, regular silt clearance, high rainfall"
+                      className="text-xs bg-white"
+                    />
+                  </div>
+
+                  {(outStatus === 'NOT_VERIFIED' || outStatus === 'VERIFIED_WITH_LIMITATIONS') && (
+                    <>
+                      <div>
+                        <label className="font-semibold block mb-1 text-slate-700">
+                          Failure / Degradation Factors (comma-separated)
+                        </label>
+                        <Input
+                          value={outFailureFactors}
+                          onChange={e => setOutFailureFactors(e.target.value)}
+                          placeholder="e.g. Unmonitored runoff, delayed pump servicing, power fluctuation"
+                          className="text-xs bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-semibold block mb-1 text-rose-700">
+                          Precedent Failure Reason (stored for future WARN alerts)
+                        </label>
+                        <Input
+                          value={outFailureReason}
+                          onChange={e => setOutFailureReason(e.target.value)}
+                          placeholder="Why did this intervention fail or face severe constraints?"
+                          className="text-xs bg-white border-rose-300"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div>
+                    <label className="font-semibold block mb-1 text-slate-700">
+                      Maintenance & Operational Constraints
+                    </label>
+                    <Input
+                      value={outMaintenanceIssues}
+                      onChange={e => setOutMaintenanceIssues(e.target.value)}
+                      placeholder="e.g. Scheduled quarterly desilting required; unmonitored sites fail"
+                      className="text-xs bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold block mb-1 text-slate-700">
+                      Lessons Learned for Future Replications
+                    </label>
+                    <Textarea
+                      value={outLessonsLearned}
+                      onChange={e => setOutLessonsLearned(e.target.value)}
+                      placeholder="Key guidance for municipal and research teams considering replicating this approach..."
+                      className="text-xs min-h-[50px] bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="font-semibold block mb-1 text-[11px] text-slate-700">Environment</label>
+                      <select
+                        value={outContextRuralUrban}
+                        onChange={e => setOutContextRuralUrban(e.target.value as any)}
+                        className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                      >
+                        <option value="RURAL">Rural</option>
+                        <option value="URBAN">Urban</option>
+                        <option value="SEMI_URBAN">Semi-Urban</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="font-semibold block mb-1 text-[11px] text-slate-700">Rainfall</label>
+                      <select
+                        value={outContextRainfall}
+                        onChange={e => setOutContextRainfall(e.target.value as any)}
+                        className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                      >
+                        <option value="HIGH">High</option>
+                        <option value="MODERATE">Moderate</option>
+                        <option value="LOW">Low</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="font-semibold block mb-1 text-[11px] text-slate-700">Maintenance Cap.</label>
+                      <select
+                        value={outContextMaintenanceCapacity}
+                        onChange={e => setOutContextMaintenanceCapacity(e.target.value as any)}
+                        className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                      >
+                        <option value="HIGH">High</option>
+                        <option value="MODERATE">Moderate</option>
+                        <option value="LOW">Low</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-indigo-700/90 italic pt-1">
+                    Outcome recorded as learning for future similar problems.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                   <Button type="button" variant="outline" onClick={() => setShowVerifyModal(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={actionLoading} className="bg-emerald-600 text-white">
-                    Verify Outcome
+                  <Button type="submit" disabled={actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                    Verify & Record Learning
                   </Button>
                 </div>
               </form>

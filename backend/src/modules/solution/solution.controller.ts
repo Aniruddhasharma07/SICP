@@ -193,4 +193,42 @@ export class SolutionController {
       next(err);
     }
   }
+
+  /**
+   * POST /api/v1/solutions/learn-outcome/:projectId
+   */
+  public static async recordProjectOutcomeAndLearn(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectId } = req.params;
+      const user = req.user!;
+      const result = await SolutionService.recordProjectOutcomeAndLearn({
+        projectId,
+        dto: req.body,
+        actorId: user.id,
+        actorRole: user.role,
+        requestId: (req as any).requestId || 'req-learn-outcome',
+      });
+      sendSuccess(res, result, 201);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * GET /api/v1/solutions/historical/challenge/:challengeId/evaluated
+   */
+  public static async evaluatePrecedents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { challengeId } = req.params;
+      const user = req.user;
+      const result = await SolutionService.evaluatePrecedents({
+        challengeId,
+        userRole: user?.role,
+        requestId: (req as any).requestId || 'req-evaluate-precedents',
+      });
+      sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

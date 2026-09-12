@@ -253,6 +253,9 @@ enum MemoryOutcomeStatus {
   PARTIALLY_EFFECTIVE
   UNDER_EVALUATION
   INSUFFICIENT_EVIDENCE
+  EFFECTIVE
+  INEFFECTIVE
+  INCONCLUSIVE
 }
 
 enum SolutionMemoryStatus {
@@ -499,6 +502,7 @@ model Challenge {
   teams                MultidisciplinaryTeam[]
   proposals            ProjectProposal[]
   solutionMemories     SolutionMemory[]
+  solutionApplications SolutionMemoryApplication[]
 
   @@index([status])
   @@index([submitterId])
@@ -760,6 +764,7 @@ model Project {
   risks                ProjectRisk[]
   fundingRequests      FundingRequest[]
   solutionMemories     SolutionMemory[]
+  solutionApplications SolutionMemoryApplication[]
 
   @@index([challengeId])
   @@index([leadingOrgId])
@@ -1136,6 +1141,14 @@ model SolutionMemory {
   tags                   String[]
   viewCount              Int                  @default(0)
   reuseCount             Int                  @default(0)
+  implementationCount    Int                  @default(1)
+  successCount           Int                  @default(1)
+  partialCount           Int                  @default(0)
+  failureCount           Int                  @default(0)
+  inconclusiveCount      Int                  @default(0)
+  effectivenessProfile   Json?
+  guidanceVerdict        String?
+  applications           SolutionMemoryApplication[]
   createdAt              DateTime             @default(now())
   updatedAt              DateTime             @updatedAt
 
@@ -1146,6 +1159,36 @@ model SolutionMemory {
   @@index([evidenceLevel])
   @@index([projectId])
   @@index([challengeId])
+}
+
+model SolutionMemoryApplication {
+  id                    String              @id @default(uuid())
+  solutionMemoryId      String
+  solutionMemory        SolutionMemory      @relation(fields: [solutionMemoryId], references: [id], onDelete: Cascade)
+  projectId             String
+  project               Project             @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  challengeId           String
+  challenge             Challenge           @relation(fields: [challengeId], references: [id], onDelete: Restrict)
+  outcomeStatus         MemoryOutcomeStatus
+  evidenceLevel         EvidenceLevel       @default(VERIFIED)
+  observedImpact        String?
+  targetAchieved        Boolean             @default(true)
+  successFactors        String[]            @default([])
+  failureFactors        String[]            @default([])
+  failureReason         String?
+  maintenanceIssues     String?
+  adoptionIssues        String?
+  unexpectedResults     String?
+  contextConditions     Json?
+  verifiedById          String?
+  verifiedAt            DateTime            @default(now())
+  createdAt             DateTime            @default(now())
+
+  @@unique([solutionMemoryId, projectId])
+  @@index([solutionMemoryId])
+  @@index([projectId])
+  @@index([challengeId])
+  @@index([outcomeStatus])
 }
 
 model AIAnalysis {

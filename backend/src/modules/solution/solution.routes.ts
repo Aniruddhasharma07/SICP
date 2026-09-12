@@ -56,6 +56,21 @@ solutionRouter.get(
   SolutionController.getChallengeHistoricalSolutions
 );
 
+// Evaluated historical precedents (Gemini + Solution Memory)
+solutionRouter.get(
+  '/historical/challenge/:challengeId/evaluated',
+  optionalAuthMiddleware,
+  SolutionController.evaluatePrecedents
+);
+
+// Record project outcome into solution memory learning loop
+solutionRouter.post(
+  '/learn-outcome/:projectId',
+  authMiddleware,
+  requirePermission('solution:create'),
+  SolutionController.recordProjectOutcomeAndLearn
+);
+
 // Search and list solutions
 solutionRouter.get(
   '/',

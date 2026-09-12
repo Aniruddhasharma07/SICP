@@ -76,6 +76,21 @@ export class SolutionRetrievalEngine {
         challenge: {
           select: { id: true, title: true, district: true, state: true, latitude: true, longitude: true },
         },
+        applications: {
+          select: {
+            id: true,
+            projectId: true,
+            challengeId: true,
+            outcomeStatus: true,
+            observedImpact: true,
+            targetAchieved: true,
+            successFactors: true,
+            failureFactors: true,
+            failureReason: true,
+            maintenanceIssues: true,
+            createdAt: true,
+          },
+        },
       },
       take: 50,
     });
@@ -203,6 +218,44 @@ export class SolutionRetrievalEngine {
       // Recommended Prerequisites
       const recommendedPrerequisites = this.extractPrerequisites(memory.constraints, memory.technicalApproach);
 
+      // Calculate Historical Applications Stats & Guidance Verdict
+      const apps = (memory as any).applications || [];
+      const appSuccesses = apps.filter(
+        (a: any) =>
+          a.outcomeStatus === MemoryOutcomeStatus.EFFECTIVE ||
+          a.outcomeStatus === MemoryOutcomeStatus.SUCCESSFUL ||
+          a.outcomeStatus === MemoryOutcomeStatus.SUCCESS
+      ).length;
+      const appFailures = apps.filter(
+        (a: any) =>
+          a.outcomeStatus === MemoryOutcomeStatus.INEFFECTIVE ||
+          a.outcomeStatus === MemoryOutcomeStatus.FAILED
+      ).length;
+      const appPartials = apps.filter(
+        (a: any) =>
+          a.outcomeStatus === MemoryOutcomeStatus.PARTIALLY_EFFECTIVE ||
+          a.outcomeStatus === MemoryOutcomeStatus.PARTIAL_SUCCESS
+      ).length;
+
+      const successCount = Math.max((memory as any).successCount || 0, appSuccesses);
+      const failureCount = Math.max((memory as any).failureCount || 0, appFailures);
+      const partialCount = Math.max((memory as any).partialCount || 0, appPartials);
+      const historicalApplicationsCount = Math.max(
+        (memory as any).implementationCount || 1,
+        apps.length,
+        successCount + failureCount + partialCount
+      );
+
+      const { guidanceVerdict, guidanceLabel } = this.determineGuidance(
+        memory.outcomeStatus as MemoryOutcomeStatus,
+        memory.reusabilityClass as ReusabilityClass,
+        { successCount, failureCount, partialCount },
+        memory.whatFailed
+      );
+
+      const { effectiveForContext, lessEffectiveForContext, failurePattern } =
+        this.extractContextualApplicability(memory, failureCount, memory.whatFailed);
+
       recommendations.push({
         memoryId: memory.id,
         title: memory.title,
@@ -217,6 +270,20 @@ export class SolutionRetrievalEngine {
         relevanceScore: finalScore,
         matchBreakdown,
         explanation,
+        guidanceVerdict,
+        guidanceLabel,
+        historicalApplicationsCount,
+        successCount,
+        failureCount,
+        partialCount,
+        failurePattern,
+        effectiveForContext,
+        lessEffectiveForContext,
+        verifiedImpact: memory.impactSummary || memory.whatWorked || null,
+        lessonsLearned: memory.lessonsLearned,
+        whatWorked: memory.whatWorked,
+        whatFailed: memory.whatFailed,
+        knownLimitations: memory.limitations,
         historicalWarning,
         recommendedPrerequisites,
         sourceProjectId: memory.projectId,
@@ -246,6 +313,7 @@ export class SolutionRetrievalEngine {
     switch (params.outcomeStatus) {
       case MemoryOutcomeStatus.SUCCESS:
       case MemoryOutcomeStatus.SUCCESSFUL:
+      case MemoryOutcomeStatus.EFFECTIVE:
         score = 85;
         break;
       case MemoryOutcomeStatus.PARTIAL_SUCCESS:
@@ -253,9 +321,11 @@ export class SolutionRetrievalEngine {
         score = 65;
         break;
       case MemoryOutcomeStatus.UNDER_EVALUATION:
+      case MemoryOutcomeStatus.INCONCLUSIVE:
         score = 50;
         break;
       case MemoryOutcomeStatus.FAILED:
+      case MemoryOutcomeStatus.INEFFECTIVE:
         score = 15;
         break;
       case MemoryOutcomeStatus.REQUIRES_REVIEW:
@@ -300,13 +370,127 @@ export class SolutionRetrievalEngine {
    * Maps numerical Reusability Score to ReusabilityClass
    */
   public static mapScoreToReusabilityClass(score: number, outcomeStatus?: MemoryOutcomeStatus): ReusabilityClass {
-    if (outcomeStatus === MemoryOutcomeStatus.FAILED) {
+    if (
+      outcomeStatus === MemoryOutcomeStatus.FAILED ||
+      outcomeStatus === MemoryOutcomeStatus.INEFFECTIVE
+    ) {
       return ReusabilityClass.NOT_RECOMMENDED;
     }
     if (score >= 80) return ReusabilityClass.HIGHLY_REUSABLE;
     if (score >= 60) return ReusabilityClass.CONDITIONALLY_REUSABLE;
     if (score >= 40) return ReusabilityClass.REQUIRES_ADAPTATION;
     return ReusabilityClass.NOT_RECOMMENDED;
+  }
+
+  /**
+   * Determines explainable institutional guidance based on outcome status,
+   * historical applications, and failure evidence.
+   */
+  public static determineGuidance(
+    outcomeStatus: MemoryOutcomeStatus,
+    reusabilityClass: ReusabilityClass,
+    history: { successCount: number; failureCount: number; partialCount: number },
+    whatFailed?: string | null
+  ): { guidanceVerdict: 'RECOMMEND' | 'WARN' | 'CAUTION' | 'NO_MEMORY'; guidanceLabel: string } {
+    // If it has both successes and failures in historical applications, it is mixed evidence
+    if (history.successCount > 0 && history.failureCount > 0) {
+      return {
+        guidanceVerdict: 'CAUTION',
+        guidanceLabel: 'Mixed Results — Use With Caution',
+      };
+    }
+
+    if (
+      outcomeStatus === MemoryOutcomeStatus.INEFFECTIVE ||
+      outcomeStatus === MemoryOutcomeStatus.FAILED ||
+      reusabilityClass === ReusabilityClass.NOT_RECOMMENDED
+    ) {
+      return {
+        guidanceVerdict: 'WARN',
+        guidanceLabel: 'Failed Before — Warn',
+      };
+    }
+
+    if (
+      outcomeStatus === MemoryOutcomeStatus.PARTIALLY_EFFECTIVE ||
+      outcomeStatus === MemoryOutcomeStatus.PARTIAL_SUCCESS ||
+      outcomeStatus === MemoryOutcomeStatus.REQUIRES_REVIEW ||
+      reusabilityClass === ReusabilityClass.REQUIRES_ADAPTATION
+    ) {
+      return {
+        guidanceVerdict: 'CAUTION',
+        guidanceLabel: 'Mixed Results — Use With Caution',
+      };
+    }
+
+    if (
+      outcomeStatus === MemoryOutcomeStatus.EFFECTIVE ||
+      outcomeStatus === MemoryOutcomeStatus.SUCCESSFUL ||
+      outcomeStatus === MemoryOutcomeStatus.SUCCESS
+    ) {
+      return {
+        guidanceVerdict: 'RECOMMEND',
+        guidanceLabel: 'Worked Before — Recommend',
+      };
+    }
+
+    return {
+      guidanceVerdict: 'CAUTION',
+      guidanceLabel: 'Limited Evidence — Use With Caution',
+    };
+  }
+
+  /**
+   * Extracts contextual applicability factors distinguishing conditions where
+   * the intervention thrives versus where it is less effective or prone to failure.
+   */
+  public static extractContextualApplicability(
+    memory: any,
+    failureCount: number,
+    whatFailed?: string | null
+  ): {
+    effectiveForContext: string[];
+    lessEffectiveForContext: string[];
+    failurePattern: string | null;
+  } {
+    const effective: string[] = [];
+    const lessEffective: string[] = [];
+
+    const category = (memory.challengeCategory || '').toUpperCase();
+    const problemType = (memory.problemType || '').toUpperCase();
+    const location = memory.locationContext || {};
+    const constraints = memory.constraints || '';
+
+    if (category.includes('WATER') || problemType.includes('WATER')) {
+      effective.push('Rural & semi-urban village recharge zones', 'High to moderate seasonal rainfall basins');
+      lessEffective.push('Centralized metropolitan deep-piped networks', 'Arid low-recharge hard-rock formations');
+    } else if (category.includes('ROAD') || category.includes('INFRASTRUCTURE')) {
+      effective.push('High-traffic arterial corridors with dedicated sub-base drainage', 'Porous aggregate pavements');
+      lessEffective.push('Inundated clay soil beds without perimeter stormwater diversion');
+    } else if (category.includes('HEALTH') || category.includes('SANITATION')) {
+      effective.push('Decentralized primary health centers', 'Community-operated filtration units');
+      lessEffective.push('Unmonitored public points without scheduled technician service');
+    } else {
+      effective.push('Localized community deployment with trained caretaker support');
+      lessEffective.push('Unmonitored environments lacking maintenance capacity');
+    }
+
+    if (constraints.toLowerCase().includes('maintenance')) {
+      lessEffective.push('Low-maintenance operating environments');
+    }
+
+    let failurePattern: string | null = null;
+    if (failureCount > 0 || whatFailed) {
+      failurePattern = whatFailed
+        ? `Documented precedent failure associated with: ${whatFailed.trim()}`
+        : 'Intervention experienced performance degradation in environments with insufficient operational capacity.';
+    }
+
+    return {
+      effectiveForContext: Array.from(new Set(effective)),
+      lessEffectiveForContext: Array.from(new Set(lessEffective)),
+      failurePattern,
+    };
   }
 
   /**
