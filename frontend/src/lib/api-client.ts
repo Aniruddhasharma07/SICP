@@ -1,6 +1,17 @@
 import { ApiResponse, ApiError, StandardErrorCode } from '@sicp/shared';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:5000';
+    }
+  }
+  return 'http://localhost:5000';
+}
 
 class ApiClient {
   private accessToken: string | null = null;
@@ -38,7 +49,8 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const baseUrl = getApiBaseUrl();
+    const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
 
     try {
       const response = await fetch(url, {
@@ -66,11 +78,20 @@ class ApiClient {
       const data: ApiResponse<T> = await response.json();
       return data;
     } catch (err: unknown) {
+      const errMsg = (err as Error)?.message || '';
+      const isNetworkError =
+        err instanceof TypeError ||
+        errMsg === 'Failed to fetch' ||
+        errMsg.toLowerCase().includes('fetch') ||
+        errMsg.toLowerCase().includes('networkerror');
+
       return {
         success: false,
         error: {
           code: StandardErrorCode.INTERNAL_ERROR,
-          message: (err as Error).message || 'Network communication error',
+          message: isNetworkError
+            ? `Unable to connect to SICP Backend (${baseUrl}). Please ensure the backend server is running.`
+            : (errMsg || 'Network communication error'),
         },
         meta: {
           requestId: headers['X-Request-Id'],
@@ -82,7 +103,8 @@ class ApiClient {
 
   private async refreshToken(): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
