@@ -67,7 +67,7 @@ jobs:
 
       - name: Generate Prisma Client & Validate Schema
         run: |
-          npx prisma validate --schema=backend/prisma/schema.prisma
+          npx --prefix backend prisma validate --schema=backend/prisma/schema.prisma
           npm run prisma:generate --prefix backend
 
       - name: Strict Backend TypeScript Verification
