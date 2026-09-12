@@ -76,8 +76,5 @@ jobs:
       - name: Execute Backend Automated Test Suites
         run: npm test --prefix backend
 
-      - name: Ensure Tailwind CSS Native Linux Dependencies
-        run: npm install --prefix frontend --no-save lightningcss-linux-x64-gnu || true
-
       - name: Frontend Next.js Production Build
         run: npm run build:frontend
