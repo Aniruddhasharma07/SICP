@@ -165,6 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const demoSwitch = async (universityOrgId: string) => {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
+      return {
+        success: false,
+        error: 'Institutional account switching is disabled in production. Please sign in with that institution’s credentials.',
+      };
+    }
+
     setIsLoading(true);
     const res = await apiClient.request<{
       user: UserDto;
