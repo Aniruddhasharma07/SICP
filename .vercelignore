@@ -1,0 +1,11 @@
+# Ignore non-frontend artifacts from Vercel upload
+tools/
+scratch/
+ai-service/
+backend/
+.git/
+node_modules/
+*/node_modules/
+.next/
+*/.next/
+*.log

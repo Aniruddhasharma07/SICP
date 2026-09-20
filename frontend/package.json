@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsc -p packages/shared/tsconfig.json",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
