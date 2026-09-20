@@ -9,6 +9,7 @@ import { Badge } from '../ui/Badge';
 import { GlobalSearchModal } from '../common/GlobalSearchModal';
 import { PortalSwitcher } from './PortalSwitcher';
 import { apiClient } from '../../lib/api-client';
+import { formatRelativeDate, formatEnumToHuman } from '../../lib/formatters';
 import {
   Globe,
   User,
@@ -103,37 +104,39 @@ export function AppHeader() {
         <div className="flex h-16 items-center justify-between px-4 md:px-8">
           {/* Logo & Portal Branding */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 text-lg tracking-tight">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-xs">
+            <Link href="/" className="flex items-center gap-2.5 text-slate-900 group">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-xs transition-transform group-hover:scale-105">
                 S
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span>SICP</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Production
+                  <span className="font-extrabold tracking-tight text-base text-slate-950">SICP</span>
+                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    PRODUCTION
                   </span>
                 </div>
-                <span className="hidden lg:block text-[10px] font-medium text-slate-400 -mt-0.5">
+                <span className="hidden lg:block text-[10px] font-medium text-slate-500 -mt-0.5">
                   Societal Innovation Collaboration Portal
                 </span>
               </div>
             </Link>
-            <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1" />
+            <div className="h-5 w-px bg-slate-200 hidden sm:block mx-1" />
             <PortalSwitcher />
           </div>
 
           {/* Center: Global Search Bar Trigger */}
-          <div className="flex-1 max-w-md mx-4 hidden md:block">
+          <div className="flex-1 max-w-md mx-4 hidden lg:block">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300 hover:bg-white text-xs transition-colors"
+              aria-label="Search problems, projects, solutions and institutions"
+              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-200/90 bg-slate-50/70 text-slate-500 hover:border-slate-300 hover:bg-white hover:text-slate-700 text-xs font-medium transition-all shadow-2xs group"
             >
-              <span className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-slate-400" />
-                <span>Search problems, solutions, faculty...</span>
+              <span className="flex items-center gap-2.5 truncate">
+                <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                <span className="truncate">Search problems, solutions, faculty...</span>
               </span>
-              <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-slate-500 bg-white border border-slate-200 rounded">
+              <kbd className="px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-white border border-slate-200/90 rounded-md shadow-2xs shrink-0">
                 Ctrl K
               </kbd>
             </button>
@@ -145,7 +148,7 @@ export function AppHeader() {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden p-2"
+              className="lg:hidden p-2"
               onClick={() => setIsSearchOpen(true)}
               title="Search"
             >
@@ -154,7 +157,7 @@ export function AppHeader() {
 
             {/* Submit Problem Button */}
             <Link href="/challenges/new">
-              <Button size="sm" className="hidden sm:flex gap-1.5 shadow-xs">
+              <Button size="sm" className="hidden lg:flex gap-1.5 shadow-xs">
                 <PlusCircle className="w-4 h-4" />
                 <span>Submit Problem</span>
               </Button>
@@ -208,17 +211,17 @@ export function AppHeader() {
                           >
                             <div className="flex items-start justify-between gap-2">
                               <span className="font-semibold text-slate-900 line-clamp-1">{n.title}</span>
-                              <span className="text-[10px] text-slate-400 shrink-0">
-                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                                {formatRelativeDate(n.createdAt)}
                               </span>
                             </div>
                             <p className="text-slate-600 mt-1 line-clamp-2">{n.message}</p>
                             <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100/60">
-                              <span className="text-[10px] text-slate-400 font-medium">{n.type}</span>
+                              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{n.type}</span>
                               {!n.read && (
                                 <button
                                   onClick={() => markAsRead(n.id)}
-                                  className="text-[11px] text-blue-600 hover:underline"
+                                  className="text-[11px] text-blue-600 hover:underline font-medium"
                                 >
                                   Mark read
                                 </button>
@@ -251,36 +254,36 @@ export function AppHeader() {
             {user ? (
               <div className="flex items-center gap-2.5">
                 <Link href="/dashboard">
-                  <Badge variant="secondary" className="hidden md:inline-flex cursor-pointer hover:bg-slate-200">
-                    {user.role}
+                  <Badge variant="secondary" className="hidden md:inline-flex cursor-pointer hover:bg-slate-200 text-[11px] font-semibold">
+                    {formatEnumToHuman(user.role)}
                   </Badge>
                 </Link>
 
                 <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
                   <Link
                     href="/dashboard"
-                    className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold hover:ring-2 hover:ring-blue-300 transition-all"
+                    className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs hover:ring-2 hover:ring-blue-300 transition-all"
                     title="User Profile"
                   >
                     {user.fullName.charAt(0).toUpperCase()}
                   </Link>
-                  <span className="hidden lg:inline text-xs font-semibold text-slate-700 max-w-[120px] truncate">
+                  <span className="hidden lg:inline text-xs font-semibold text-slate-800 max-w-[130px] truncate">
                     {user.fullName}
                   </span>
-                  <Button variant="ghost" size="sm" onClick={() => logout()} title="Sign out" className="p-1.5">
-                    <LogOut className="w-4 h-4 text-slate-500 hover:text-red-600" />
+                  <Button variant="ghost" size="sm" onClick={() => logout()} title="Sign out" className="p-1.5 hover:bg-rose-50">
+                    <LogOut className="w-4 h-4 text-slate-400 hover:text-rose-600 transition-colors" />
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <Link href="/login">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="px-2.5 sm:px-3 text-xs">
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="sm">
+                <Link href="/register" className="hidden sm:inline-block">
+                  <Button size="sm" className="px-2.5 sm:px-3 text-xs">
                     Register
                   </Button>
                 </Link>

@@ -40,6 +40,8 @@ import {
   ShieldCheck,
   Compass,
 } from 'lucide-react';
+import { cn } from '../../src/lib/utils';
+import { CompareCaseDrawer } from '../../src/components/intelligence/CompareCaseDrawer';
 
 export default function SolutionsRepositoryPage() {
   const { user } = useAuth();
@@ -61,6 +63,15 @@ export default function SolutionsRepositoryPage() {
   const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
   const [comparisonData, setComparisonData] = useState<SolutionComparisonDto | null>(null);
   const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerCases, setDrawerCases] = useState<any[]>([]);
+
+  const handleOpenDrawerComparison = () => {
+    const selectedCases = solutions.filter(s => selectedForCompare.includes(s.id));
+    if (selectedCases.length === 0) return;
+    setDrawerCases(selectedCases);
+    setDrawerOpen(true);
+  };
 
   // AI Knowledge Assistant State
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -231,6 +242,38 @@ export default function SolutionsRepositoryPage() {
           </div>
         )}
 
+        {/* Canonical Memory Status Navigation Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs border-b border-slate-200">
+          {[
+            { id: '', label: 'All Precedents', count: total },
+            { id: 'SUCCESSFUL', label: '🟢 Worked Before', count: analytics?.memoriesByOutcome?.successful ?? 0 },
+            { id: 'FAILED', label: '🔴 Failed Before', count: analytics?.memoriesByOutcome?.failed ?? 0 },
+            { id: 'PARTIALLY_EFFECTIVE', label: '🟡 Mixed Results', count: analytics?.memoriesByOutcome?.partiallyEffective ?? 0 },
+            { id: 'UNDER_EVALUATION', label: '⚪ Under Evaluation', count: analytics?.memoriesByOutcome?.underEvaluation ?? 0 },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setOutcomeFilter(tab.id)}
+              className={cn(
+                'px-3.5 py-2 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer',
+                outcomeFilter === tab.id
+                  ? 'bg-blue-600 text-white font-bold shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              )}
+            >
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span className={cn(
+                  'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+                  outcomeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                )}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         {/* Search & Filter Toolbar */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -315,11 +358,10 @@ export default function SolutionsRepositoryPage() {
                 <Button
                   size="sm"
                   variant="primary"
-                  onClick={handleOpenComparison}
-                  disabled={selectedForCompare.length < 2}
-                  className="text-xs h-7 py-0"
+                  onClick={handleOpenDrawerComparison}
+                  className="text-xs h-7 py-0 bg-blue-600 hover:bg-blue-700 text-white font-bold"
                 >
-                  Compare ({selectedForCompare.length})
+                  Side-by-side Analysis ({selectedForCompare.length})
                 </Button>
                 <Button
                   size="sm"
@@ -467,12 +509,24 @@ export default function SolutionsRepositoryPage() {
                         <div className="text-[11px] text-slate-400">
                           {sol.reuseCount > 0 ? `Reused ${sol.reuseCount} times` : 'Ready for adoption'}
                         </div>
-                        <Link href={`/solutions/${sol.id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700 p-0 flex items-center gap-1">
-                            <span>View Full Case Study</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDrawerCases([sol]);
+                              setDrawerOpen(true);
+                            }}
+                            className="text-[11px] font-semibold text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+                          >
+                            Inspect Specs
+                          </button>
+                          <Link href={`/solutions/${sol.id}`}>
+                            <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700 p-0 flex items-center gap-1">
+                              <span>Full Case</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -777,6 +831,13 @@ export default function SolutionsRepositoryPage() {
             </div>
           </div>
         )}
+
+        {/* Side-by-side Historical Precedent Comparison Drawer */}
+        <CompareCaseDrawer
+          isOpen={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          historicalCases={drawerCases}
+        />
       </div>
     </AppLayout>
   );

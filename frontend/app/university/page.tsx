@@ -47,6 +47,9 @@ import {
   FacultyMatchScoreDto,
   IndustryMatchScoreDto,
 } from '@sicp/shared';
+import { SolutionMemoryCard } from '../../src/components/intelligence/SolutionMemoryCard';
+import { HistoricalFailureWarning } from '../../src/components/intelligence/HistoricalFailureWarning';
+import { CompareCaseDrawer } from '../../src/components/intelligence/CompareCaseDrawer';
 
 interface UniversityMatchItem {
   id: string;
@@ -219,6 +222,43 @@ export default function UniversityPortalPage() {
 
   // Current user's institution data & rating
   const [institution, setInstitution] = useState<any | null>(user?.organization || null);
+
+  // Institutional Precedents for University Faculty & Teams
+  const [uniPrecedents, setUniPrecedents] = useState<Record<string, any[]>>({});
+  const [uniLoadingPrecedents, setUniLoadingPrecedents] = useState<Record<string, boolean>>({});
+  const [uniComparingMemory, setUniComparingMemory] = useState<any | null>(null);
+  const [uniCompareDrawerOpen, setUniCompareDrawerOpen] = useState(false);
+  const [selectedChallengeContext, setSelectedChallengeContext] = useState<any | null>(null);
+  const [expandedPrecedents, setExpandedPrecedents] = useState<Record<string, boolean>>({});
+
+  const toggleChallengePrecedents = async (challengeId: string, category?: string) => {
+    const nextState = !expandedPrecedents[challengeId];
+    setExpandedPrecedents(prev => ({ ...prev, [challengeId]: nextState }));
+    if (nextState && !uniPrecedents[challengeId]) {
+      setUniLoadingPrecedents(prev => ({ ...prev, [challengeId]: true }));
+      try {
+        const evalRes = await apiClient.request<any>(
+          `/api/v1/solutions/historical/challenge/${challengeId}/evaluated`
+        );
+        if (evalRes.success && evalRes.data && evalRes.data.retrievedMemories?.length > 0) {
+          setUniPrecedents(prev => ({ ...prev, [challengeId]: evalRes.data.retrievedMemories }));
+        } else {
+          const catRes = await apiClient.request<any>(
+            `/api/v1/solutions?category=${encodeURIComponent(category || '')}&limit=3`
+          );
+          if (catRes.success && catRes.data) {
+            const items = Array.isArray(catRes.data) ? catRes.data : catRes.data.items || [];
+            setUniPrecedents(prev => ({ ...prev, [challengeId]: items }));
+          }
+        }
+      } catch {
+        // non-blocking
+      } finally {
+        setUniLoadingPrecedents(prev => ({ ...prev, [challengeId]: false }));
+      }
+    }
+  };
+
   // Resubmission Form State
   const [resubmitModalOpen, setResubmitModalOpen] = useState(false);
   const [resubmitAishe, setResubmitAishe] = useState('');
@@ -1586,6 +1626,73 @@ export default function UniversityPortalPage() {
                             ))}
                           </div>
                         )}
+
+                        {/* Institutional Memory & Research Precedents */}
+                        <div className="border-t border-slate-200 pt-3">
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => toggleChallengePrecedents(item.challengeId, item.challenge?.category)}
+                              className="text-xs font-bold text-slate-700 hover:text-blue-600 flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                              <span>Research Precedents &amp; Failure Lessons</span>
+                              <Badge variant="outline" className="text-[10px] ml-1">
+                                {expandedPrecedents[item.challengeId] ? 'Hide Precedents' : 'Explore Prior Attempts'}
+                              </Badge>
+                            </button>
+                            <span className="text-[10px] text-slate-400 font-medium">Institutional Memory</span>
+                          </div>
+
+                          {expandedPrecedents[item.challengeId] && (
+                            <div className="mt-3 space-y-3">
+                              {uniLoadingPrecedents[item.challengeId] ? (
+                                <div className="p-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg">
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-1.5 text-blue-600" />
+                                  Checking historical engineering approaches and failure logs...
+                                </div>
+                              ) : (uniPrecedents[item.challengeId] || []).length === 0 ? (
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-500">
+                                  ℹ️ No prior engineering cases found in institutional memory for this specific civic domain. Novel research approach recommended.
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  {(uniPrecedents[item.challengeId] || []).some(p => p.outcomeStatus === 'FAILED') && (
+                                    <HistoricalFailureWarning
+                                      memoryId={(uniPrecedents[item.challengeId] || []).find(p => p.outcomeStatus === 'FAILED')?.memoryId || 'prev-fail'}
+                                      solutionTitle={(uniPrecedents[item.challengeId] || []).find(p => p.outcomeStatus === 'FAILED')?.title || 'Prior Approach'}
+                                      intendedOutcome="Field engineering pilot"
+                                      observedOutcome="FAILED"
+                                      failureFactors={(uniPrecedents[item.challengeId] || []).find(p => p.outcomeStatus === 'FAILED')?.whatFailed || 'Previous trial failed due to environmental or maintenance constraints.'}
+                                      knownLimitations={(uniPrecedents[item.challengeId] || []).find(p => p.outcomeStatus === 'FAILED')?.rootCause || 'Root cause misdiagnosis during initial pilot.'}
+                                      institutionalLesson={(uniPrecedents[item.challengeId] || []).find(p => p.outcomeStatus === 'FAILED')?.futureWarnings || 'Ensure community adoption and ruggedization against local weather conditions.'}
+                                    />
+                                  )}
+                                  {(uniPrecedents[item.challengeId] || []).slice(0, 2).map((mem: any) => (
+                                    <SolutionMemoryCard
+                                      key={mem.memoryId || mem.id}
+                                      memory={mem}
+                                      currentProblemContext={{
+                                        title: item.challenge?.title || '',
+                                        description: item.challenge?.description || '',
+                                        category: item.challenge?.category || '',
+                                        district: item.challenge?.district || undefined,
+                                      }}
+                                      onCompare={id => {
+                                        const found = (uniPrecedents[item.challengeId] || []).find((p: any) => (p.memoryId || p.id) === id);
+                                        if (found) {
+                                          setUniComparingMemory(found);
+                                          setSelectedChallengeContext(item.challenge);
+                                          setUniCompareDrawerOpen(true);
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   );
@@ -2149,6 +2256,17 @@ export default function UniversityPortalPage() {
                     required
                   />
                 </div>
+
+                {/* Institutional Precedent Callout */}
+                <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-lg text-xs text-blue-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-950">
+                    <BookOpen className="w-3.5 h-3.5 text-blue-700" />
+                    <span>Institutional Memory Check</span>
+                  </div>
+                  <p className="text-[11px] text-blue-800 leading-relaxed">
+                    SICP cross-references proposal approaches with prior deployed civic solutions. Technical approaches that build upon verified precedents and avoid documented failure modes receive accelerated government review.
+                  </p>
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" size="sm" type="button" onClick={() => setShowProposalModal(false)}>
@@ -2265,6 +2383,24 @@ export default function UniversityPortalPage() {
             </div>
           </div>
         )}
+
+        {/* Side-by-side Historical Precedent Comparison Drawer */}
+        <CompareCaseDrawer
+          isOpen={uniCompareDrawerOpen}
+          onClose={() => setUniCompareDrawerOpen(false)}
+          currentCase={
+            selectedChallengeContext
+              ? {
+                  id: selectedChallengeContext.id,
+                  title: selectedChallengeContext.title,
+                  description: selectedChallengeContext.description,
+                  category: selectedChallengeContext.category,
+                  district: selectedChallengeContext.district || undefined,
+                }
+              : null
+          }
+          historicalCases={uniComparingMemory ? [uniComparingMemory] : []}
+        />
       </div>
     </AppLayout>
   );

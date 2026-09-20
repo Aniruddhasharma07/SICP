@@ -1,0 +1,28 @@
+export enum UserRole {
+  CITIZEN = 'CITIZEN',
+  COMMUNITY_GROUP = 'COMMUNITY_GROUP',
+  PRI = 'PRI',
+  ULB = 'ULB',
+  GOVERNMENT_DEPARTMENT = 'GOVERNMENT_DEPARTMENT',
+  GOVERNMENT_OFFICER = 'GOVERNMENT_OFFICER',
+  UNIVERSITY_ADMIN = 'UNIVERSITY_ADMIN',
+  FACULTY = 'FACULTY',
+  STUDENT = 'STUDENT',
+  RESEARCH_ASSISTANT = 'RESEARCH_ASSISTANT',
+  INDUSTRY_PARTNER = 'INDUSTRY_PARTNER',
+  STARTUP = 'STARTUP',
+  MSME = 'MSME',
+  CSR_ORGANIZATION = 'CSR_ORGANIZATION',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+}
+
+/**
+ * Phase 1 proven and thoroughly tested workflow roles.
+ * Remaining roles are defined in RBAC matrix for architectural readiness.
+ */
+export const PHASE_1_PROVEN_ROLES: readonly UserRole[] = [
+  UserRole.CITIZEN,
+  UserRole.GOVERNMENT_OFFICER,
+  UserRole.UNIVERSITY_ADMIN,
+  UserRole.SYSTEM_ADMIN,
+] as const;

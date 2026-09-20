@@ -124,10 +124,10 @@ export class SolutionRetrievalEngine {
       let geographicContext = 0.5; // Neutral baseline for cross-geography portability
       let distKm: number | null = null;
 
-      const memLat = (memory.locationContext as any)?.latitude ?? memory.challenge?.latitude;
-      const memLng = (memory.locationContext as any)?.longitude ?? memory.challenge?.longitude;
-      const memDistrict = (memory.locationContext as any)?.district ?? memory.challenge?.district;
-      const memState = (memory.locationContext as any)?.state ?? memory.challenge?.state;
+      const memLat = (memory.locationContext as any)?.latitude ?? (memory as any).challenge?.latitude;
+      const memLng = (memory.locationContext as any)?.longitude ?? (memory as any).challenge?.longitude;
+      const memDistrict = (memory.locationContext as any)?.district ?? (memory as any).challenge?.district;
+      const memState = (memory.locationContext as any)?.state ?? (memory as any).challenge?.state;
 
       if (query.latitude != null && query.longitude != null && memLat != null && memLng != null) {
         distKm = DuplicateClusteringService.calculateDistanceKm(

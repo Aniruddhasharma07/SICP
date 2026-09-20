@@ -32,7 +32,11 @@ import {
   Award,
   GraduationCap,
   AlertTriangle,
+  BookOpen,
 } from 'lucide-react';
+import { SolutionMemoryCard } from '../../src/components/intelligence/SolutionMemoryCard';
+import { HistoricalFailureWarning } from '../../src/components/intelligence/HistoricalFailureWarning';
+import { CompareCaseDrawer } from '../../src/components/intelligence/CompareCaseDrawer';
 
 interface Opportunity {
   id: string;
@@ -176,6 +180,37 @@ export default function IndustryPortalPage() {
     fundingOffered: '',
     equipmentOffered: '',
   });
+
+  // Institutional Precedents & Deployment Track Records for Industry
+  const [indPrecedents, setIndPrecedents] = useState<any[]>([]);
+  const [indLoadingPrecedents, setIndLoadingPrecedents] = useState<boolean>(false);
+  const [indComparingMemory, setIndComparingMemory] = useState<any | null>(null);
+  const [indCompareDrawerOpen, setIndCompareDrawerOpen] = useState<boolean>(false);
+
+  const fetchOpportunityPrecedents = async (challengeId: string, category?: string) => {
+    setIndLoadingPrecedents(true);
+    setIndPrecedents([]);
+    try {
+      const evalRes = await apiClient.request<any>(
+        `/api/v1/solutions/historical/challenge/${challengeId}/evaluated`
+      );
+      if (evalRes.success && evalRes.data && evalRes.data.retrievedMemories?.length > 0) {
+        setIndPrecedents(evalRes.data.retrievedMemories);
+      } else {
+        const catRes = await apiClient.request<any>(
+          `/api/v1/solutions?category=${encodeURIComponent(category || '')}&limit=3`
+        );
+        if (catRes.success && catRes.data) {
+          const items = Array.isArray(catRes.data) ? catRes.data : catRes.data.items || [];
+          setIndPrecedents(items);
+        }
+      }
+    } catch {
+      // non-blocking
+    } finally {
+      setIndLoadingPrecedents(false);
+    }
+  };
 
   const [notificationBanner, setNotificationBanner] = useState<string | null>(null);
 
@@ -612,6 +647,7 @@ export default function IndustryPortalPage() {
                           onClick={() => {
                             setSelectedOpp(opp);
                             setDetailModalOpen(true);
+                            fetchOpportunityPrecedents(opp.challengeId, opp.category);
                           }}
                           className="text-xs text-gray-600 hover:text-gray-900"
                         >
@@ -1116,6 +1152,61 @@ export default function IndustryPortalPage() {
                 </div>
               </div>
 
+              {/* Precedent Track Record for Industry Co-Investment */}
+              <div className="space-y-3 pt-3 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                    Deployment Precedents &amp; Field Track Record
+                  </h4>
+                  <span className="text-[10px] text-gray-400 font-medium">Institutional Intelligence</span>
+                </div>
+
+                {indLoadingPrecedents ? (
+                  <div className="py-4 text-center text-xs text-gray-500 bg-gray-50 rounded-lg">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin mx-auto mb-1 text-blue-600" />
+                    Checking empirical deployment records and field failure logs...
+                  </div>
+                ) : indPrecedents.length === 0 ? (
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500">
+                    ℹ️ No prior corporate or municipal deployments recorded for this exact specification. Pioneer pilot opportunity.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {indPrecedents.some(p => p.outcomeStatus === 'FAILED') && (
+                      <HistoricalFailureWarning
+                        memoryId={indPrecedents.find(p => p.outcomeStatus === 'FAILED')?.memoryId || 'prev-fail'}
+                        solutionTitle={indPrecedents.find(p => p.outcomeStatus === 'FAILED')?.title || 'Prior Municipal Attempt'}
+                        intendedOutcome="Corporate/civic co-deployment"
+                        observedOutcome="FAILED"
+                        failureFactors={indPrecedents.find(p => p.outcomeStatus === 'FAILED')?.whatFailed || 'Previous trial encountered component supply chain or maintenance challenges.'}
+                        knownLimitations={indPrecedents.find(p => p.outcomeStatus === 'FAILED')?.rootCause || 'Unverified local vendor capacity or insufficient telemetry.'}
+                        institutionalLesson={indPrecedents.find(p => p.outcomeStatus === 'FAILED')?.futureWarnings || 'Ensure modular component availability and SLA-backed maintenance.'}
+                      />
+                    )}
+                    {indPrecedents.slice(0, 2).map((rec: any) => (
+                      <SolutionMemoryCard
+                        key={rec.memoryId || rec.id}
+                        memory={rec}
+                        currentProblemContext={{
+                          title: selectedOpp.title,
+                          description: selectedOpp.description,
+                          category: selectedOpp.category,
+                          district: selectedOpp.district,
+                        }}
+                        onCompare={id => {
+                          const found = indPrecedents.find((p: any) => (p.memoryId || p.id) === id);
+                          if (found) {
+                            setIndComparingMemory(found);
+                            setIndCompareDrawerOpen(true);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="pt-3 border-t border-gray-200 flex justify-end gap-3">
                 <Button variant="outline" size="sm" onClick={() => setDetailModalOpen(false)}>
                   Close
@@ -1209,6 +1300,24 @@ export default function IndustryPortalPage() {
             </div>
           </Modal>
         )}
+
+        {/* Side-by-side Historical Precedent Comparison Drawer */}
+        <CompareCaseDrawer
+          isOpen={indCompareDrawerOpen}
+          onClose={() => setIndCompareDrawerOpen(false)}
+          currentCase={
+            selectedOpp
+              ? {
+                  id: selectedOpp.id,
+                  title: selectedOpp.title,
+                  description: selectedOpp.description,
+                  category: selectedOpp.category,
+                  district: selectedOpp.district,
+                }
+              : null
+          }
+          historicalCases={indComparingMemory ? [indComparingMemory] : indPrecedents}
+        />
       </div>
     </AppLayout>
   );

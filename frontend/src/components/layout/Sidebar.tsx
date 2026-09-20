@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth-context';
 import { cn } from '../../lib/utils';
 import { getAuthorizedPortals, PORTAL_DEFINITIONS } from './PortalSwitcher';
 import { PortalType } from './PortalShellHeader';
+import { formatEnumToHuman } from '../../lib/formatters';
 import {
   Compass,
   PlusCircle,
@@ -203,7 +204,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
   return (
     <aside
       className={cn(
-        'hidden md:flex w-64 flex-col border-r min-h-[calc(100vh-4rem)] p-3.5 space-y-4 select-none',
+        'hidden md:flex w-64 shrink-0 flex-col border-r min-h-[calc(100vh-4rem)] p-3.5 space-y-4 select-none',
         isDark
           ? 'bg-slate-950 border-slate-800 text-slate-200'
           : 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xs'
@@ -359,12 +360,17 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
                 {user.fullName ? user.fullName[0] : 'U'}
               </div>
               <div className="truncate">
-                <span className="font-bold text-xs truncate block leading-tight">
+                <span className="font-bold text-xs truncate block leading-tight text-slate-900 dark:text-slate-100">
                   {user.fullName || user.email}
                 </span>
-                <span className="text-[9px] text-slate-400 uppercase font-semibold block leading-tight">
-                  {user.role}
+                <span className="text-[10px] text-slate-500 font-semibold block leading-tight">
+                  {formatEnumToHuman(user.role)}
                 </span>
+                {user.organization?.name && (
+                  <span className="text-[9px] text-blue-600 dark:text-emerald-400 font-medium truncate block leading-tight mt-0.5">
+                    {user.organization.name}
+                  </span>
+                )}
               </div>
             </div>
             <button

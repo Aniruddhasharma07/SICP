@@ -6,6 +6,7 @@ import { AppHeader } from './AppHeader';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { PortalShellHeader, PortalType } from './PortalShellHeader';
+import { TeamCreditWidget } from '../common/TeamCreditWidget';
 
 export interface AppLayoutProps {
   children: ReactNode;
@@ -29,16 +30,17 @@ export function AppLayout({ children, portal }: AppLayoutProps) {
       : 'citizen');
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col overflow-x-hidden w-full relative">
       <AppHeader />
       <PortalShellHeader portal={effectivePortal} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0 w-full overflow-x-hidden">
         <Sidebar portal={effectivePortal} />
-        <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 min-w-0 p-4 md:p-8 pb-20 md:pb-8 max-w-7xl mx-auto w-full overflow-x-hidden">
           {children}
         </main>
       </div>
       <MobileNav />
+      <TeamCreditWidget />
     </div>
   );
 }

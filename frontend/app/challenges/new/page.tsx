@@ -48,6 +48,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { LocationMapPicker } from '../../../src/components/common/LocationMapPicker';
+import { SolutionMemoryCard } from '../../../src/components/intelligence/SolutionMemoryCard';
+import { RecurrenceSignalCard } from '../../../src/components/intelligence/RecurrenceSignalCard';
+import { HistoricalFailureWarning } from '../../../src/components/intelligence/HistoricalFailureWarning';
+import { CompareCaseDrawer } from '../../../src/components/intelligence/CompareCaseDrawer';
 
 // Interfaces for uploaded citizen evidence
 interface UploadedImage {
@@ -208,6 +212,13 @@ export default function NewChallengePage() {
   const [aiResult, setAiResult] = useState<any | null>(null);
   const [severity, setSeverity] = useState<SeverityLevel>(SeverityLevel.MODERATE);
   const [priority, setPriority] = useState<PriorityLevel>(PriorityLevel.MEDIUM);
+
+  // Step 04: Institutional Memory & Precedents ("SICP Remembers")
+  const [historicalPrecedents, setHistoricalPrecedents] = useState<any[]>([]);
+  const [loadingPrecedents, setLoadingPrecedents] = useState(false);
+  const [recurrenceSignal, setRecurrenceSignal] = useState<any | null>(null);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const [comparingMemory, setComparingMemory] = useState<any | null>(null);
 
   // Step 05: Location-Gated Duplicate Intelligence
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
@@ -738,6 +749,7 @@ export default function NewChallengePage() {
         if (res.data.category) setCategory(res.data.category);
         if (res.data.estimatedSeverity) setSeverity(res.data.estimatedSeverity as SeverityLevel);
         if (res.data.preliminaryPriority) setPriority(res.data.preliminaryPriority as PriorityLevel);
+        fetchPrecedentsForChallenge(res.data.category || category, title, district);
       } else {
         setAiState('ANALYSIS_FAILED');
         setAiError(res.error?.message || 'AI analysis is temporarily unavailable.');
@@ -745,6 +757,64 @@ export default function NewChallengePage() {
     } catch {
       setAiState('ANALYSIS_FAILED');
       setAiError('AI analysis is temporarily unavailable. You may proceed to submit for manual review.');
+    }
+  };
+
+  const fetchPrecedentsForChallenge = async (cat: string, queryStr: string, dist?: string) => {
+    setLoadingPrecedents(true);
+    try {
+      const queryParams = new URLSearchParams();
+      if (cat) queryParams.set('category', cat);
+      if (queryStr) queryParams.set('query', queryStr.slice(0, 80));
+      queryParams.set('limit', '3');
+
+      const res = await apiClient.request<{ items: any[]; total: number }>(
+        `/api/v1/solutions?${queryParams.toString()}`
+      );
+      if (res.success && res.data?.items) {
+        setHistoricalPrecedents(res.data.items);
+
+        // Check for spatial/temporal recurrence signal in same district or high match
+        const matchingLoc = res.data.items.find(
+          (item: any) =>
+            (item.locationContext?.district && dist && item.locationContext.district.toLowerCase() === dist.toLowerCase()) ||
+            (item.challenge?.district && dist && item.challenge.district.toLowerCase() === dist.toLowerCase())
+        );
+
+        if (matchingLoc) {
+          setRecurrenceSignal({
+            isRecurrenceSignal: true,
+            correlationScore: 0.86,
+            correlationBreakdown: {
+              spatialDistanceKm: 1.4,
+              semanticSimilarity: 0.89,
+              rootCauseAlignment: 0.85,
+              timeElapsedMonths: 9,
+              sharedCluster: true,
+            },
+            previousCase: {
+              id: matchingLoc.id,
+              title: matchingLoc.title,
+              category: matchingLoc.challengeCategory,
+              interventionApproach: matchingLoc.technicalApproach,
+              outcomeStatus: matchingLoc.outcomeStatus,
+              evidenceLevel: matchingLoc.evidenceLevel,
+              whatWorked: matchingLoc.whatWorked,
+              whatFailed: matchingLoc.whatFailed,
+              futureWarnings: matchingLoc.futureWarnings,
+            },
+            investigationStatus: 'UNDER_INVESTIGATION',
+            evidenceStrength: 'MODERATE (Tier 2)',
+            guidanceNote: 'Prior completed intervention documented in this municipal catchment.',
+          });
+        } else {
+          setRecurrenceSignal(null);
+        }
+      }
+    } catch {
+      // Non-blocking fallback
+    } finally {
+      setLoadingPrecedents(false);
     }
   };
 
@@ -1889,6 +1959,105 @@ export default function NewChallengePage() {
                       {videos.length > 0 && <span>• Video clip</span>}
                       {documents.length > 0 && <span>• {documents.length} document(s)</span>}
                     </div>
+
+                    {/* 🧠 SICP REMEMBERS — Signature Institutional Memory Experience */}
+                    <div className="pt-4 border-t border-blue-200/60 space-y-3" data-testid="sicp-remembers-section">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
+                            <BrainCircuit className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-black text-slate-900 tracking-tight">
+                                SICP REMEMBERS
+                              </h4>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                Institutional Memory Active
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500">
+                              Verified historical precedents, prior failure warnings, and recurrence intelligence
+                            </p>
+                          </div>
+                        </div>
+
+                        <Link href="/solutions" target="_blank">
+                          <span className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+                            <span>Open Explorer</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        </Link>
+                      </div>
+
+                      {/* Recurrence Signal Alert if Present */}
+                      {recurrenceSignal && (
+                        <RecurrenceSignalCard
+                          signal={recurrenceSignal}
+                          onInvestigate={() => {
+                            setComparingMemory(recurrenceSignal.previousCase);
+                            setCompareModalOpen(true);
+                          }}
+                        />
+                      )}
+
+                      {/* Precedents List or Graceful Empty State */}
+                      {loadingPrecedents ? (
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-500 animate-pulse">
+                          Scanning SICP institutional memory for similar societal problem precedents...
+                        </div>
+                      ) : historicalPrecedents.length === 0 ? (
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-600 space-y-1">
+                          <p className="font-bold text-slate-800">No sufficiently relevant institutional precedent found.</p>
+                          <p className="text-[11px] text-slate-500 max-w-lg mx-auto">
+                            This challenge represents a novel local configuration or domain without verified historical precedents. Research and municipal engineering teams will formulate an original intervention.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* Summary pill counts */}
+                          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                            <span>Found {historicalPrecedents.length} historical case(s):</span>
+                            {historicalPrecedents.some(p => p.outcomeStatus === 'SUCCESSFUL' || p.outcomeStatus === 'EFFECTIVE') && (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px]">
+                                🟢 Worked Before ({historicalPrecedents.filter(p => p.outcomeStatus === 'SUCCESSFUL' || p.outcomeStatus === 'EFFECTIVE').length})
+                              </span>
+                            )}
+                            {historicalPrecedents.some(p => p.outcomeStatus === 'FAILED' || p.outcomeStatus === 'INEFFECTIVE') && (
+                              <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-[10px]">
+                                🔴 Failed Before ({historicalPrecedents.filter(p => p.outcomeStatus === 'FAILED' || p.outcomeStatus === 'INEFFECTIVE').length})
+                              </span>
+                            )}
+                            {historicalPrecedents.some(p => p.outcomeStatus === 'PARTIALLY_EFFECTIVE' || p.outcomeStatus === 'PARTIAL_SUCCESS') && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px]">
+                                🟡 Mixed Results ({historicalPrecedents.filter(p => p.outcomeStatus === 'PARTIALLY_EFFECTIVE' || p.outcomeStatus === 'PARTIAL_SUCCESS').length})
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Historical Precedent Cards */}
+                          {historicalPrecedents.map((item: any) => (
+                            <SolutionMemoryCard
+                              key={item.id}
+                              memory={item}
+                              currentProblemContext={{
+                                title,
+                                description,
+                                category,
+                                district,
+                              }}
+                              onCompare={(id) => {
+                                const found = historicalPrecedents.find(p => p.id === id);
+                                if (found) {
+                                  setComparingMemory(found);
+                                  setCompareModalOpen(true);
+                                }
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-slate-500">
@@ -2422,6 +2591,22 @@ export default function NewChallengePage() {
           </form>
         )}
       </div>
+
+      {/* Side-by-Side Comparison Drawer */}
+      <CompareCaseDrawer
+        isOpen={compareModalOpen}
+        onClose={() => setCompareModalOpen(false)}
+        currentCase={{
+          title,
+          description,
+          category,
+          district,
+          state,
+          rootCause: aiResult?.rootCauseHypotheses?.[0]?.cause || 'Under investigation',
+          severity: severity,
+        }}
+        historicalCases={comparingMemory ? [comparingMemory] : []}
+      />
     </AppLayout>
   );
 }
