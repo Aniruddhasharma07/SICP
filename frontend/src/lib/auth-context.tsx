@@ -164,14 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPermissions([]);
   };
 
-  const demoSwitch = async (universityOrgId: string) => {
-    if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
-      return {
-        success: false,
-        error: 'Institutional account switching is disabled in production. Please sign in with that institution’s credentials.',
-      };
-    }
-
+  const demoSwitch = async (orgId: string) => {
     setIsLoading(true);
     const res = await apiClient.request<{
       user: UserDto;
@@ -180,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       permissions: string[];
     }>('/api/v1/auth/demo-switch', {
       method: 'POST',
-      body: JSON.stringify({ universityOrgId }),
+      body: JSON.stringify({ universityOrgId: orgId, organizationId: orgId }),
     });
 
     setIsLoading(false);

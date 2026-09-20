@@ -112,7 +112,7 @@ interface RegisteredIndustry {
 }
 
 export default function IndustryPortalPage() {
-  const { user, login } = useAuth();
+  const { user, login, demoSwitch } = useAuth();
   const titleId = useId();
   const descId = useId();
 
@@ -331,9 +331,23 @@ export default function IndustryPortalPage() {
     }
   };
 
-  // Institutional Partner Directory - Session context is bounded to authenticated credentials
+  // Institutional Switcher
   const handleSwitchIndustry = async (orgId: string) => {
-    setSwitcherModalOpen(false);
+    try {
+      setLoading(true);
+      const res = await demoSwitch(orgId);
+      if (res.success) {
+        setSwitcherModalOpen(false);
+        await fetchData();
+      } else {
+        alert(res.error || 'Failed to switch industry partner');
+      }
+    } catch (err: any) {
+      console.error('Failed to switch industry partner:', err);
+      alert('Institutional switch failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const orgName = isIndustryPersona
@@ -417,26 +431,28 @@ export default function IndustryPortalPage() {
               </div>
             </div>
 
-            {/* Actions: Portal Navigation + Directory + Refresh */}
+            {/* Actions: Portal Switcher + Partner Switcher + Refresh */}
             <div className="flex items-center gap-3 self-start lg:self-center">
-              <Link href="/university">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 text-indigo-700 border-indigo-300 hover:bg-indigo-50 font-semibold"
-                >
-                  <GraduationCap className="w-4 h-4" />
-                  Switch to University Portal
-                </Button>
-              </Link>
+              {isUniversityPersona && (
+                <Link href="/university">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-indigo-700 border-indigo-300 hover:bg-indigo-50 font-semibold"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    Switch to University Portal
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSwitcherModalOpen(true)}
                 className="flex items-center gap-2 text-blue-700 border-blue-300 hover:bg-blue-50 font-semibold"
               >
-                <Building2 className="w-4 h-4" />
-                Browse Partners ({registeredIndustries.length})
+                <RefreshCw className="w-4 h-4" />
+                Switch Partner ({registeredIndustries.length})
               </Button>
               <Button
                 variant="ghost"
@@ -1143,17 +1159,17 @@ export default function IndustryPortalPage() {
           </Modal>
         )}
 
-        {/* MODAL 4: REGISTERED PARTNERS DIRECTORY */}
+        {/* MODAL 4: 1-CLICK INSTITUTIONAL SWITCHER */}
         {switcherModalOpen && (
           <Modal
             isOpen={switcherModalOpen}
             onClose={() => setSwitcherModalOpen(false)}
-            title="Registered Industry &amp; CSR Partners Directory"
+            title="Switch Industry Institution"
             size="lg"
           >
             <div className="space-y-4">
               <p className="text-xs text-gray-500">
-                Verified corporate, MSME, startup, and CSR organizations participating in societal innovation co-funding and pilot deployments:
+                Select a premier registered and verified industry/CSR organization to switch session context:
               </p>
 
               <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
@@ -1162,10 +1178,11 @@ export default function IndustryPortalPage() {
                   return (
                     <div
                       key={ind.id}
-                      className={`p-3.5 rounded-lg border transition-all flex items-center justify-between ${
+                      onClick={() => !isCurrent && handleSwitchIndustry(ind.id)}
+                      className={`p-3.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer ${
                         isCurrent
                           ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-400'
-                          : 'border-gray-200 bg-white'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                       }`}
                     >
                       <div className="space-y-1">
@@ -1191,9 +1208,13 @@ export default function IndustryPortalPage() {
                           Current Active
                         </span>
                       ) : (
-                        <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded">
-                          Verified Partner
-                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-blue-600 hover:bg-blue-100"
+                        >
+                          Switch →
+                        </Button>
                       )}
                     </div>
                   );

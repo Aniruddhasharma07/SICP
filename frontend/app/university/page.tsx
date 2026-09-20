@@ -99,7 +99,7 @@ interface UniversityMatchItem {
 
 export default function UniversityPortalPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, demoSwitch } = useAuth();
   const isUniversityAdmin = user?.role === UserRole.UNIVERSITY_ADMIN || user?.role === UserRole.SYSTEM_ADMIN;
   const isFaculty = user?.role === UserRole.FACULTY;
   const isStudent = user?.role === UserRole.STUDENT || user?.role === UserRole.RESEARCH_ASSISTANT;
@@ -432,8 +432,31 @@ export default function UniversityPortalPage() {
   const [declineExplanation, setDeclineExplanation] = useState<string>('');
 
   const handleSwitchUniversity = async (uniId: string) => {
-    // In production, institutional session context is bound to authenticated credentials.
-    setShowSwitchModal(false);
+    setActionLoading(true);
+    setStatusMessage(null);
+    try {
+      const res = await demoSwitch(uniId);
+      if (res.success && res.user) {
+        setStatusMessage({
+          type: 'success',
+          text: `Switched institutional session to ${res.user.organization?.name || 'institution'}! Active credentials updated.`,
+        });
+        setShowSwitchModal(false);
+        if (res.user.organizationId) {
+          const orgRes = await apiClient.request<any>(`/api/v1/organizations/${res.user.organizationId}`);
+          if (orgRes.success && orgRes.data) {
+            setInstitution(orgRes.data);
+          }
+        }
+        await fetchData();
+      } else {
+        setStatusMessage({ type: 'error', text: res.error || 'Failed to switch institution.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'Error switching institution.' });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleExpressInterest = async (challengeId: string) => {
@@ -1095,44 +1118,50 @@ export default function UniversityPortalPage() {
                   : 'Review government-routed civic problems, accept research assignments, select qualified faculty leads, assemble multidisciplinary student teams, and publish solution proposals.'}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/industry">
-                <Button className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-900/30 border border-amber-400/30">
-                  <Briefcase className="h-4 w-4 mr-1.5" />
-                  Switch to Industry Portal
-                </Button>
-              </Link>
-
-              <Button
-                variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs font-semibold"
-                onClick={() => setShowSwitchModal(true)}
-              >
-                <Building2 className="h-4 w-4 mr-1.5 text-indigo-300" />
-                Browse Universities ({registeredUnis.length})
-              </Button>
-
-              {isUniversityAdmin && (
+            <div className="flex flex-wrap gap-3">
+              {isUniversityPersona ? (
+                <>
+                  <Button
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-900/30 border border-indigo-400/30"
+                    onClick={() => setShowSwitchModal(true)}
+                  >
+                    <Building2 className="h-4 w-4 mr-1.5" />
+                    Switch Institution
+                  </Button>
+                  <Button
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30"
+                    onClick={() => setRegisterModalOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-1.5" />
+                    Register New University
+                  </Button>
+                </>
+              ) : isIndustryPersona ? (
+                <>
+                  <Link href="/industry">
+                    <Button className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-900/30 border border-amber-400/30">
+                      <Briefcase className="h-4 w-4 mr-1.5" />
+                      Switch to Industry Portal
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs font-semibold"
+                    onClick={() => setActiveTab('partnerships')}
+                  >
+                    <Building2 className="h-4 w-4 mr-1.5 text-amber-300" />
+                    CSR &amp; Partner Matching
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30"
-                  onClick={() => setRegisterModalOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg"
+                  onClick={() => setShowSwitchModal(true)}
                 >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Register New University
+                  <Building2 className="h-4 w-4 mr-1.5" />
+                  Browse Universities ({registeredUnis.length})
                 </Button>
               )}
-
-              {isIndustryPersona && (
-                <Button
-                  variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs font-semibold"
-                  onClick={() => setActiveTab('partnerships')}
-                >
-                  <Building2 className="h-4 w-4 mr-1.5 text-amber-300" />
-                  CSR &amp; Partner Matching
-                </Button>
-              )}
-
               <Button
                 variant="outline"
                 className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs"
@@ -2199,14 +2228,14 @@ export default function UniversityPortalPage() {
           </div>
         )}
 
-        {/* MODAL: Accredited Universities Directory */}
+        {/* MODAL: Switch Registered University */}
         {showSwitchModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
             <div className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2 text-indigo-600">
                   <GraduationCap className="h-6 w-6" />
-                  <h3 className="text-lg font-bold text-slate-900">Accredited Universities Directory</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Switch Registered University</h3>
                 </div>
                 <button
                   onClick={() => setShowSwitchModal(false)}
@@ -2217,7 +2246,7 @@ export default function UniversityPortalPage() {
               </div>
 
               <p className="text-xs text-slate-600">
-                Accredited higher education institutions registered on SICP for research assignment, faculty collaboration, and solution proposal authorship.
+                Select an accredited institution to review civic problems assigned by Government, manage multidisciplinary research teams, and author technical proposals.
               </p>
 
               {/* Search Bar */}
@@ -2280,15 +2309,14 @@ export default function UniversityPortalPage() {
                         </div>
 
                         <div className="shrink-0">
-                          {isActive ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
-                              Active Institution
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                              Accredited Partner
-                            </span>
-                          )}
+                          <Button
+                            size="sm"
+                            disabled={actionLoading || isActive}
+                            className={isActive ? 'bg-slate-200 text-slate-500' : 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs'}
+                            onClick={() => handleSwitchUniversity(u.id)}
+                          >
+                            {isActive ? 'Current Institution' : 'Switch & Access'}
+                          </Button>
                         </div>
                       </div>
                     );
