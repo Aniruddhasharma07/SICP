@@ -92,6 +92,7 @@ export function TeamCreditWidget() {
   return (
     <div
       ref={containerRef}
+      data-testid="team-credit-widget"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 select-none font-sans"
