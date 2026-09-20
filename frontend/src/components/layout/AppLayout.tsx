@@ -6,7 +6,6 @@ import { AppHeader } from './AppHeader';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { PortalShellHeader, PortalType } from './PortalShellHeader';
-import { TeamCreditWidget } from '../common/TeamCreditWidget';
 
 export interface AppLayoutProps {
   children: ReactNode;
@@ -40,7 +39,6 @@ export function AppLayout({ children, portal }: AppLayoutProps) {
         </main>
       </div>
       <MobileNav />
-      <TeamCreditWidget />
     </div>
   );
 }
