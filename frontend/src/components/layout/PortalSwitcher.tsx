@@ -76,7 +76,12 @@ export function getAuthorizedPortals(role?: string | null): PortalDef[] {
   // Public & Citizens always have Civic Portal
   const authorized: PortalDef[] = [PORTAL_DEFINITIONS[0]];
 
-  if (!role) return authorized;
+  // For unauthenticated/public visitors, allow Civic, University, and Industry discovery
+  if (!role) {
+    authorized.push(PORTAL_DEFINITIONS[2]); // University
+    authorized.push(PORTAL_DEFINITIONS[3]); // Industry
+    return authorized;
+  }
 
   const r = role.toUpperCase();
 
@@ -85,13 +90,25 @@ export function getAuthorizedPortals(role?: string | null): PortalDef[] {
     authorized.push(PORTAL_DEFINITIONS[1]);
   }
 
-  // University Portal access
-  if (['UNIVERSITY_ADMIN', 'FACULTY', 'STUDENT', 'RESEARCH_ASSISTANT', 'SYSTEM_ADMIN'].includes(r)) {
+  // University Portal access (Academic, Industry collaborator, Government oversight, Admin, or Citizen discovery)
+  if ([
+    'UNIVERSITY_ADMIN', 'FACULTY', 'STUDENT', 'RESEARCH_ASSISTANT',
+    'INDUSTRY_PARTNER', 'MSME', 'CSR_ORGANIZATION', 'STARTUP',
+    'GOVERNMENT_OFFICER', 'GOVERNMENT_DEPARTMENT',
+    'CITIZEN', 'COMMUNITY_GROUP', 'PRI', 'ULB',
+    'SYSTEM_ADMIN',
+  ].includes(r)) {
     authorized.push(PORTAL_DEFINITIONS[2]);
   }
 
-  // Industry Portal access (Industry, MSME, CSR)
-  if (['INDUSTRY_PARTNER', 'MSME', 'CSR_ORGANIZATION', 'STARTUP', 'SYSTEM_ADMIN'].includes(r)) {
+  // Industry Portal access (Corporate partner, University collaborator, Government oversight, Admin, or Citizen discovery)
+  if ([
+    'INDUSTRY_PARTNER', 'MSME', 'CSR_ORGANIZATION', 'STARTUP',
+    'UNIVERSITY_ADMIN', 'FACULTY', 'STUDENT', 'RESEARCH_ASSISTANT',
+    'GOVERNMENT_OFFICER', 'GOVERNMENT_DEPARTMENT',
+    'CITIZEN', 'COMMUNITY_GROUP', 'PRI', 'ULB',
+    'SYSTEM_ADMIN',
+  ].includes(r)) {
     authorized.push(PORTAL_DEFINITIONS[3]);
   }
 

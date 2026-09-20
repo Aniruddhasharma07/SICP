@@ -318,7 +318,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
                   : 'admin';
               return p.id !== currentPId;
             })
-            .slice(0, 3)
+            .slice(0, 4)
             .map((p) => (
               <Link
                 key={p.id}
