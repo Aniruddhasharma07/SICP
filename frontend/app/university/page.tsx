@@ -346,10 +346,9 @@ export default function UniversityPortalPage() {
     try {
       const res = await apiClient.request<UniversityMatchItem[]>('/api/v1/university/challenges');
       if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-        setMatches(res.data);
-        if (!selectedChallengeId) {
-          setSelectedChallengeId(res.data[0].challengeId);
-        }
+        const dataList = res.data;
+        setMatches(dataList);
+        setSelectedChallengeId(prev => (dataList.some(d => d.challengeId === prev) ? prev : dataList[0].challengeId));
       } else {
         // Fallback for collaborative/observer view (e.g. Industry partner, Citizen, or unassigned university)
         const allRes = await apiClient.request<any>('/api/v1/challenges');
@@ -378,11 +377,10 @@ export default function UniversityPortalPage() {
               },
             }));
             setMatches(mappedMatches);
-            if (!selectedChallengeId) {
-              setSelectedChallengeId(mappedMatches[0].challengeId);
-            }
+            setSelectedChallengeId(prev => (mappedMatches.some(d => d.challengeId === prev) ? prev : mappedMatches[0].challengeId));
           } else {
             setMatches([]);
+            setSelectedChallengeId('');
           }
         }
       }
@@ -391,7 +389,7 @@ export default function UniversityPortalPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedChallengeId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -448,6 +446,7 @@ export default function UniversityPortalPage() {
             setInstitution(orgRes.data);
           }
         }
+        setSelectedChallengeId('');
         await fetchData();
       } else {
         setStatusMessage({ type: 'error', text: res.error || 'Failed to switch institution.' });
@@ -1059,109 +1058,44 @@ export default function UniversityPortalPage() {
                 <span>University Portal</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                {isUniversityPersona
-                  ? (institution?.name || user?.organization?.name || 'Academic Innovation Center')
-                  : isIndustryPersona
-                  ? 'Academic Innovation & R&D Network'
-                  : isGovernmentPersona
-                  ? 'Academic Innovation Hub — Government Command'
-                  : 'Academic Innovation & Research Hub'}
+                {institution?.name || user?.organization?.name || 'Academic Innovation Center'}
               </h1>
+              <div className="text-sm font-semibold text-blue-200">
+                Current Institution: <span className="text-white font-bold">{institution?.name || user?.organization?.name || 'Academic Innovation Center'}</span>
+              </div>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {isUniversityPersona ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-xs font-bold">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    University status: Government Verified
-                  </span>
-                ) : isIndustryPersona ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-bold">
-                    <Briefcase className="w-3.5 h-3.5 text-amber-400" />
-                    Industry Collaborator View
-                  </span>
-                ) : isGovernmentPersona ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/40 text-xs font-bold">
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                    Government Oversight View
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/40 text-xs font-bold">
-                    <BookOpen className="w-3.5 h-3.5 text-blue-400" />
-                    Public Discovery Mode
-                  </span>
-                )}
-                {isUniversityPersona && institution?.metadata?.aisheCode && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 text-xs font-mono">
+                <span className="text-xs text-blue-200">
+                  User: <strong className="text-white font-semibold">{user?.fullName || 'Academic Administrator'}</strong> ({user?.role || 'UNIVERSITY_ADMIN'})
+                </span>
+                {institution?.metadata?.aisheCode && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 text-xs font-mono">
                     AISHE: {institution.metadata.aisheCode}
                   </span>
                 )}
-                {user && (
-                  <Badge className="bg-blue-500/30 text-blue-200 border-blue-400/40 text-xs">
-                    {isUniversityAdmin
-                      ? 'Institutional Administrator'
-                      : isFaculty
-                      ? 'Faculty Lead Researcher'
-                      : isStudent
-                      ? 'Student Researcher'
-                      : isIndustryPersona
-                      ? `Corporate Partner (${user.role})`
-                      : isGovernmentPersona
-                      ? `Government Officer (${user.role})`
-                      : user.role}
-                  </Badge>
-                )}
+                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-xs font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  University status: Government Verified
+                </span>
               </div>
               <p className="mt-1 text-blue-200/80 text-xs max-w-2xl leading-relaxed">
-                {isIndustryPersona
-                  ? 'Explore accredited university R&D calls, multidisciplinary research teams, faculty expert profiles, and co-funding opportunities for societal challenges.'
-                  : isGovernmentPersona
-                  ? 'Review academic performance, track assigned civic challenges, monitor multidisciplinary research teams, and sanction university pilots.'
-                  : 'Review government-routed civic problems, accept research assignments, select qualified faculty leads, assemble multidisciplinary student teams, and publish solution proposals.'}
+                Review government-routed civic problems, accept research assignments, select qualified faculty leads, assemble multidisciplinary student teams, and publish solution proposals.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {isUniversityPersona ? (
-                <>
-                  <Button
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-900/30 border border-indigo-400/30"
-                    onClick={() => setShowSwitchModal(true)}
-                  >
-                    <Building2 className="h-4 w-4 mr-1.5" />
-                    Switch Institution
-                  </Button>
-                  <Button
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30"
-                    onClick={() => setRegisterModalOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-1.5" />
-                    Register New University
-                  </Button>
-                </>
-              ) : isIndustryPersona ? (
-                <>
-                  <Link href="/industry">
-                    <Button className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-900/30 border border-amber-400/30">
-                      <Briefcase className="h-4 w-4 mr-1.5" />
-                      Switch to Industry Portal
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs font-semibold"
-                    onClick={() => setActiveTab('partnerships')}
-                  >
-                    <Building2 className="h-4 w-4 mr-1.5 text-amber-300" />
-                    CSR &amp; Partner Matching
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg"
-                  onClick={() => setShowSwitchModal(true)}
-                >
-                  <Building2 className="h-4 w-4 mr-1.5" />
-                  Browse Universities ({registeredUnis.length})
-                </Button>
-              )}
+            <div className="flex flex-wrap gap-3 items-center">
+              <Button
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-900/30 border border-indigo-400/30"
+                onClick={() => setShowSwitchModal(true)}
+              >
+                <Building2 className="h-4 w-4 mr-1.5" />
+                Switch Institution
+              </Button>
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30"
+                onClick={() => setRegisterModalOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                Register New University
+              </Button>
               <Button
                 variant="outline"
                 className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur text-xs"

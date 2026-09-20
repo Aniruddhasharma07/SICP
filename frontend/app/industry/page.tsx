@@ -336,8 +336,9 @@ export default function IndustryPortalPage() {
     try {
       setLoading(true);
       const res = await demoSwitch(orgId);
-      if (res.success) {
+      if (res.success && res.user) {
         setSwitcherModalOpen(false);
+        setNotificationBanner(`Switched active partner session to ${res.user.organization?.name || 'organization'}!`);
         await fetchData();
       } else {
         alert(res.error || 'Failed to switch industry partner');
@@ -350,20 +351,12 @@ export default function IndustryPortalPage() {
     }
   };
 
-  const orgName = isIndustryPersona
-    ? (user?.organization?.name || 'CleanGrid Tech Innovations')
-    : isUniversityPersona
-    ? (user?.organization?.name ? `${user.organization.name} (Academic Partner)` : 'Academic Innovation Network')
-    : 'Industry & CSR Commercialization Network';
+  const orgName = user?.organization?.name || (isIndustryPersona ? 'CleanGrid Tech Innovations' : 'Industry & CSR Commercialization Network');
 
-  const orgType = isIndustryPersona
-    ? (user?.organization?.type || 'CSR / Industry')
-    : isUniversityPersona
-    ? 'Academic Collaborator'
-    : 'Partner Discovery';
+  const orgType = user?.organization?.type || (isIndustryPersona ? 'CSR / Industry' : isUniversityPersona ? 'Academic Collaborator' : 'Partner Discovery');
 
-  const userFullName = user?.fullName || (isUniversityPersona ? 'University Collaborator' : 'Industry Administrator');
-  const userEmail = user?.email || (isUniversityPersona ? 'university@sicp.gov.in' : 'industry@sicp.gov.in');
+  const userFullName = user?.fullName || (isIndustryPersona ? 'Industry Administrator' : 'Guest / Collaborator');
+  const userEmail = user?.email || (isIndustryPersona ? 'industry@sicp.gov.in' : 'guest@sicp.gov.in');
 
   return (
     <AppLayout portal="industry">
@@ -392,67 +385,51 @@ export default function IndustryPortalPage() {
                 <Building2 className="w-7 h-7" />
               </div>
               <div className="space-y-1">
+                <div className="flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-wider">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>Industry Portal</span>
+                </div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-2xl font-bold text-gray-900">{orgName}</h1>
-                  {isIndustryPersona ? (
-                    <Badge variant="success" className="flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      VERIFIED
-                    </Badge>
-                  ) : isUniversityPersona ? (
-                    <Badge variant="outline" className="flex items-center gap-1 bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold">
-                      <GraduationCap className="w-3.5 h-3.5" />
-                      ACADEMIC COLLABORATOR
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
-                      DISCOVERY MODE
-                    </Badge>
-                  )}
+                  <Badge variant="success" className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    VERIFIED
+                  </Badge>
                   <Badge variant="outline" className="font-mono text-xs text-blue-700 bg-blue-50 border-blue-200">
                     {orgType}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-500 flex items-center gap-2">
-                  <span>Logged in as:</span>
-                  <span className="font-medium text-gray-700">{userFullName}</span>
-                  <span className="text-gray-400">({userEmail})</span>
+                <div className="text-sm font-semibold text-gray-700">
+                  Current Partner: <span className="font-bold text-gray-900">{orgName}</span>
+                </div>
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <span>User:</span>
+                  <span className="font-semibold text-gray-800">{userFullName}</span>
+                  <span className="text-gray-500">({user?.role || 'CSR_ORGANIZATION'})</span>
                 </p>
                 <div className="flex items-center gap-4 text-xs text-gray-500 pt-1">
                   <span className="flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-gray-400" />
-                    Role: {user?.role || (isUniversityPersona ? 'UNIVERSITY_ADMIN' : 'CSR_ORGANIZATION')}
-                  </span>
-                  <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-gray-400" />
                     Civic Impact Region: Pan-India
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span>Email:</span>
+                    <span className="text-gray-600 font-medium">{userEmail}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Actions: Portal Switcher + Partner Switcher + Refresh */}
+            {/* Actions: Partner Switcher + Refresh */}
             <div className="flex items-center gap-3 self-start lg:self-center">
-              {isUniversityPersona && (
-                <Link href="/university">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 text-indigo-700 border-indigo-300 hover:bg-indigo-50 font-semibold"
-                  >
-                    <GraduationCap className="w-4 h-4" />
-                    Switch to University Portal
-                  </Button>
-                </Link>
-              )}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSwitcherModalOpen(true)}
-                className="flex items-center gap-2 text-blue-700 border-blue-300 hover:bg-blue-50 font-semibold"
+                className="flex items-center gap-2 text-blue-700 border-blue-300 hover:bg-blue-50 font-semibold shadow-sm"
               >
-                <RefreshCw className="w-4 h-4" />
-                Switch Partner ({registeredIndustries.length})
+                <Building2 className="w-4 h-4" />
+                Switch Partner
               </Button>
               <Button
                 variant="ghost"
@@ -1164,12 +1141,12 @@ export default function IndustryPortalPage() {
           <Modal
             isOpen={switcherModalOpen}
             onClose={() => setSwitcherModalOpen(false)}
-            title="Switch Industry Institution"
+            title="Registered Industry / CSR Partners"
             size="lg"
           >
             <div className="space-y-4">
               <p className="text-xs text-gray-500">
-                Select a premier registered and verified industry/CSR organization to switch session context:
+                Select a registered and verified industry / CSR organization to switch active partner session:
               </p>
 
               <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
@@ -1209,11 +1186,14 @@ export default function IndustryPortalPage() {
                         </span>
                       ) : (
                         <Button
-                          variant="ghost"
                           size="sm"
-                          className="text-xs text-blue-600 hover:bg-blue-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSwitchIndustry(ind.id);
+                          }}
+                          className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                         >
-                          Switch →
+                          Switch
                         </Button>
                       )}
                     </div>
