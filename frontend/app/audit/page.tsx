@@ -81,7 +81,7 @@ export default function AuditTrailPage() {
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Governance Access Restricted</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                The SICP Audit Trail contains immutable transaction histories, verification reviews, and administrative operations. Access is restricted to authorized Government Officers and System Administrators.
+                The SICP Audit Trail contains tamper-evident transaction histories, verification reviews, and administrative operations. Access is restricted to authorized Government Officers and System Administrators.
               </p>
             </div>
 
@@ -109,14 +109,14 @@ export default function AuditTrailPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Governance Audit Trail
+              Tamper-Evident Authority Audit Ledger
             </h1>
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
               Privileged Telemetry
             </span>
           </div>
           <p className="text-sm text-slate-500 mt-1">
-            Immutable RFC 4180 audit records tracking state changes, government reviews, and security actions.
+            Verifiable audit records tracking state changes, government officer validations, and statutory actions.
           </p>
         </div>
 

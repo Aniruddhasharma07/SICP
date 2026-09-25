@@ -28,6 +28,7 @@ import {
   Clock,
   Loader2,
 } from 'lucide-react';
+import { IntelligenceTrace } from '../../src/components/common/IntelligenceTrace';
 
 interface ProjectListItem {
   id: string;
@@ -134,6 +135,23 @@ export default function ProjectsExplorerPage() {
               </Link>
             </div>
           }
+        />
+
+        {/* 13-Stage Canonical Intelligence Continuum Trace: Stage 11 - Intervention */}
+        <IntelligenceTrace
+          activeStage="intervention"
+          dominantActionLabel="Track Interventions"
+          onStageClick={(stage) => {
+            if (stage === 'problem' || stage === 'connected') {
+              window.location.href = '/challenges';
+            } else if (stage === 'systemic' || stage === 'infrastructure' || stage === 'investigation' || stage === 'sentinel' || stage === 'hypotheses' || stage === 'validation') {
+              window.location.href = '/government/systemic-intelligence';
+            } else if (stage === 'collaboration') {
+              window.location.href = '/university';
+            } else if (stage === 'memory') {
+              window.location.href = '/solutions';
+            }
+          }}
         />
 
         {/* Filters & Search Controls */}

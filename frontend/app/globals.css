@@ -96,6 +96,19 @@ body {
   }
 }
 
+@keyframes sicpSlideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-sicp-slide-left {
+  animation: sicpSlideLeft 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .animate-sicp-fade {
   animation: sicpFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

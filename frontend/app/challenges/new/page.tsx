@@ -1982,15 +1982,26 @@ export default function NewChallengePage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(2)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
               </Button>
-              <Button variant="primary" onClick={() => setCurrentStep(4)}>
-                Continue to AI Analysis
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs"
+                  onClick={handleSubmit}
+                  isLoading={isLoading}
+                >
+                  <Sparkles className="w-4 h-4 mr-1.5" />
+                  Submit &amp; Run Analysis
+                </Button>
+                <Button variant="outline" onClick={() => setCurrentStep(4)}>
+                  Review Details
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         )}

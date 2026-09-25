@@ -52,7 +52,7 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 text-[11px] font-medium transition-colors touch-manipulation',
+                'flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-1 text-[11px] font-medium transition-colors touch-manipulation',
                 isPrimary
                   ? 'text-blue-600 font-bold'
                   : isActive

@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
 import { CompareCaseDrawer } from '../../src/components/intelligence/CompareCaseDrawer';
+import { IntelligenceTrace } from '../../src/components/common/IntelligenceTrace';
 
 export default function SolutionsRepositoryPage() {
   const { user } = useAuth();
@@ -197,6 +198,20 @@ export default function SolutionsRepositoryPage() {
               <span>Ask Knowledge Assistant</span>
             </Button>
           }
+        />
+        {/* 13-Stage Canonical Intelligence Continuum Trace: Stage 13 - Solution Memory */}
+        <IntelligenceTrace
+          activeStage="memory"
+          dominantActionLabel="Synthesize Precedents"
+          onStageClick={(stage) => {
+            if (stage === 'problem' || stage === 'connected') {
+              window.location.href = '/challenges';
+            } else if (stage === 'systemic' || stage === 'infrastructure' || stage === 'investigation' || stage === 'sentinel' || stage === 'hypotheses' || stage === 'validation') {
+              window.location.href = '/government/systemic-intelligence';
+            } else if (stage === 'collaboration' || stage === 'intervention') {
+              window.location.href = '/university';
+            }
+          }}
         />
 
         {/* Actionable Analytics Metric Cards */}

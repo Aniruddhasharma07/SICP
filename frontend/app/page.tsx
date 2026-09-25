@@ -107,51 +107,102 @@ export default function CivicPortalHomePage() {
     });
   }, [challenges, selectedCategory]);
 
-  const totalReported = analytics?.challenges?.total ?? (challenges.length || 29);
-  const underReviewCount = Math.round(totalReported * 0.35);
-  const beingSolvedCount = Math.round(totalReported * 0.4);
-  const resolvedCount = Math.max(1, totalReported - underReviewCount - beingSolvedCount);
+  const totalReported = analytics?.challenges?.total ?? challenges.length;
+  const systemicCount = analytics?.challenges?.systemicCount ?? challenges.filter(c => c.isSystemic).length;
+  const totalProjects = analytics?.projects?.total ?? 0;
+  const memoryCount = analytics?.innovation?.publishedSolutionMemories ?? 0;
 
   const pipelineSteps = [
     {
       step: '01',
-      title: 'Citizen Problem Intake',
-      subtitle: 'Multimodal Reporting & Intent Gate',
-      desc: 'Citizens report local road, water, or civil hazards via voice or text. Real-time AI intent gate validates genuine civic failures and stops test spam.',
-      color: 'from-blue-600 to-indigo-600',
-      badge: 'Citizen & Community',
+      title: 'Citizen Signal',
+      subtitle: 'Verified Ground Intake',
+      desc: 'Citizens report local road, water, or civil hazards via text, voice, or media. Verifiable geocoding and symptom extraction are captured.',
+      badge: 'Citizen',
     },
     {
       step: '02',
-      title: 'Context-Aware AI & Spatial Radar',
-      subtitle: 'PostGIS Proximity & Root Causes',
-      desc: 'Geospatial clustering detects nearby reports within 500m. Gemini semantic embeddings isolate shared civil root-causes and recommend systemic consolidation.',
-      color: 'from-indigo-600 to-purple-600',
-      badge: 'AI Engine',
+      title: 'Intake Understood',
+      subtitle: 'Symptom & Boundary Parsing',
+      desc: 'SICP semantically extracts symptoms, severity, and service area boundaries without hallucinating nonexistent facts.',
+      badge: 'SICP AI',
     },
     {
       step: '03',
-      title: 'Municipal Validation & SLA',
-      subtitle: 'Statutory 72-Hour Response',
-      desc: 'Nodal officers verify ground authenticity, calibrate population reach footprint, and disaggregate systemic clusters with logged justifications.',
-      color: 'from-purple-600 to-pink-600',
-      badge: 'Government Command',
+      title: 'Signals Connected',
+      subtitle: 'Spatio-Temporal Correlation',
+      desc: 'Proximity algorithms connect nearby reports sharing time windows (<48h), distance (<2km), and symptom overlap (>80%).',
+      badge: 'Correlation',
     },
     {
       step: '04',
-      title: 'Academic R&D & Prototyping',
-      subtitle: 'Faculty Match & Student Teams',
-      desc: 'Problems with no municipal off-the-shelf fix are routed to accredited universities. Multi-disciplinary teams develop prototypes and test solutions.',
-      color: 'from-emerald-600 to-teal-600',
-      badge: 'University Workspace',
+      title: 'Systemic Pattern',
+      subtitle: 'Heuristic Scoring',
+      desc: 'Evidence crosses the systemic threshold (S_sys >= 0.70), alerting municipal command to a possible shared infrastructure failure.',
+      badge: 'Systemic',
     },
     {
       step: '05',
-      title: 'CSR Co-Funding & Solution Memory',
-      subtitle: 'Outcome Verification & Archival',
-      desc: 'Industry partners co-finance field pilots. Citizen outcome surveys verify permanent resolution, and verified interventions become reusable Solution Memory.',
-      color: 'from-amber-600 to-orange-600',
-      badge: 'Industry & Platform',
+      title: 'Infrastructure Lineage',
+      subtitle: 'Topological Traversal',
+      desc: 'Directed graph traversal queries official Municipal GIS data to trace feeder lines and identify Lowest Common Ancestor (LCA) assets.',
+      badge: 'Topology',
+    },
+    {
+      step: '06',
+      title: 'Active Investigation',
+      subtitle: 'Field Inspection & Logging',
+      desc: 'Municipal engineers log physical observations, dynamic pressure readings, and acoustic correlation data.',
+      badge: 'Investigation',
+    },
+    {
+      step: '07',
+      title: 'Sentinel Probe',
+      subtitle: 'Targeted Control Inquiry',
+      desc: 'Strictly neutral, non-leading inquiries are dispatched to unaffected control areas to test branch boundary hypotheses.',
+      badge: 'Sentinel',
+    },
+    {
+      step: '08',
+      title: 'Competing Hypotheses',
+      subtitle: 'Richards Heuer AMCH v1.0',
+      desc: 'Analysis of Competing Hypotheses matrix evaluates mutually exclusive failure modes, penalizing inconsistent explanations.',
+      badge: 'AMCH',
+    },
+    {
+      step: '09',
+      title: 'Human Validation',
+      subtitle: 'Statutory Officer Sign-Off',
+      desc: 'Invariant #1: AI suggests and computes; only accredited human government officers hold statutory authority to validate findings.',
+      badge: 'Governance',
+    },
+    {
+      step: '10',
+      title: 'Collaboration',
+      subtitle: 'University & Industry Brief',
+      desc: 'Validated challenges convert into accredited academic R&D calls and corporate CSR deployment opportunities.',
+      badge: 'Partnership',
+    },
+    {
+      step: '11',
+      title: 'Field Intervention',
+      subtitle: 'Engineering Remediation',
+      desc: 'Multi-disciplinary university teams and industry partners execute sensor deployments and engineering fixes.',
+      badge: 'Intervention',
+    },
+    {
+      step: '12',
+      title: 'Verified Outcome',
+      subtitle: 'Ground Truth Confirmation',
+      desc: 'Citizen post-intervention surveys and municipal inspections verify permanent problem resolution on the ground.',
+      badge: 'Verified',
+    },
+    {
+      step: '13',
+      title: 'Solution Memory',
+      subtitle: 'SICP Remembers (Section 22)',
+      desc: 'Intervention telemetry, failure avoidance factors, and lessons learned are indexed into institutional memory for future learning.',
+      badge: 'Memory',
     },
   ];
 
@@ -223,27 +274,27 @@ export default function CivicPortalHomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
             <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-slate-400 font-bold uppercase block">Reported Issues</span>
+              <span className="text-xs text-slate-400 font-bold uppercase block">Reported Civic Issues</span>
               <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">{totalReported}</div>
               <span className="text-[11px] text-blue-600 font-semibold">100% Authenticated Intake</span>
             </div>
 
-            <div className="p-4 md:p-5 rounded-2xl bg-amber-50/50 border border-amber-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-amber-700 font-bold uppercase block">Under Gov SLA Review</span>
-              <div className="text-3xl font-black text-amber-900 font-mono tracking-tight">{underReviewCount}</div>
-              <span className="text-[11px] text-amber-700 font-semibold">Active Municipal Triage</span>
+            <div className="p-4 md:p-5 rounded-2xl bg-blue-50/50 border border-blue-200 shadow-xs space-y-1 text-center">
+              <span className="text-xs text-blue-700 font-bold uppercase block">Systemic Patterns</span>
+              <div className="text-3xl font-black text-blue-900 font-mono tracking-tight">{systemicCount}</div>
+              <span className="text-[11px] text-blue-700 font-semibold">Correlated Asset Lineages</span>
             </div>
 
             <div className="p-4 md:p-5 rounded-2xl bg-indigo-50/50 border border-indigo-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-indigo-700 font-bold uppercase block">University R&amp;D Prototyping</span>
-              <div className="text-3xl font-black text-indigo-900 font-mono tracking-tight">{beingSolvedCount}</div>
-              <span className="text-[11px] text-indigo-700 font-semibold">Active Engineering Labs</span>
+              <span className="text-xs text-indigo-700 font-bold uppercase block">R&amp;D &amp; Field Projects</span>
+              <div className="text-3xl font-black text-indigo-900 font-mono tracking-tight">{totalProjects}</div>
+              <span className="text-[11px] text-indigo-700 font-semibold">University &amp; CSR Interventions</span>
             </div>
 
             <div className="p-4 md:p-5 rounded-2xl bg-emerald-50/50 border border-emerald-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-emerald-700 font-bold uppercase block">Verified Interventions</span>
-              <div className="text-3xl font-black text-emerald-900 font-mono tracking-tight">{resolvedCount}</div>
-              <span className="text-[11px] text-emerald-700 font-semibold">Citizen Validated Outcomes</span>
+              <span className="text-xs text-emerald-700 font-bold uppercase block">Solution Memories</span>
+              <div className="text-3xl font-black text-emerald-900 font-mono tracking-tight">{memoryCount}</div>
+              <span className="text-[11px] text-emerald-700 font-semibold">Indexed Precedents (Sec 22)</span>
             </div>
           </div>
         </section>
@@ -255,7 +306,7 @@ export default function CivicPortalHomePage() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                  Closed-Loop Innovation Lifecycle
+                  13-Stage Canonical Intelligence Continuum
                 </span>
               </div>
               <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -263,12 +314,12 @@ export default function CivicPortalHomePage() {
               </h2>
             </div>
             <span className="text-xs text-slate-500 font-medium self-start md:self-auto">
-              Click any stage to inspect the cross-sector operational workflow
+              Click any stage to inspect the intelligence continuum
             </span>
           </div>
 
           {/* Stepper Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {pipelineSteps.map((step, idx) => {
               const isSelected = activePipelineStep === idx;
               return (

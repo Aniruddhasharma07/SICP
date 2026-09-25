@@ -79,6 +79,12 @@ export const CANONICAL_SICP_STAGES: Omit<TraceStage, 'status'>[] = [
     description: 'Topological traversal traced lineage to common upstream assets.',
   },
   {
+    id: 'investigation',
+    label: 'Active Investigation',
+    shortLabel: 'Investigation',
+    description: 'Evidence gathering, physical inspection, and hydraulic logging.',
+  },
+  {
     id: 'hypotheses',
     label: 'Competing Explanations',
     shortLabel: 'Hypotheses',
@@ -170,7 +176,7 @@ export function IntelligenceTrace({
             </span>
           )}
           <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
-            • Canonical Lifecycle Continuum
+            • 13-Stage Canonical Intelligence Continuum
           </span>
         </div>
 

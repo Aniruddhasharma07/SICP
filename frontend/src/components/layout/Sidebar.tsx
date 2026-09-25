@@ -40,6 +40,7 @@ import {
   Lock,
   ArrowRight,
   Sparkles,
+  Network,
 } from 'lucide-react';
 
 interface NavSection {
@@ -82,10 +83,11 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
   // 2. GOVERNMENT PORTAL NAVIGATION
   const governmentSections: NavSection[] = [
     {
-      title: 'Command & Triage Queue',
+      title: 'Investigation & Triage Queue',
       items: [
         { label: 'Government Command', href: '/government', icon: LayoutDashboard, badge: 'SLA Active', color: 'text-purple-600' },
-        { label: 'Priority Triage Queue', href: '/government?mode=QUEUE', icon: CheckSquare, isPrimary: true, color: 'text-purple-600' },
+        { label: 'Systemic Intelligence Radar', href: '/government/systemic-intelligence', icon: Network, isPrimary: true, badge: 'Radar', color: 'text-blue-600' },
+        { label: 'Priority Triage Queue', href: '/government?mode=QUEUE', icon: CheckSquare, color: 'text-purple-600' },
         { label: 'Jurisdictional Issues', href: '/challenges', icon: Compass, color: 'text-purple-600' },
       ],
     },
@@ -93,13 +95,14 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
       title: 'Institutional Governance',
       items: [
         { label: 'Accredited Universities', href: '/government?mode=UNIVERSITIES', icon: GraduationCap, badge: 'Ratings', color: 'text-indigo-600' },
-        { label: 'Industry CSR Oversight', href: '/government?mode=INDUSTRY', icon: Briefcase, badge: 'Sanctions', color: 'text-amber-600' },
-        { label: 'Field Pilot Sanctions', href: '/projects', icon: FolderKanban, color: 'text-blue-600' },
+        { label: 'Industry & CSR Partnerships', href: '/government?mode=INDUSTRY', icon: Briefcase, badge: 'CSR', color: 'text-amber-600' },
+        { label: 'Field Interventions & Pilots', href: '/projects', icon: FolderKanban, color: 'text-blue-600' },
       ],
     },
     {
-      title: 'Resolution Telemetry',
+      title: 'Resolution Telemetry & Memory',
       items: [
+        { label: 'Solution Memory (Precedents)', href: '/solutions', icon: BrainCircuit, badge: 'Memory', color: 'text-emerald-600' },
         { label: 'Platform Analytics', href: '/analytics', icon: BarChart3, badge: 'Live DB', color: 'text-emerald-600' },
         { label: 'Universal Entity Search', href: '/search', icon: Search, color: 'text-slate-500' },
       ],
@@ -166,7 +169,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
       title: 'Superuser Command & Audit',
       items: [
         { label: 'Admin Command Center', href: '/admin', icon: LayoutDashboard, badge: 'Superuser', color: 'text-emerald-500' },
-        { label: 'Immutable Audit Ledger', href: '/audit', icon: ShieldAlert, isPrimary: true, color: 'text-rose-500' },
+        { label: 'Tamper-Evident Audit Ledger', href: '/audit', icon: ShieldAlert, isPrimary: true, color: 'text-rose-500' },
         { label: 'Server & DB Diagnostics', href: '/admin?tab=overview', icon: Server, color: 'text-cyan-400' },
       ],
     },

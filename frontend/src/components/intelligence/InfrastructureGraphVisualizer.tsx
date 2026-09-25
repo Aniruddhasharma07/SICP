@@ -59,17 +59,31 @@ export function InfrastructureGraphVisualizer({ graph, onSelectNode }: Infrastru
         <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950/60 text-amber-600 rounded-full flex items-center justify-center mx-auto">
           <Network className="w-6 h-6" />
         </div>
-        <div className="space-y-1">
-          <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Infrastructure Topology Inferred from Catchment Boundaries
-          </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-            Official municipal GIS vectors for this district are currently synchronizing. Topology is approximated from municipal catchment boundaries and known feeder alignments.
+        <div className="space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Infrastructure topology unavailable; catchment-based relationship is an inference.
+            </h4>
+            <Badge variant="warning" className="font-mono text-[10px]">
+              INFERRED
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+            Official municipal GIS pipe vectors for this jurisdiction are currently synchronizing. Topological lineage is approximated from administrative catchment boundaries and known feeder alignments, not physical valve schematics.
           </p>
+          <div className="pt-2">
+            <ExplainWhy
+              title="Why is this an inference?"
+              summary="Direct pipeline connectivity requires verified GIS pipe alignment layers. Until official municipal GIS vectors are ingested, SICP approximates connectivity using municipal ward catchment polygons and known bulk supply booster locations."
+              technicalDetails={{
+                epistemicClass: 'INFERRED',
+                provenance: 'Municipal Ward Boundary Gazetteer v2.1 (Approximate Catchment)',
+                invariants: 'SICP Invariant #2: Inferred catchment topology must not be claimed as verified physical infrastructure.',
+              }}
+              role="GOVERNMENT"
+            />
+          </div>
         </div>
-        <Badge variant="outline" className="border-amber-300 text-amber-800 dark:text-amber-300">
-          Inferred Topology Mode
-        </Badge>
       </div>
     );
   }

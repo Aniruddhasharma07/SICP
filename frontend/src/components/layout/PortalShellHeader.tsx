@@ -57,7 +57,7 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     accentBg: 'bg-purple-50/80',
     accentBorder: 'border-purple-200',
     accentText: 'text-purple-900',
-    tagline: 'SLA triage, university assignment, institutional ratings & pilot sanctioning',
+    tagline: 'SLA triage, university assignment, institutional ratings & pilot approval',
     quickAction: {
       label: 'Triage Priority Queue',
       href: '/government#triage',
@@ -99,7 +99,7 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     accentBg: 'bg-slate-900 text-white',
     accentBorder: 'border-slate-800',
     accentText: 'text-slate-100',
-    tagline: 'Immutable audit logs, RBAC directory, service telemetry & system health',
+    tagline: 'Tamper-evident audit ledger, RBAC directory, service telemetry & system health',
     quickAction: {
       label: 'Audit Ledger',
       href: '/audit',
@@ -115,7 +115,7 @@ export function PortalShellHeader({ portal }: { portal: PortalType }) {
   return (
     <div
       className={cn(
-        'w-full border-b transition-colors px-4 md:px-8 py-2.5 select-none',
+        'w-full border-b transition-colors px-4 md:px-8 py-2 select-none shadow-2xs',
         meta.accentBg,
         meta.accentBorder,
         meta.accentText

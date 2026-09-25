@@ -1025,37 +1025,46 @@ export default function GovernmentCommandCenterPage() {
       </div>
 
       {/* Systemic Intelligence Command Quick Banner */}
-      <div className="bg-gradient-to-r from-indigo-900 via-purple-950 to-slate-900 border border-indigo-500/30 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border border-indigo-500/40 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none" />
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-400/30 shrink-0">
               <Network className="w-6 h-6 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-2 py-0.5 rounded-full">
-                  Systemic Intelligence Subsystem
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300 bg-indigo-950/80 border border-indigo-700/60 px-2.5 py-0.5 rounded-full">
+                  Emerging Systemic Incident Radar
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                  <Sparkles className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 border border-amber-500/40 px-2 py-0.5 rounded-full">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
                   Richards Heuer AMCH Active
+                </span>
+                <span className="text-[11px] font-mono font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+                  SYS-2026-BHP-001 Active
                 </span>
               </div>
               <h2 className="text-lg font-bold text-white mt-1">
-                Infrastructure Root-Cause Intelligence &amp; Proactive Community Sentinel
+                SYS-2026-BHP-001: Multi-Ward Water Supply Disruption &amp; Contamination Cluster
               </h2>
               <p className="text-xs text-indigo-200/80 max-w-2xl mt-0.5">
-                Analyze multi-signal civic infrastructure clusters, trace lowest common ancestors in utility networks, dispatch neutral community sentinel probes, and validate competing root-cause hypotheses with full auditability.
+                4 citizen reports correlated across Wards 11, 12, 13. Lowest Common Ancestor traced to Trunk Line 4 downstream of MBR-02. Branch differential sentinel feedback active.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto justify-end">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-stretch lg:self-auto justify-end">
             <Link
               href="/government/systemic-intelligence"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-lg transition"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/20 transition"
             >
-              <span>Open Intelligence Hub</span>
+              <span>View All Incidents</span>
+            </Link>
+            <Link
+              href="/government/systemic-intelligence/SYS-2026-BHP-001"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
+            >
+              <span>Inspect Incident Dossier</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1139,7 +1148,7 @@ export default function GovernmentCommandCenterPage() {
               2. Ground Reality Verification
             </div>
             <p className="text-slate-600 text-[11px] leading-relaxed">
-              Assigned officers must authoritatively verify impact footprint, affected population, and geolocation prior to resource sanction.
+              Assigned officers must authoritatively verify impact footprint, affected population, and geolocation prior to resource commitment.
             </p>
           </div>
           <div className="p-3 bg-white/90 rounded-xl border border-blue-100 space-y-1">
