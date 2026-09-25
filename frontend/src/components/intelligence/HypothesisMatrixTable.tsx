@@ -20,6 +20,7 @@ import {
   Activity,
   Layers,
   Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { ExplainWhy } from '../common/ExplainWhy';
@@ -338,16 +339,26 @@ export function HypothesisMatrixTable({
                   </div>
 
                   {onSelectHypothesis && (
-                    <div className="pt-1 flex justify-end">
+                    <div className="pt-2 flex justify-end">
                       <button
                         onClick={() => onSelectHypothesis(hyp)}
-                        className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                           isSelected
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200'
+                            ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/40'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-600'
                         }`}
                       >
-                        {isSelected ? '✓ Selected for Governance Review' : 'Select for Governance Review'}
+                        {isSelected ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                            <span>✓ Selected for Governance Review</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Select for Governance Review</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </>
+                        )}
                       </button>
                     </div>
                   )}

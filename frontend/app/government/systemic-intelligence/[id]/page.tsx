@@ -466,7 +466,7 @@ export default function RootCauseDossierPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/government/systemic-intelligence"
-              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-slate-800 bg-slate-900"
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-slate-800 hover:bg-slate-800/80 transition"
               title="Return to Hub"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -710,21 +710,21 @@ export default function RootCauseDossierPage() {
             </div>
 
             {validationSuccess || incident.status === SystemicIncidentStatus.HUMAN_VALIDATED ? (
-              <div className="p-4 bg-emerald-950/40 border border-emerald-600/50 rounded-xl space-y-3 text-xs animate-sicp-scale-in">
-                <div className="flex items-center justify-between border-b border-emerald-800/60 pb-2">
-                  <div className="flex items-center gap-2 font-bold text-emerald-200">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    STATUTORY SIGN-OFF SEAL
+              <div className="p-4 bg-emerald-950/60 border-2 border-emerald-500/60 rounded-xl space-y-3 text-xs animate-sicp-scale-in shadow-lg shadow-emerald-950/50">
+                <div className="flex items-center justify-between pb-2 border-b border-emerald-500/30">
+                  <div className="flex items-center gap-2 font-black text-emerald-300 uppercase tracking-wide">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <span>Statutory Sign-Off Sealed</span>
                   </div>
-                  <span className="font-mono text-[10px] font-bold text-emerald-400 bg-emerald-900/50 border border-emerald-700/60 px-2 py-0.5 rounded">
+                  <span className="font-mono text-[10px] font-bold bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 px-2 py-0.5 rounded">
                     GOV-VAL-{incident.code}
                   </span>
                 </div>
                 
                 <div className="space-y-1 text-slate-300">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Validated By:</span>
-                    <strong className="text-slate-100">{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED)'}</strong>
+                    <span className="text-slate-400">Authorized Signatory:</span>
+                    <strong className="text-emerald-300 font-bold">{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED)'}</strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Audit Timestamp:</span>
@@ -732,12 +732,12 @@ export default function RootCauseDossierPage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-slate-300 text-[11px] italic">
-                  &quot;{incident.validationReason}&quot;
+                <div className="bg-emerald-900/30 border border-emerald-500/20 p-2.5 rounded-lg text-slate-300 text-[11px] italic leading-relaxed">
+                  &quot;{incident.validationReason || validationReason}&quot;
                 </div>
 
-                <div className="pt-2 border-t border-emerald-800/60 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[10px] text-emerald-400 font-medium">
+                <div className="pt-2 border-t border-emerald-500/20 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[10px] text-emerald-400 font-medium font-mono">
                     ✓ Recorded on Tamper-Evident Authority Audit Ledger
                   </span>
                   <Button
@@ -747,7 +747,7 @@ export default function RootCauseDossierPage() {
                       const el = document.getElementById('collaboration-section');
                       if (el) el.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7 px-3"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7 px-3 shadow"
                   >
                     Continue to Collaboration &rarr;
                   </Button>
