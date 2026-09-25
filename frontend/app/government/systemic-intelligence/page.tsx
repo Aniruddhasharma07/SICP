@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { SystemicIncidentCard } from '../../../src/components/intelligence/SystemicIncidentCard';
 import { Button } from '../../../src/components/ui/Button';
+import { IntelligenceTrace } from '../../../src/components/common/IntelligenceTrace';
 import { DEMO_INCIDENT_SUMMARY } from '../../../src/lib/systemic-demo-data';
 
 export default function SystemicIntelligenceHubPage() {
@@ -154,9 +155,16 @@ export default function SystemicIntelligenceHubPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
+        {/* Canonical Intelligence Trace */}
+        <IntelligenceTrace
+          activeStage="systemic"
+          dominantActionLabel="Investigate Leading Case (SYS-2026-BHP-001)"
+          onStageClick={() => {}}
+        />
+
         {/* Controlled Demo Highlight Banner */}
-        <div className="mb-6 bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border border-amber-500/20 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 border border-amber-500/20 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
               <Radio className="w-3 h-3 text-amber-600 animate-pulse" />

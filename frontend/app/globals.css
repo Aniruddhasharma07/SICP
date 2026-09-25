@@ -44,3 +44,97 @@ body {
   background: #dbeafe;
   color: #1e40af;
 }
+
+/* =========================================================================
+   SICP ELITE MOTION SYSTEM
+   Micro-interactions: 150-300ms, cause -> effect -> state transitions.
+   ========================================================================= */
+
+@keyframes sicpFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sicpSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sicpPulseSubtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+@keyframes sicpDashFlow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes sicpScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-sicp-fade {
+  animation: sicpFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sicp-slide-up {
+  animation: sicpSlideUp 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sicp-scale-in {
+  animation: sicpScaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sicp-pulse-subtle {
+  animation: sicpPulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-sicp-dash {
+  stroke-dasharray: 6 4;
+  animation: sicpDashFlow 1.2s linear infinite;
+}
+
+.sicp-transition-smooth {
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Strict Accessibility: prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-sicp-dash {
+    animation: none !important;
+  }
+  .animate-sicp-pulse-subtle {
+    animation: none !important;
+  }
+}

@@ -401,7 +401,7 @@ export const INITIAL_DEMO_INCIDENT: SystemicIncidentDto = {
       ],
       missingEvidence: ['Multi-branch differential inspection on parallel distribution trunks'],
       falsificationCriteria:
-        'If any parallel feeder trunk (such as Trunk Line 5) reports clear, normal water, plant-wide treatment failure is conclusively refuted.',
+        'If any parallel feeder trunk (such as Trunk Line 5) reports clear, normal water, plant-wide treatment failure is significantly weakened.',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -501,7 +501,7 @@ export function applyDemoSentinelNormal(current: SystemicIncidentDto): SystemicI
         },
         branchVerificationOutcome: BranchDifferentialStatus.BRANCH_UNAFFECTED_DISPROVED_UPSTREAM,
         evidenceContributionSummary:
-          'Branch Differential Invariant active: Branch B normal service refutes upstream treatment plant failure.',
+          'Branch Differential Invariant active: Branch B normal service weakens upstream treatment plant hypothesis.',
       };
     }
     return p;
@@ -533,15 +533,15 @@ export function applyDemoSentinelNormal(current: SystemicIncidentDto): SystemicI
         diagnosticSupportScore: 5,
         status: HypothesisStatus.REFUTED,
         refutationReason:
-          'Topologically refuted: Ward 14 on parallel branch reports normal service. Fundamental causality invariant mathematically refutes upstream treatment failure.',
+          'Topologically weakened: Ward 14 on parallel branch reports normal service. Fundamental causality invariant mathematically weakens upstream treatment failure in favor of localized branch failure.',
         contradictingEvidence: [
           ...h.contradictingEvidence,
           {
             id: 'ev-sentinel-02',
             epistemicClass: EvidenceEpistemicClass.COMPUTED,
-            title: 'Topological Refutation via Branch Differential Invariant',
+            title: 'Topological Weakening via Branch Differential Invariant',
             description:
-              'Parallel branch originating from Master Balancing Reservoir 2 reports normal service. Fundamental causality invariant mathematically refutes upstream treatment failure.',
+              'Parallel branch originating from Master Balancing Reservoir 2 reports normal service. Fundamental causality invariant mathematically weakens upstream treatment failure.',
             sourceName: 'Branch Differential Analysis Engine',
             diagnosticWeight: 45,
           },
@@ -565,7 +565,7 @@ export function applyDemoSentinelNormal(current: SystemicIncidentDto): SystemicI
         normalBranchNodeIds: ['node-trunk-05', 'node-zone-5a'],
         status: BranchDifferentialStatus.BRANCH_UNAFFECTED_DISPROVED_UPSTREAM,
         deduction:
-          'Ward 14 (Feeder Trunk 5) reports normal water pressure and zero turbidity. By the Branch Differential Invariant, common upstream Treatment Plant (WTP-KOLAR) failure is conclusively refuted. Root cause isolated downstream to Trunk Line 4.',
+          'The new Ward 14 observation weakens the network-wide Treatment Plant hypothesis and increases support for a branch-localized Trunk Line 4 hypothesis.',
         weakenedHypothesisIds: ['hyp-02'],
         evaluatedAt: new Date().toISOString(),
       },

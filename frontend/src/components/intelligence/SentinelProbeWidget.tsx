@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { ExplainWhy } from '../common/ExplainWhy';
 
 interface SentinelProbeWidgetProps {
   probe: SentinelProbeRequestDto;
@@ -103,28 +104,48 @@ export function SentinelProbeWidget({
           </p>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-medium">
-          <button
-            onClick={() => setActiveTab('citizen')}
-            className={`px-3 py-1 rounded-md transition-colors ${
-              activeTab === 'citizen'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            Citizen Inquirer
-          </button>
-          <button
-            onClick={() => setActiveTab('government')}
-            className={`px-3 py-1 rounded-md transition-colors ${
-              activeTab === 'government'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            Live Aggregation ({total})
-          </button>
+        {/* Tab switcher & ExplainWhy */}
+        <div className="flex items-center gap-2">
+          <ExplainWhy
+            title="Why was Ward 14 selected for sentinel inquiry?"
+            summary="Ward 14 was selected because it shares the same Master Balancing Reservoir (MBR-02) as the affected wards, but branches along Trunk Line 5. If Ward 14 reports normal water pressure, the failure is mathematically proven to be localized downstream of MBR-02 on Trunk Line 4 rather than upstream at the Treatment Plant."
+            evidenceItems={[
+              'Topological Junction: Master Balancing Reservoir 2 (MBR-02)',
+              'Parallel Feeder: Trunk Line 5 (Ward 14 East)',
+              'Zero Leading Framing: Inquiry asks for direct citizen observation without priming disruption',
+            ]}
+            technicalDetails={{
+              algorithm: 'Topological Branch Differential Evaluation',
+              epistemicClass: 'COMPUTED',
+              provenance: 'Municipal Graph Traversal Engine',
+              invariants: 'Branch Differential Invariant active',
+            }}
+            buttonText="Why Ward 14?"
+            variant="badge"
+          />
+
+          <div className="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-medium">
+            <button
+              onClick={() => setActiveTab('citizen')}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                activeTab === 'citizen'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              Citizen Inquirer
+            </button>
+            <button
+              onClick={() => setActiveTab('government')}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                activeTab === 'government'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              Live Aggregation ({total})
+            </button>
+          </div>
         </div>
       </div>
 

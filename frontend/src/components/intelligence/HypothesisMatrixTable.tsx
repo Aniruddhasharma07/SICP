@@ -19,8 +19,10 @@ import {
   Scale,
   Activity,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { ExplainWhy } from '../common/ExplainWhy';
 
 interface HypothesisMatrixTableProps {
   hypotheses: RootCauseHypothesisDto[];
@@ -48,16 +50,16 @@ export function HypothesisMatrixTable({
         );
       case HypothesisStatus.LEADING_HYPOTHESIS:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 animate-sicp-pulse-subtle">
             <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             Leading Investigation Hypothesis
           </span>
         );
       case HypothesisStatus.REFUTED:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800">
-            <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-            Topologically Refuted
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
+            <XCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+            Weakened by Evidence
           </span>
         );
       case HypothesisStatus.UNDER_EVALUATION:
@@ -88,20 +90,43 @@ export function HypothesisMatrixTable({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm animate-sicp-slide-up">
       {/* Table Header */}
       <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            Analysis of Competing Hypotheses (AMCH)
-          </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Structured diagnostic evaluation: Supporting ($E^+$), Contradicting ($E^-$), and Missing ($E^?$) evidence.
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              COMPETING EXPLANATIONS
+            </h4>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-mono">
+              AMCH v1.0
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Structured diagnostic evaluation: Supporting (E⁺), Contradicting (E⁻), and Missing (Eˀ) evidence evaluated simultaneously.
           </p>
         </div>
-        <div className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-          Method: Heuer AMCH Heuristic v1.0
+
+        <div className="flex items-center gap-2">
+          <ExplainWhy
+            title="Analysis of Competing Hypotheses (AMCH)"
+            summary="Developed by CIA analyst Richards Heuer, AMCH prevents premature cognitive closure. Rather than gathering evidence to confirm a single favored explanation, AMCH weighs diagnostic evidence across all plausible hypotheses. The leading explanation is the one with the strongest empirical support and least contradicting evidence."
+            evidenceItems={[
+              'Simultaneous evaluation of multiple explanations',
+              'Explicit tracking of contradicting and missing evidence',
+              'Calibrated diagnostic weights (0-100%)',
+              'Final validation reserved strictly for authorized human officials',
+            ]}
+            technicalDetails={{
+              algorithm: 'Richards Heuer AMCH Weighted Diagnostics Engine v1.0',
+              epistemicClass: 'COMPUTED',
+              scoringModel: 'Bayesian Weight Normalization with Falsification Penalties',
+              invariants: 'Hypotheses remain labeled HYPOTHESIS until an authorized Government Officer explicitly validates them.',
+            }}
+            buttonText="How AMCH Works"
+            variant="badge"
+          />
         </div>
       </div>
 
@@ -115,7 +140,7 @@ export function HypothesisMatrixTable({
           return (
             <div
               key={hyp.id}
-              className={`transition-colors ${
+              className={`transition-colors duration-200 ${
                 isSelected
                   ? 'bg-blue-50/40 dark:bg-blue-950/20'
                   : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
@@ -141,19 +166,19 @@ export function HypothesisMatrixTable({
                   </h5>
                 </div>
 
-                {/* Diagnostic Score Gauge */}
+                {/* Diagnostic Score Gauge with Smooth Transition (Signature #4) */}
                 <div className="w-48">
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="text-slate-500 dark:text-slate-400">Diagnostic Support:</span>
-                    <strong className="text-slate-900 dark:text-slate-100 font-mono">
+                    <strong className="text-slate-900 dark:text-slate-100 font-mono text-xs">
                       {score}%
                     </strong>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${
                         hyp.status === HypothesisStatus.REFUTED
-                          ? 'bg-red-500'
+                          ? 'bg-rose-500'
                           : score >= 70
                           ? 'bg-blue-600'
                           : score >= 40
@@ -168,24 +193,24 @@ export function HypothesisMatrixTable({
                   </div>
                 </div>
 
-                {/* Evidence Counts Summary & Expand Button */}
+                {/* Evidence Counts Summary & Expand Button (Signature #5) */}
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-xs font-mono">
+                  <div className="flex items-center gap-1.5 text-xs font-mono">
                     <span
-                      className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-semibold"
-                      title="Supporting Evidence count"
+                      className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800"
+                      title="Supporting Evidence items"
                     >
                       +{hyp.supportingEvidence.length} E⁺
                     </span>
                     <span
-                      className="px-2 py-0.5 rounded bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 font-semibold"
-                      title="Contradicting Evidence count"
+                      className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800"
+                      title="Contradicting Evidence items"
                     >
                       -{hyp.contradictingEvidence.length} E⁻
                     </span>
                     <span
-                      className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-semibold"
-                      title="Missing Evidence Gaps count"
+                      className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-800"
+                      title="Missing Evidence gaps"
                     >
                       ?{hyp.missingEvidence.length} Eˀ
                     </span>
@@ -199,17 +224,17 @@ export function HypothesisMatrixTable({
 
               {/* Expanded Diagnostic Detail */}
               {isExpanded && (
-                <div className="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-900/40">
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                <div className="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-900/40 animate-sicp-slide-up">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     {hyp.description}
                   </p>
 
-                  {/* Refutation Reason Banner if Refuted */}
+                  {/* Weakening / Refutation Reason Banner if Weakened */}
                   {hyp.refutationReason && (
-                    <div className="p-3 bg-red-50/80 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg text-xs text-red-800 dark:text-red-300 flex items-start gap-2">
-                      <XCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <div className="p-3 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg text-xs text-rose-800 dark:text-rose-300 flex items-start gap-2">
+                      <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                       <div>
-                        <strong>Topological Refutation Reason:</strong> {hyp.refutationReason}
+                        <strong>Diagnostic Assessment:</strong> {hyp.refutationReason}
                       </div>
                     </div>
                   )}
@@ -258,7 +283,7 @@ export function HypothesisMatrixTable({
 
                     {/* Contradicting Evidence (E-) */}
                     <div className="bg-white dark:bg-slate-800/70 p-3 rounded-lg border border-slate-200 dark:border-slate-700/80">
-                      <h6 className="text-xs font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-1.5">
+                      <h6 className="text-xs font-bold text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-1.5">
                         <XCircle className="w-3.5 h-3.5" />
                         Contradicting Evidence (E⁻)
                       </h6>
@@ -267,7 +292,7 @@ export function HypothesisMatrixTable({
                       ) : (
                         <ul className="space-y-2 text-xs">
                           {hyp.contradictingEvidence.map(ev => (
-                            <li key={ev.id} className="border-l-2 border-red-500 pl-2">
+                            <li key={ev.id} className="border-l-2 border-rose-500 pl-2">
                               <div className="font-medium text-slate-800 dark:text-slate-200">
                                 {ev.title}
                               </div>

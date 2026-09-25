@@ -39,6 +39,9 @@ import { SentinelProbeWidget } from '../../../../src/components/intelligence/Sen
 import { ExecutiveDemoControls } from '../../../../src/components/intelligence/ExecutiveDemoControls';
 import { Badge } from '../../../../src/components/ui/Badge';
 import { Button } from '../../../../src/components/ui/Button';
+import { IntelligenceTrace } from '../../../../src/components/common/IntelligenceTrace';
+import { GuidedInvestigationCard } from '../../../../src/components/intelligence/GuidedInvestigationCard';
+import { ExplainWhy } from '../../../../src/components/common/ExplainWhy';
 import {
   INITIAL_DEMO_INCIDENT,
   applyDemoSentinelNormal,
@@ -363,6 +366,33 @@ export default function RootCauseDossierPage() {
   }
 
   const scorePercentage = Math.round(incident.systemicScore * 100);
+  const isHumanValidated = incident.status === SystemicIncidentStatus.HUMAN_VALIDATED;
+  const isInterventionActive = projectCreated || incident.status === SystemicIncidentStatus.INTERVENTION_ACTIVE;
+
+  const activeTraceStage = isInterventionActive
+    ? 'intervention'
+    : isHumanValidated
+    ? 'validation'
+    : demoStep >= 4
+    ? 'sentinel'
+    : 'hypotheses';
+
+  const dominantActionLabel = !isHumanValidated
+    ? 'Validate Leading Hypothesis'
+    : !isInterventionActive
+    ? 'Spawn University R&D & Industry CSR Project →'
+    : 'View Active Interventions in University Portal →';
+
+  const handleDominantAction = () => {
+    if (!isHumanValidated) {
+      const el = document.getElementById('governance-validation-panel');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else if (!isInterventionActive) {
+      handleCreateProject();
+    } else {
+      router.push('/university');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 pb-20">
@@ -408,7 +438,92 @@ export default function RootCauseDossierPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+        {/* Persistent Canonical Intelligence Trace */}
+        <IntelligenceTrace
+          activeStage={activeTraceStage}
+          currentProblemId={incident.code}
+          dominantActionLabel={dominantActionLabel}
+          onStageClick={(stage: string) => {
+            if (stage === 'problem' || stage === 'connected') {
+              router.push('/challenges');
+            } else if (stage === 'collaboration' || stage === 'intervention') {
+              router.push('/university');
+            } else if (stage === 'memory') {
+              router.push('/solutions');
+            }
+          }}
+        />
+
+        {/* 4-Questions Guided Investigation Orientation Card */}
+        <GuidedInvestigationCard
+          currentStage={
+            isInterventionActive
+              ? 'Multi-Stakeholder Intervention Active'
+              : isHumanValidated
+              ? 'Government Validated Finding'
+              : demoStep >= 4
+              ? 'Branch Differential Evidence Injected'
+              : 'Systemic Investigation & Competing Hypotheses'
+          }
+          stageSubtitle={
+            isHumanValidated
+              ? 'Executive Engineer Sign-off Confirmed'
+              : 'Analysis of Competing Hypotheses (AMCH v1.0)'
+          }
+          whatHappened={`${incident.signals.length} citizen reports across Wards 11, 12, and 13 documented matching low-pressure and turbidity signals within a 6-hour window.`}
+          discovery={
+            incident.graph.branchDifferentialResult
+              ? incident.graph.branchDifferentialResult.deduction
+              : 'Topological analysis identified Master Balancing Reservoir 2 as the Lowest Common Ancestor. Sentinel inquiry in Ward 14 was dispatched to evaluate Branch Differential.'
+          }
+          evidencePoints={[
+            '4 citizen reports correlate on symptoms, space (< 2 km), and time (< 6h)',
+            'Common upstream feeder: Trunk Line 4 from MBR-02',
+            'WTP Outflow SCADA turbidity verified within BIS standards at 0.8 NTU',
+            incident.graph.branchDifferentialResult
+              ? 'Ward 14 sentinel feedback confirms normal service on parallel branch'
+              : 'Ward 14 sentinel probe active to test branch differential',
+            'Solution Memory: 2 historical pipeline rupture precedents retrieved',
+          ]}
+          uncertaintyOrUnknown={
+            isHumanValidated
+              ? 'Sub-surface acoustic listening rods currently verifying exact joint fracture coordinates (Ch. 2+400 to 3+100).'
+              : 'Exact physical crack location along Trunk Line 4 requires on-site acoustic correlation.'
+          }
+          dominantAction={{
+            label: dominantActionLabel,
+            onClick: handleDominantAction,
+            helperText: !isHumanValidated
+              ? 'Officer authority required before field dispatch or public declaration'
+              : 'Dispatches research R&D challenge and opens CSR funding pool',
+          }}
+          secondaryActions={[
+            {
+              label: 'Interactive GIS Network',
+              onClick: () => {
+                const el = document.getElementById('infrastructure-network-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              },
+            },
+            {
+              label: 'Solution Memory Cases',
+              onClick: () => router.push('/solutions'),
+            },
+          ]}
+          explainWhy={{
+            title: 'Why is Trunk Line 4 the Leading Root Cause?',
+            summary:
+              'Because Ward 14 reports normal water pressure from the same Master Balancing Reservoir, the common upstream node is absolved of failure. The defect is topologically and empirically isolated to Trunk Line 4 downstream of MBR-02.',
+            technicalDetails: {
+              algorithm: 'Topological Branch Differential Invariant',
+              epistemicClass: 'COMPUTED',
+              provenance: 'PHED Municipal GIS + Sentinel Telemetry',
+              invariants: 'Branch Differential Invariant active: Branch B normal service weakens upstream treatment failure.',
+            },
+          }}
+        />
+
         {/* Controlled Demo Stepper Banner */}
         <ExecutiveDemoControls
           currentStep={demoStep}
@@ -418,7 +533,7 @@ export default function RootCauseDossierPage() {
         />
 
         {/* Top Split Layout: Infrastructure Graph & Incident Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div id="infrastructure-network-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
           {/* Left: Interactive Infrastructure Network Graph (7 cols) */}
           <div className="lg:col-span-7">
             <InfrastructureGraphVisualizer graph={incident.graph} />
@@ -492,27 +607,43 @@ export default function RootCauseDossierPage() {
 
         {/* Bottom Section: Authoritative Human Governance Panel & Project Intervention */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Left: Government Validation Sign-off */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              Authoritative Human Governance & Validation
-            </h3>
-            <p className="text-xs text-slate-500 mb-4">
-              AI produces competing hypotheses and calculations; authorized Government Officers hold sole authority to validate operational investigation findings.
-            </p>
+          {/* Left: Government Validation Sign-off (Signature #7: Human Authority Boundary) */}
+          <div
+            id="governance-validation-panel"
+            className="bg-white dark:bg-slate-900 border-2 border-emerald-500/40 dark:border-emerald-600/40 rounded-xl p-5 shadow-sm space-y-4"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                  Signature #7 • Human Authority Boundary
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  SICP Invariant #1
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                Authoritative Human Governance &amp; Validation
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
+                AI produces competing hypotheses and calculations; authorized Government Officers hold sole authority to validate operational investigation findings.
+              </p>
+            </div>
 
             {validationSuccess || incident.status === SystemicIncidentStatus.HUMAN_VALIDATED ? (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2 text-xs">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2 text-xs animate-sicp-scale-in">
                 <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   Investigation Hypothesis Formally Validated
                 </div>
                 <div className="text-emerald-800 dark:text-emerald-300">
-                  Validated by: <strong>{incident.validatedByName || 'Er. Rajesh Varma'}</strong>
+                  Validated by: <strong>{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED Bhopal)'}</strong>
                 </div>
                 <div className="text-slate-600 dark:text-slate-400 italic">
                   &quot;{incident.validationReason}&quot;
+                </div>
+                <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-700 dark:text-emerald-400">
+                  ✓ Officially sealed in municipal public registry. Unlocks University R&amp;D and Industry CSR coordination.
                 </div>
               </div>
             ) : (
@@ -555,45 +686,54 @@ export default function RootCauseDossierPage() {
                     variant="primary"
                     size="sm"
                     disabled={actionLoading || validationReason.trim().length < 10}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
                     <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-                    Validate as Official Investigation Hypothesis
+                    Validate as Official Investigation Finding
                   </Button>
                 </div>
               </form>
             )}
           </div>
 
-          {/* Right: Closed-Loop Lifecycle — University & Industry Interventions */}
+          {/* Right: Closed-Loop Lifecycle — University & Industry Interventions (Signature #8) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+                  Signature #8 • Cross-Portal Collaboration Continuum
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  SICP Remembers
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
                 <Building className="w-4 h-4 text-purple-600" />
-                Intervention Coordination & Lifecycle
+                Intervention Coordination &amp; Lifecycle
               </h3>
               <p className="text-xs text-slate-500 mb-4">
                 Connect validated systemic incidents to University engineering research and Industry CSR co-investment opportunities.
               </p>
 
               {projectCreated || incident.status === SystemicIncidentStatus.INTERVENTION_ACTIVE ? (
-                <div className="p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl space-y-2 text-xs">
+                <div className="p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl space-y-2 text-xs animate-sicp-slide-up">
                   <div className="flex items-center gap-2 font-bold text-purple-900 dark:text-purple-200">
                     <CheckCircle2 className="w-4 h-4 text-purple-600" />
                     Multi-Stakeholder Intervention Project Active
                   </div>
                   <p className="text-purple-800 dark:text-purple-300">
-                    Challenge published to University Portal (Acoustic Leak Detection R&D) and Industry Portal (Water Infrastructure CSR Matching).
+                    Challenge published to University Portal (Acoustic Leak Detection R&amp;D) and Industry Portal (Water Infrastructure CSR Matching).
                   </p>
-                  <div className="pt-2 flex gap-3">
+                  <div className="pt-2 flex flex-wrap gap-3">
                     <Link
                       href="/university"
-                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline"
+                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
                     >
                       View in University Portal &rarr;
                     </Link>
                     <Link
                       href="/industry"
-                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline"
+                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
                     >
                       View in Industry Portal &rarr;
                     </Link>
@@ -608,7 +748,7 @@ export default function RootCauseDossierPage() {
                     <div className="text-slate-600 dark:text-slate-300">
                       • Acoustic Pipeline Leak Detection IoT Nodes
                       <br />
-                      • Municipal Water Hammer & Surge Cavitation Simulation
+                      • Municipal Water Hammer &amp; Surge Cavitation Simulation
                     </div>
                   </div>
 
@@ -643,6 +783,7 @@ export default function RootCauseDossierPage() {
                   size="sm"
                   onClick={handleCreateProject}
                   disabled={actionLoading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   <Sparkles className="w-3.5 h-3.5 mr-1" />
                   Spawn University / CSR Project
@@ -723,11 +864,19 @@ export default function RootCauseDossierPage() {
                 </div>
 
                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
-                    22 Solution Memory Precedents
-                  </strong>
+                  <div className="flex items-center justify-between mb-1">
+                    <strong className="block text-slate-900 dark:text-slate-100">
+                      22 Solution Memory Precedents (Signature #9)
+                    </strong>
+                    <Link
+                      href="/solutions"
+                      className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
+                    >
+                      Explore Memory &rarr;
+                    </Link>
+                  </div>
                   <p className="text-slate-600 dark:text-slate-400">
-                    Referenced institutional cases: 2 previous pipeline joint ruptures documented in Solution Memory (Kolar 2024, Indore Trunk 2023).
+                    SICP Remembers: 2 previous pipeline joint ruptures documented in Solution Memory (Kolar 2024, Indore Trunk 2023). Empirical lessons incorporated into proposed engineering response.
                   </p>
                 </div>
 
