@@ -949,12 +949,14 @@ export default function GovernmentCommandCenterPage() {
           whoIsResponsible="Government Department Admin or System Administrator"
           whatHappensIfIdle="Your account cannot evaluate or assign incoming societal problems."
           whatCanDoNext={[
+            'Explore Systemic Intelligence Command Center (Public Live Demo)',
             'Switch to an authorized officer account',
             'Return to Civic Problem Explorer',
             'Submit a community problem',
           ]}
           onActionClick={action => {
-            if (action.includes('Switch')) router.push('/login');
+            if (action.includes('Systemic')) router.push('/government/systemic-intelligence');
+            else if (action.includes('Switch')) router.push('/login');
             else if (action.includes('Submit')) router.push('/challenges/new');
             else router.push('/challenges');
           }}

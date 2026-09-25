@@ -33,6 +33,25 @@ export const DEMO_INCIDENT_SUMMARY: SystemicIncidentSummaryDto = {
   updatedAt: new Date().toISOString(),
 };
 
+export const GAMHARIA_INCIDENT_SUMMARY: SystemicIncidentSummaryDto = {
+  id: 'SI-204',
+  code: 'SYS-2026-JHK-204',
+  title: 'Gamharia Block Multi-Village JJM Scheme — Feeder 3B-2 & Power Grid Transient Cascade',
+  category: 'WATER',
+  status: SystemicIncidentStatus.INVESTIGATING,
+  severity: SeverityLevel.CRITICAL,
+  evidenceStrength: 'STRONG',
+  systemicScore: 0.88,
+  district: 'Seraikela Kharsawan',
+  state: 'Jharkhand',
+  signalCount: 25,
+  leadingHypothesisTitle: 'Feeder Line 3B-2 Valve Pin Sheared Post Power-Trip Hydraulic Surge',
+  leadingHypothesisScore: 84,
+  isControlledDemo: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 export const INITIAL_DEMO_INCIDENT: SystemicIncidentDto = {
   id: 'SYS-2026-BHP-001',
   code: 'SYS-2026-001',

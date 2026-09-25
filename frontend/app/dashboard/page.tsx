@@ -39,6 +39,8 @@ import {
   X,
 } from 'lucide-react';
 import { ChallengeStatus, SeverityLevel, PriorityLevel, KnowledgeAssistantResponseDto } from '@sicp/shared';
+import { RootCauseDossierDrawer } from '../../src/components/intelligence/RootCauseDossierDrawer';
+import { GAMHARIA_SYSTEMIC_INCIDENT_SI_204, SEED_JHARKHAND_CHALLENGES } from '../../src/lib/scenarios/gamharia-incident-scenario';
 
 interface ComplaintItem {
   id: string;
@@ -69,12 +71,15 @@ export default function ComplaintDashboardPage() {
   const router = useRouter();
 
   // Active View: MY_GRIEVANCES | COMMUNITY_HOTSPOTS | RESOLVED_IMPACT
-  const [activeTab, setActiveTab] = useState<'MY_GRIEVANCES' | 'COMMUNITY_HOTSPOTS' | 'RESOLVED_IMPACT'>('MY_GRIEVANCES');
-  const [complaints, setComplaints] = useState<ComplaintItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'MY_GRIEVANCES' | 'COMMUNITY_HOTSPOTS' | 'RESOLVED_IMPACT'>('COMMUNITY_HOTSPOTS');
+  const [complaints, setComplaints] = useState<ComplaintItem[]>(SEED_JHARKHAND_CHALLENGES as any);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Systemic Incident SI-204 Dossier Drawer state
+  const [dossierOpen, setDossierOpen] = useState(false);
 
   // Upvoted IDs set
   const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
@@ -99,10 +104,16 @@ export default function ComplaintDashboardPage() {
       const res = await apiClient.request<any>('/api/v1/challenges?limit=100');
       if (res.success && res.data) {
         const items = Array.isArray(res.data) ? res.data : res.data.items || res.data.challenges || [];
-        setComplaints(items);
+        if (items.length > 0) {
+          setComplaints(items);
+        } else {
+          setComplaints(SEED_JHARKHAND_CHALLENGES as any);
+        }
+      } else {
+        setComplaints(SEED_JHARKHAND_CHALLENGES as any);
       }
     } catch {
-      setComplaints([]);
+      setComplaints(SEED_JHARKHAND_CHALLENGES as any);
     } finally {
       setLoading(false);
     }
@@ -241,6 +252,46 @@ export default function ComplaintDashboardPage() {
             {toast.text}
           </Alert>
         )}
+
+        {/* Systemic Incident SI-204 Intelligence Banner */}
+        <div className="bg-gradient-to-r from-amber-950 via-slate-900 to-indigo-950 border-2 border-amber-500/50 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+            <div className="space-y-2.5 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-black flex items-center gap-1.5 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+                  ACTIVE SYSTEMIC INCIDENT: SI-204
+                </span>
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                  Gamharia Block, Seraikela Kharsawan
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  JJM Infrastructure Graph Correlated
+                </span>
+                <span className="text-[10px] font-mono text-slate-300 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">
+                  Evidence Strength: 84/100 (8/12 Signals)
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-black text-amber-200 tracking-tight">
+                25 Correlated Citizen Reports Aggregated Across 3 Habitations
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Automated multi-signal root-cause intelligence detected shared feeder failure (Gamharia Branch 3B-2) rather than isolated plumbing leaks. Differential baseline analysis (Village D unaffected) weakens WTP-level failure. Cross-utility power grid cascade logged at JBVNL Gamharia Substation.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Button
+                onClick={() => setDossierOpen(true)}
+                className="bg-amber-500 hover:bg-amber-400 text-black font-black text-xs h-11 px-5 shadow-lg shadow-amber-500/25 flex items-center gap-2 transition transform hover:scale-[1.02]"
+              >
+                <BrainCircuit className="w-4 h-4 text-black" />
+                <span>Open Systemic Dossier &amp; Graph</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Citizen Navigation Tabs */}
         <div className="border-b border-slate-200 flex flex-wrap gap-4 text-sm font-medium">
@@ -635,6 +686,12 @@ export default function ComplaintDashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Systemic Incident Root Cause Dossier Drawer */}
+        <RootCauseDossierDrawer
+          isOpen={dossierOpen}
+          onClose={() => setDossierOpen(false)}
+        />
       </div>
     </AppLayout>
   );
