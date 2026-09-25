@@ -23,10 +23,11 @@ import {
 } from 'lucide-react';
 import { SystemicIncidentCard } from '../../../src/components/intelligence/SystemicIncidentCard';
 import { Button } from '../../../src/components/ui/Button';
+import { DEMO_INCIDENT_SUMMARY } from '../../../src/lib/systemic-demo-data';
 
 export default function SystemicIntelligenceHubPage() {
-  const [incidents, setIncidents] = useState<SystemicIncidentSummaryDto[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [incidents, setIncidents] = useState<SystemicIncidentSummaryDto[]>([DEMO_INCIDENT_SUMMARY]);
+  const [loading, setLoading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
@@ -36,11 +37,13 @@ export default function SystemicIntelligenceHubPage() {
       const res = await apiClient.request<SystemicIncidentSummaryDto[]>(
         '/api/v1/systemic-incidents'
       );
-      if (res.success && res.data) {
+      if (res.success && res.data && res.data.length > 0) {
         setIncidents(res.data);
+      } else {
+        setIncidents([DEMO_INCIDENT_SUMMARY]);
       }
     } catch {
-      // Fallback
+      setIncidents([DEMO_INCIDENT_SUMMARY]);
     } finally {
       setLoading(false);
     }
