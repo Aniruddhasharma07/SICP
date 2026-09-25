@@ -345,7 +345,7 @@ export function SolutionMemoryCard({
                 size="sm"
                 className="h-7 text-xs flex items-center gap-1"
               >
-                <span>Solution Dossier</span>
+                <span>Review Applicability</span>
                 <ArrowRight className="w-3 h-3" />
               </Button>
             </Link>

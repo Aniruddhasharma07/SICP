@@ -274,20 +274,23 @@ export function SentinelProbeWidget({
                 </div>
 
                 {/* Submit Action */}
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
                   <button
                     type="button"
                     onClick={handleSimulateNormal}
                     disabled={isLoading}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center gap-1"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center gap-1.5"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Quick 1-Click Demo Observation (Normal)
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono uppercase bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                      Demo Shortcut
+                    </span>
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>Quick 1-Click Demo Observation</span>
                   </button>
 
                   <Button type="submit" variant="primary" size="sm" disabled={isLoading}>
                     <Send className="w-3.5 h-3.5 mr-1" />
-                    Submit Observation
+                    Record Community Observation
                   </Button>
                 </div>
               </form>

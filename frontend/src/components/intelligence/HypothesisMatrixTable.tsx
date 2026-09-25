@@ -341,9 +341,13 @@ export function HypothesisMatrixTable({
                     <div className="pt-1 flex justify-end">
                       <button
                         onClick={() => onSelectHypothesis(hyp)}
-                        className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded text-xs font-medium transition-colors"
+                        className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200'
+                        }`}
                       >
-                        {isSelected ? 'Selected for Validation' : 'Select Hypothesis'}
+                        {isSelected ? '✓ Selected for Governance Review' : 'Select for Governance Review'}
                       </button>
                     </div>
                   )}

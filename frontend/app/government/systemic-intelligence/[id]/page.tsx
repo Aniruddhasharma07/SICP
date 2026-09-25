@@ -44,7 +44,9 @@ import { GuidedInvestigationCard } from '../../../../src/components/intelligence
 import { ExplainWhy } from '../../../../src/components/common/ExplainWhy';
 import {
   INITIAL_DEMO_INCIDENT,
+  GAMHARIA_DEMO_INCIDENT,
   applyDemoSentinelNormal,
+  applyGamhariaSentinelNormal,
 } from '../../../../src/lib/systemic-demo-data';
 
 export default function RootCauseDossierPage() {
@@ -53,17 +55,28 @@ export default function RootCauseDossierPage() {
   const { user } = useAuth();
   const incidentId = (params?.id as string) || 'SYS-2026-BHP-001';
 
-  const [incident, setIncident] = useState<SystemicIncidentDto | null>(
-    incidentId === 'SYS-2026-BHP-001' ? INITIAL_DEMO_INCIDENT : null
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
+    incidentId === 'SYS-2026-JHK-204' ? 'SYS-2026-JHK-204' : 'SYS-2026-BHP-001'
   );
+
+  const [incident, setIncident] = useState<SystemicIncidentDto | null>(() => {
+    if (incidentId === 'SYS-2026-JHK-204') return GAMHARIA_DEMO_INCIDENT;
+    if (incidentId === 'SYS-2026-BHP-001') return INITIAL_DEMO_INCIDENT;
+    return null;
+  });
+
   const [loading, setLoading] = useState(false);
   const [demoStep, setDemoStep] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Validation Form State
-  const [validationHypothesisId, setValidationHypothesisId] = useState<string>('hyp-01');
+  const [validationHypothesisId, setValidationHypothesisId] = useState<string>(
+    incidentId === 'SYS-2026-JHK-204' ? 'hyp-jh-01' : 'hyp-01'
+  );
   const [validationReason, setValidationReason] = useState(
-    'Topologically verified through Branch Differential: Ward 14 East Sector normal water quality disproves Treatment Plant failure. Confirmed sub-soil fracture along Trunk Line 4.'
+    incidentId === 'SYS-2026-JHK-204'
+      ? 'Topologically verified through Branch Differential: Gamharia Village 4 normal supply disproves River Intake outage. Confirmed sheared drive pin on Motorized Sluice Valve 3B-2.'
+      : 'Topologically verified through Branch Differential: Ward 14 East Sector normal water quality disproves Treatment Plant failure. Confirmed sub-soil fracture along Trunk Line 4.'
   );
   const [validationSuccess, setValidationSuccess] = useState(false);
 
@@ -87,11 +100,15 @@ export default function RootCauseDossierPage() {
       );
       if (res.success && res.data) {
         setIncident(res.data);
+      } else if (incidentId === 'SYS-2026-JHK-204') {
+        setIncident(GAMHARIA_DEMO_INCIDENT);
       } else if (incidentId === 'SYS-2026-BHP-001' || !incident) {
         setIncident(INITIAL_DEMO_INCIDENT);
       }
     } catch {
-      if (incidentId === 'SYS-2026-BHP-001' || !incident) {
+      if (incidentId === 'SYS-2026-JHK-204') {
+        setIncident(GAMHARIA_DEMO_INCIDENT);
+      } else if (incidentId === 'SYS-2026-BHP-001' || !incident) {
         setIncident(INITIAL_DEMO_INCIDENT);
       }
     } finally {
@@ -102,6 +119,27 @@ export default function RootCauseDossierPage() {
   useEffect(() => {
     fetchIncident();
   }, [incidentId]);
+
+  const handleScenarioChange = (newScenarioId: string) => {
+    setSelectedScenarioId(newScenarioId);
+    setDemoStep(1);
+    setValidationSuccess(false);
+    setDispatchSuccess(false);
+    setProjectCreated(false);
+    if (newScenarioId === 'SYS-2026-JHK-204') {
+      setIncident(GAMHARIA_DEMO_INCIDENT);
+      setValidationHypothesisId('hyp-jh-01');
+      setValidationReason(
+        'Topologically verified through Branch Differential: Gamharia Village 4 normal supply disproves River Intake outage. Confirmed sheared drive pin on Motorized Sluice Valve 3B-2.'
+      );
+    } else {
+      setIncident(INITIAL_DEMO_INCIDENT);
+      setValidationHypothesisId('hyp-01');
+      setValidationReason(
+        'Topologically verified through Branch Differential: Ward 14 East Sector normal water quality disproves Treatment Plant failure. Confirmed sub-soil fracture along Trunk Line 4.'
+      );
+    }
+  };
 
   // Handle Sentinel Response Submission
   const handleSendSentinelResponse = async (data: {
@@ -131,14 +169,22 @@ export default function RootCauseDossierPage() {
           setDemoStep(4);
         }
       } else {
-        setIncident(prev => (prev ? applyDemoSentinelNormal(prev) : INITIAL_DEMO_INCIDENT));
+        if (selectedScenarioId === 'SYS-2026-JHK-204' || incident.id === 'SYS-2026-JHK-204') {
+          setIncident(prev => (prev ? applyGamhariaSentinelNormal(prev) : GAMHARIA_DEMO_INCIDENT));
+        } else {
+          setIncident(prev => (prev ? applyDemoSentinelNormal(prev) : INITIAL_DEMO_INCIDENT));
+        }
         if (data.choice === SentinelChoice.NORMAL_SERVICE && demoStep < 4) {
           setDemoStep(4);
         }
       }
     } catch (err) {
       console.warn('Backend endpoint unavailable, applying resilient client-side AMCH state:', err);
-      setIncident(prev => (prev ? applyDemoSentinelNormal(prev) : INITIAL_DEMO_INCIDENT));
+      if (selectedScenarioId === 'SYS-2026-JHK-204' || incident.id === 'SYS-2026-JHK-204') {
+        setIncident(prev => (prev ? applyGamhariaSentinelNormal(prev) : GAMHARIA_DEMO_INCIDENT));
+      } else {
+        setIncident(prev => (prev ? applyDemoSentinelNormal(prev) : INITIAL_DEMO_INCIDENT));
+      }
       if (data.choice === SentinelChoice.NORMAL_SERVICE && demoStep < 4) {
         setDemoStep(4);
       }
@@ -306,11 +352,18 @@ export default function RootCauseDossierPage() {
       // Prompt user or display sentinel
     } else if (step === 4) {
       // Simulate normal sentinel response to trigger Branch Differential
-      await handleSendSentinelResponse({
-        choice: SentinelChoice.NORMAL_SERVICE,
-        feedbackText:
-          'Simulated citizen observation: Tap water pressure is high and water is completely clear in Ward 14.',
-      });
+      if (selectedScenarioId === 'SYS-2026-JHK-204') {
+        await handleSendSentinelResponse({
+          choice: SentinelChoice.NORMAL_SERVICE,
+          feedbackText: 'Simulated citizen observation: Steady dynamic pressure observed at Village 4 standpost.',
+        });
+      } else {
+        await handleSendSentinelResponse({
+          choice: SentinelChoice.NORMAL_SERVICE,
+          feedbackText:
+            'Simulated citizen observation: Tap water pressure is high and water is completely clear in Ward 14.',
+        });
+      }
     } else if (step === 5) {
       // Execute officer sign-off
       await handleValidateHypothesis({ preventDefault: () => {} } as any);
@@ -324,7 +377,13 @@ export default function RootCauseDossierPage() {
     } catch {
       // Ignore if offline
     } finally {
-      setIncident(INITIAL_DEMO_INCIDENT);
+      if (selectedScenarioId === 'SYS-2026-JHK-204') {
+        setIncident(GAMHARIA_DEMO_INCIDENT);
+        setValidationHypothesisId('hyp-jh-01');
+      } else {
+        setIncident(INITIAL_DEMO_INCIDENT);
+        setValidationHypothesisId('hyp-01');
+      }
       setDemoStep(1);
       setValidationSuccess(false);
       setDispatchSuccess(false);
@@ -335,11 +394,11 @@ export default function RootCauseDossierPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
         <div className="text-center space-y-3">
-          <Network className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Synthesizing Root Cause Dossier & Graph Lineage...
+          <Network className="w-10 h-10 text-blue-500 animate-spin mx-auto" />
+          <p className="text-sm font-medium text-slate-400">
+            Synthesizing Root Cause Dossier &amp; Graph Lineage...
           </p>
         </div>
       </div>
@@ -348,18 +407,23 @@ export default function RootCauseDossierPage() {
 
   if (!incident) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <div className="text-center space-y-3">
-          <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
-          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Systemic Incident Dossier Not Found
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 p-4">
+        <div className="text-center space-y-4 max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
+          <h3 className="text-base font-bold text-slate-100">
+            Live investigation data unavailable
           </h3>
-          <Link href="/government/systemic-intelligence">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-              Return to Intelligence Hub
-            </Button>
-          </Link>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            The municipal incident record could not be retrieved from the intelligence backend. Preserving system state without synthetic generation.
+          </p>
+          <div className="pt-2">
+            <Link href="/government/systemic-intelligence">
+              <Button variant="outline" size="sm" className="border-slate-700 text-slate-200 hover:bg-slate-800">
+                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                Return to Intelligence Hub
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -395,14 +459,14 @@ export default function RootCauseDossierPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 pb-20">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-900 selection:text-white pb-28">
       {/* Top Breadcrumb & Controls */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8">
+      <div className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/government/systemic-intelligence"
-              className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800"
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-slate-800 bg-slate-900"
               title="Return to Hub"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -439,6 +503,19 @@ export default function RootCauseDossierPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+        {/* Mode B: Controlled SIH Demo Banner */}
+        {(incident.isControlledDemo || incident.id === 'SYS-2026-BHP-001' || incident.id === 'SYS-2026-JHK-204') && (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-amber-950/40 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-semibold">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>CONTROLLED SIH DEMO — NOT LIVE GOVERNMENT DATA</span>
+            </div>
+            <span className="font-mono text-[11px] text-amber-400/80 bg-amber-900/40 px-2 py-0.5 rounded border border-amber-800/60">
+              Scenario: {selectedScenarioId === 'SYS-2026-JHK-204' ? 'Gamharia Block JJM (Rural)' : 'Bhopal Kolar (Urban)'}
+            </span>
+          </div>
+        )}
+
         {/* Persistent Canonical Intelligence Trace */}
         <IntelligenceTrace
           activeStage={activeTraceStage}
@@ -530,6 +607,8 @@ export default function RootCauseDossierPage() {
           onStepChange={handleDemoStepChange}
           onReset={handleResetDemo}
           isLoading={actionLoading}
+          scenarioId={selectedScenarioId}
+          onScenarioChange={handleScenarioChange}
         />
 
         {/* Top Split Layout: Infrastructure Graph & Incident Summary */}
@@ -542,42 +621,42 @@ export default function RootCauseDossierPage() {
           {/* Right: Executive Context Card & Branch Differential Summary (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
             {/* Systemic Relationship Evidence Card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
-                <Network className="w-4 h-4 text-blue-600" />
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+                <Network className="w-4 h-4 text-blue-400" />
                 Systemic Evidence Assessment
               </h3>
 
               <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Heuristic Relationship Strength:</span>
-                  <span className="font-bold text-slate-900 dark:text-slate-100 font-mono">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="text-slate-400">Heuristic Relationship Strength:</span>
+                  <span className="font-bold text-slate-100 font-mono">
                     {incident.evidenceStrength} ({scorePercentage}%)
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Connected Civic Problem Reports:</span>
-                  <strong className="text-slate-900 dark:text-slate-100">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="text-slate-400">Connected Civic Problem Reports:</span>
+                  <strong className="text-slate-100">
                     {incident.signals.length} reports across 3 wards
                   </strong>
                 </div>
 
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Assigned Investigating Officer:</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-medium">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="text-slate-400">Assigned Investigating Officer:</span>
+                  <span className="text-slate-200 font-medium">
                     {incident.assignedOfficerName || 'Er. Rajesh Varma (Executive Engineer, PHED)'}
                   </span>
                 </div>
 
                 {/* Branch Differential Alert */}
                 {incident.graph.branchDifferentialResult && (
-                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-900 dark:text-emerald-300">
+                  <div className="p-3 bg-emerald-950/40 border border-emerald-800 rounded-lg text-emerald-300">
                     <div className="flex items-center gap-1.5 font-bold mb-1 text-xs">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
                       Branch Differential Analysis
                     </div>
-                    <p className="text-[11px] leading-relaxed text-emerald-800 dark:text-emerald-300">
+                    <p className="text-[11px] leading-relaxed text-emerald-300">
                       {incident.graph.branchDifferentialResult.deduction}
                     </p>
                   </div>
@@ -610,52 +689,80 @@ export default function RootCauseDossierPage() {
           {/* Left: Government Validation Sign-off (Signature #7: Human Authority Boundary) */}
           <div
             id="governance-validation-panel"
-            className="bg-white dark:bg-slate-900 border-2 border-emerald-500/40 dark:border-emerald-600/40 rounded-xl p-5 shadow-sm space-y-4"
+            className="bg-slate-900 border-2 border-emerald-500/40 rounded-xl p-5 shadow-sm space-y-4"
           >
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800">
                   Signature #7 • Human Authority Boundary
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">
                   SICP Invariant #1
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 Authoritative Human Governance &amp; Validation
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
+              <p className="text-xs text-slate-400 leading-relaxed mt-1">
                 AI produces competing hypotheses and calculations; authorized Government Officers hold sole authority to validate operational investigation findings.
               </p>
             </div>
 
             {validationSuccess || incident.status === SystemicIncidentStatus.HUMAN_VALIDATED ? (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2 text-xs animate-sicp-scale-in">
-                <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Investigation Hypothesis Formally Validated
+              <div className="p-4 bg-emerald-950/40 border border-emerald-600/50 rounded-xl space-y-3 text-xs animate-sicp-scale-in">
+                <div className="flex items-center justify-between border-b border-emerald-800/60 pb-2">
+                  <div className="flex items-center gap-2 font-bold text-emerald-200">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    STATUTORY SIGN-OFF SEAL
+                  </div>
+                  <span className="font-mono text-[10px] font-bold text-emerald-400 bg-emerald-900/50 border border-emerald-700/60 px-2 py-0.5 rounded">
+                    GOV-VAL-{incident.code}
+                  </span>
                 </div>
-                <div className="text-emerald-800 dark:text-emerald-300">
-                  Validated by: <strong>{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED Bhopal)'}</strong>
+                
+                <div className="space-y-1 text-slate-300">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Validated By:</span>
+                    <strong className="text-slate-100">{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED)'}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Audit Timestamp:</span>
+                    <span className="font-mono text-slate-300">{new Date().toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="text-slate-600 dark:text-slate-400 italic">
+
+                <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-slate-300 text-[11px] italic">
                   &quot;{incident.validationReason}&quot;
                 </div>
-                <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-700 dark:text-emerald-400">
-                  ✓ Officially sealed in municipal public registry. Unlocks University R&amp;D and Industry CSR coordination.
+
+                <div className="pt-2 border-t border-emerald-800/60 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[10px] text-emerald-400 font-medium">
+                    ✓ Recorded on Tamper-Evident Authority Audit Ledger
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      const el = document.getElementById('collaboration-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7 px-3"
+                  >
+                    Continue to Collaboration &rarr;
+                  </Button>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleValidateHypothesis} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
                     Select Hypothesis to Validate as Official Finding:
                   </label>
                   <select
                     value={validationHypothesisId}
                     onChange={e => setValidationHypothesisId(e.target.value)}
-                    className="w-full text-xs p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full text-xs p-2 border border-slate-700 rounded-lg bg-slate-800 text-slate-100"
                   >
                     {incident.hypotheses
                       .filter(h => h.status !== HypothesisStatus.REFUTED)
@@ -668,14 +775,14 @@ export default function RootCauseDossierPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
                     Official Governance Sign-off Justification:
                   </label>
                   <textarea
                     rows={3}
                     value={validationReason}
                     onChange={e => setValidationReason(e.target.value)}
-                    className="w-full text-xs p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full text-xs p-2 border border-slate-700 rounded-lg bg-slate-800 text-slate-100 placeholder-slate-500"
                     placeholder="Enter evidence-backed governance reason..."
                   />
                 </div>
@@ -697,43 +804,43 @@ export default function RootCauseDossierPage() {
           </div>
 
           {/* Right: Closed-Loop Lifecycle — University & Industry Interventions (Signature #8) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div id="collaboration-section" className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 bg-purple-950 px-2 py-0.5 rounded-full border border-purple-800">
                   Signature #8 • Cross-Portal Collaboration Continuum
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">
                   SICP Remembers
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
-                <Building className="w-4 h-4 text-purple-600" />
-                Intervention Coordination &amp; Lifecycle
+              <h3 className="text-sm font-bold text-slate-100 mb-1 flex items-center gap-2">
+                <Building className="w-4 h-4 text-purple-400" />
+                SICP Identified Collaboration Opportunities
               </h3>
-              <p className="text-xs text-slate-500 mb-4">
+              <p className="text-xs text-slate-400 mb-4">
                 Connect validated systemic incidents to University engineering research and Industry CSR co-investment opportunities.
               </p>
 
               {projectCreated || incident.status === SystemicIncidentStatus.INTERVENTION_ACTIVE ? (
-                <div className="p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl space-y-2 text-xs animate-sicp-slide-up">
-                  <div className="flex items-center gap-2 font-bold text-purple-900 dark:text-purple-200">
-                    <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                <div className="p-4 bg-purple-950/40 border border-purple-800 rounded-xl space-y-2 text-xs animate-sicp-slide-up">
+                  <div className="flex items-center gap-2 font-bold text-purple-200">
+                    <CheckCircle2 className="w-4 h-4 text-purple-400" />
                     Multi-Stakeholder Intervention Project Active
                   </div>
-                  <p className="text-purple-800 dark:text-purple-300">
+                  <p className="text-purple-300">
                     Challenge published to University Portal (Acoustic Leak Detection R&amp;D) and Industry Portal (Water Infrastructure CSR Matching).
                   </p>
                   <div className="pt-2 flex flex-wrap gap-3">
                     <Link
                       href="/university"
-                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
+                      className="text-xs font-semibold text-purple-300 hover:text-purple-200 hover:underline flex items-center gap-1"
                     >
                       View in University Portal &rarr;
                     </Link>
                     <Link
                       href="/industry"
-                      className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
+                      className="text-xs font-semibold text-purple-300 hover:text-purple-200 hover:underline flex items-center gap-1"
                     >
                       View in Industry Portal &rarr;
                     </Link>
@@ -741,22 +848,22 @@ export default function RootCauseDossierPage() {
                 </div>
               ) : (
                 <div className="space-y-3 text-xs">
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 space-y-1">
-                    <strong className="block text-slate-800 dark:text-slate-200">
+                  <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700/60 space-y-1">
+                    <strong className="block text-slate-200">
                       Eligible University Research Domains:
                     </strong>
-                    <div className="text-slate-600 dark:text-slate-300">
+                    <div className="text-slate-300">
                       • Acoustic Pipeline Leak Detection IoT Nodes
                       <br />
                       • Municipal Water Hammer &amp; Surge Cavitation Simulation
                     </div>
                   </div>
 
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 space-y-1">
-                    <strong className="block text-slate-800 dark:text-slate-200">
+                  <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700/60 space-y-1">
+                    <strong className="block text-slate-200">
                       Eligible Industry CSR Themes:
                     </strong>
-                    <div className="text-slate-600 dark:text-slate-300">
+                    <div className="text-slate-300">
                       • Schedule VII Item 1: Potable Water Supply Remediation
                       <br />
                       • Urban Utility Pipeline Replacement Co-funding
@@ -794,10 +901,10 @@ export default function RootCauseDossierPage() {
         </div>
 
         {/* 24-Point Comprehensive Dossier Progressive Disclosure Section */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+            <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-blue-400" />
               Complete 24-Point Root Cause Dossier Records
             </h4>
             <div className="flex gap-2">
@@ -805,8 +912,8 @@ export default function RootCauseDossierPage() {
                 onClick={() => setActiveTab('dossier')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                   activeTab === 'dossier'
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400'
+                    ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                    : 'text-slate-400 hover:bg-slate-800'
                 }`}
               >
                 Dossier Sections
@@ -815,8 +922,8 @@ export default function RootCauseDossierPage() {
                 onClick={() => setActiveTab('signals')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                   activeTab === 'signals'
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400'
+                    ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                    : 'text-slate-400 hover:bg-slate-800'
                 }`}
               >
                 Individual Signals ({incident.signals.length})
@@ -827,65 +934,65 @@ export default function RootCauseDossierPage() {
           <div className="p-5">
             {activeTab === 'dossier' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
+                  <strong className="block text-slate-100 mb-1">
                     01 Incident Summary
                   </strong>
-                  <p className="text-slate-600 dark:text-slate-400">{incident.description}</p>
+                  <p className="text-slate-300">{incident.description}</p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
-                    04 Infrastructure Context & Capacity
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
+                  <strong className="block text-slate-100 mb-1">
+                    04 Infrastructure Context &amp; Capacity
                   </strong>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-slate-300">
                     Network: Kolar 150 MLD Distribution Grid. Feeder Main 4 capacity 70 MLD serving 14,200 connections.
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
+                  <strong className="block text-slate-100 mb-1">
                     07 Computed 7-Factor Relationships
                   </strong>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-slate-300">
                     Semantic: {incident.factorBreakdown?.semantic}% | Spatial: {incident.factorBreakdown?.spatial}% | Temporal: {incident.factorBreakdown?.temporal}% | Symptoms: {incident.factorBreakdown?.symptom}% | Infrastructure: {incident.factorBreakdown?.infrastructure}%
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
+                  <strong className="block text-slate-100 mb-1">
                     14 Identified Evidence Gaps
                   </strong>
-                  <ul className="text-slate-600 dark:text-slate-400 list-disc list-inside">
+                  <ul className="text-slate-300 list-disc list-inside">
                     {incident.evidenceGaps?.map((g, i) => (
                       <li key={i}>{g}</li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
                   <div className="flex items-center justify-between mb-1">
-                    <strong className="block text-slate-900 dark:text-slate-100">
+                    <strong className="block text-slate-100">
                       22 Solution Memory Precedents (Signature #9)
                     </strong>
                     <Link
                       href="/solutions"
-                      className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
+                      className="text-[11px] text-blue-400 font-semibold hover:underline flex items-center gap-1"
                     >
                       Explore Memory &rarr;
                     </Link>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-slate-300">
                     SICP Remembers: 2 previous pipeline joint ruptures documented in Solution Memory (Kolar 2024, Indore Trunk 2023). Empirical lessons incorporated into proposed engineering response.
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80">
-                  <strong className="block text-slate-900 dark:text-slate-100 mb-1">
-                    24 Immutable Governance Audit Trail
+                <div className="p-3.5 bg-slate-800/60 rounded-lg border border-slate-700/80">
+                  <strong className="block text-slate-100 mb-1">
+                    24 Tamper-Evident Authority Audit Ledger
                   </strong>
-                  <p className="text-slate-600 dark:text-slate-400">
-                    All state transitions and official sign-offs are cryptographically logged with user identity, timestamp, and reasoning.
+                  <p className="text-slate-300">
+                    All state transitions and official sign-offs are cryptographically logged with user identity, timestamp, and audit trail.
                   </p>
                 </div>
               </div>
@@ -895,13 +1002,13 @@ export default function RootCauseDossierPage() {
                 {incident.signals.map(s => (
                   <div
                     key={s.id}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/80 dark:border-slate-700/80 flex items-start justify-between gap-4 text-xs"
+                    className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/80 flex items-start justify-between gap-4 text-xs"
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-0.5">
+                      <div className="font-semibold text-slate-100 mb-0.5">
                         {s.title}
                       </div>
-                      <div className="text-slate-500 mb-1">
+                      <div className="text-slate-400 mb-1">
                         Symptom Summary: {s.symptomSummary}
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-slate-400">

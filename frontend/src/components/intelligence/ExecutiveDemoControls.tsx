@@ -19,6 +19,8 @@ interface ExecutiveDemoControlsProps {
   onStepChange: (step: number) => void;
   onReset: () => void;
   isLoading?: boolean;
+  scenarioId?: string;
+  onScenarioChange?: (scenarioId: string) => void;
 }
 
 export function ExecutiveDemoControls({
@@ -26,30 +28,32 @@ export function ExecutiveDemoControls({
   onStepChange,
   onReset,
   isLoading,
+  scenarioId = 'SYS-2026-BHP-001',
+  onScenarioChange,
 }: ExecutiveDemoControlsProps) {
   const steps = [
     {
       num: 1,
       title: 'Scattered Signals',
-      desc: '4 citizen reports across Wards 11-13',
+      desc: scenarioId.includes('JHK') ? '25 rural citizen reports across 3 villages' : '4 citizen reports across Wards 11-13',
       icon: <Radio className="w-3.5 h-3.5" />,
     },
     {
       num: 2,
       title: 'Graph Traversal',
-      desc: 'Upstream lineage traces to Trunk Line 4',
+      desc: scenarioId.includes('JHK') ? 'Upstream lineage traces to Feeder 3B-2' : 'Upstream lineage traces to Trunk Line 4',
       icon: <Network className="w-3.5 h-3.5" />,
     },
     {
       num: 3,
       title: 'Sentinel Inquiry',
-      desc: 'Neutral probe dispatched to Ward 14',
+      desc: scenarioId.includes('JHK') ? 'Neutral probe dispatched to Village 4' : 'Neutral probe dispatched to Ward 14',
       icon: <Scale className="w-3.5 h-3.5" />,
     },
     {
       num: 4,
       title: 'Branch Differential',
-      desc: 'Ward 14 normal refutes WTP, confirms Trunk 4',
+      desc: scenarioId.includes('JHK') ? 'Village 4 normal refutes intake, isolates valve' : 'Ward 14 normal refutes WTP, confirms Trunk 4',
       icon: <ShieldCheck className="w-3.5 h-3.5" />,
     },
     {
@@ -61,30 +65,48 @@ export function ExecutiveDemoControls({
   ];
 
   return (
-    <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 border border-blue-500/30 rounded-xl p-4 shadow-lg text-white mb-6">
+    <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 border border-blue-500/40 rounded-xl p-4 shadow-xl text-white mb-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 bg-blue-500/20 text-blue-300 rounded-lg border border-blue-400/30">
+        <div className="flex items-center gap-3">
+          <span className="p-2 bg-amber-500/20 text-amber-300 rounded-lg border border-amber-400/30">
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
           </span>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h4 className="text-sm font-bold tracking-tight text-white">
-                SIH Executive Demonstration Flow (30–60s)
+                SIH Executive Demonstration Controls
               </h4>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                Live Engine Execution
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-amber-400/20 text-amber-300 border border-amber-400/40 tracking-wide">
+                CONTROLLED SIH DEMO — NOT LIVE GOVERNMENT DATA
               </span>
             </div>
-            <p className="text-xs text-blue-200/80">
-              Interactive end-to-end evaluation: From scattered civic symptoms to branch differential and university R&D.
+            <p className="text-xs text-blue-200/80 mt-0.5">
+              Curated demonstration records: Evaluate topological LCA, Heuer AMCH hypothesis differential, and statutory sign-off.
             </p>
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Action Controls & Scenario Selector */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {onScenarioChange && (
+            <div className="flex items-center gap-1.5 bg-black/30 border border-white/15 rounded-lg px-2.5 py-1">
+              <span className="text-[11px] text-slate-300 font-medium">Scenario:</span>
+              <select
+                value={scenarioId}
+                onChange={e => onScenarioChange(e.target.value)}
+                className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer"
+              >
+                <option value="SYS-2026-BHP-001" className="bg-slate-900 text-white">
+                  Scenario A: Bhopal Kolar (Urban Distribution)
+                </option>
+                <option value="SYS-2026-JHK-204" className="bg-slate-900 text-white">
+                  Scenario B: Gamharia Block JJM (Rural Water-Grid)
+                </option>
+              </select>
+            </div>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -104,8 +126,7 @@ export function ExecutiveDemoControls({
               disabled={isLoading}
               className="text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md"
             >
-              Advance to Step {currentStep + 1}
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              Advance to Next Demonstration Step →
             </Button>
           )}
         </div>
