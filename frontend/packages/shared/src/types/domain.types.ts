@@ -40,6 +40,16 @@ import {
   ReusabilityClass,
   EvidenceLevel,
   EmbeddingStatus,
+  EvidenceEpistemicClass,
+  InfrastructureImpactStatus,
+  SystemicIncidentStatus,
+  InfrastructureNodeType,
+  InfrastructureProvenance,
+  InfrastructureEdgeType,
+  HypothesisStatus,
+  SentinelProbeStatus,
+  SentinelChoice,
+  BranchDifferentialStatus,
 } from '../enums/status.enum';
 
 export interface UserDto {
@@ -1544,5 +1554,213 @@ export interface AiStructuredAnalysisDto {
   dataLimitations: string;
   appliedRules: string[];
   aiProvider: string;
+}
+
+// ==========================================
+// SYSTEMIC INTELLIGENCE & SENTINEL CONTRACTS
+// ==========================================
+
+export interface EvidenceItemDto {
+  id: string;
+  epistemicClass: EvidenceEpistemicClass;
+  title: string;
+  description: string;
+  sourceName: string;
+  provenance?: string;
+  diagnosticWeight: number; // Positive supports, negative contradicts
+  observedAt?: string | null;
+  verifiedBy?: string | null;
+  isStale?: boolean;
+}
+
+export interface RootCauseHypothesisDto {
+  id: string;
+  incidentId: string;
+  title: string;
+  description: string;
+  targetNodeId?: string | null;
+  targetNodeName?: string | null;
+  failureMode: string;
+  diagnosticSupportScore: number; // 0 to 100 heuristic evidence support (NOT probability)
+  status: HypothesisStatus;
+  supportingEvidence: EvidenceItemDto[];
+  contradictingEvidence: EvidenceItemDto[];
+  missingEvidence: string[];
+  falsificationCriteria: string; // "What would change our assessment?"
+  refutationReason?: string | null;
+  validatedById?: string | null;
+  validatedByName?: string | null;
+  validatedAt?: string | null;
+  validationReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InfrastructureNodeDto {
+  id: string;
+  code: string;
+  name: string;
+  type: InfrastructureNodeType;
+  category: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  district?: string | null;
+  state?: string | null;
+  capacity?: string | null;
+  operationalStatus: string;
+  provenance: InfrastructureProvenance;
+  impactStatus: InfrastructureImpactStatus;
+  serviceAreaName?: string | null;
+  activeSignalCount: number;
+  metadata?: Record<string, any>;
+}
+
+export interface InfrastructureEdgeDto {
+  id: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  edgeType: InfrastructureEdgeType;
+  capacityFlow?: string | null;
+  bidirectional: boolean;
+  status: string;
+  provenance: string;
+  metadata?: Record<string, any>;
+}
+
+export interface BranchDifferentialResultDto {
+  junctionNodeId: string;
+  junctionNodeName: string;
+  affectedBranchNodeIds: string[];
+  normalBranchNodeIds: string[];
+  status: BranchDifferentialStatus;
+  deduction: string;
+  weakenedHypothesisIds: string[];
+  evaluatedAt: string;
+}
+
+export interface InfrastructureGraphDto {
+  incidentId: string;
+  nodes: InfrastructureNodeDto[];
+  edges: InfrastructureEdgeDto[];
+  hasCycles: boolean;
+  commonUpstreamNodes: string[];
+  branchDifferentialResult?: BranchDifferentialResultDto | null;
+  provenanceSummary: string;
+}
+
+export interface SentinelProbeRequestDto {
+  id: string;
+  incidentId: string;
+  targetNodeId?: string | null;
+  targetNodeName?: string | null;
+  serviceAreaName: string;
+  inquiryTitle: string;
+  inquiryText: string; // strictly neutral, non-leading
+  status: SentinelProbeStatus;
+  totalSent: number;
+  totalResponses: number;
+  responseBreakdown: Record<string, number>;
+  branchVerificationOutcome: BranchDifferentialStatus;
+  evidenceContributionSummary: string;
+  dispatchedAt?: string | null;
+  closedAt?: string | null;
+  createdAt: string;
+}
+
+export interface SentinelProbeResponseDto {
+  id: string;
+  probeRequestId: string;
+  userId?: string | null;
+  responseChoice: SentinelChoice;
+  feedbackText?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  isVerifiedLocation: boolean;
+  createdAt: string;
+}
+
+export interface SystemicFactorBreakdown {
+  semantic: number;
+  spatial: number;
+  temporal: number;
+  symptom: number;
+  infrastructure: number;
+  rootCause: number;
+  historical: number;
+  weights: Record<string, number>;
+  availableFactors: string[];
+  unavailableFactors: string[];
+  scoringModelVersion: string;
+}
+
+export interface SystemicIncidentSignalDto {
+  id: string;
+  incidentId: string;
+  challengeId?: string | null;
+  title: string;
+  category: string;
+  severity: string;
+  district?: string | null;
+  state?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  reportedAt: string;
+  closestNodeId?: string | null;
+  closestNodeName?: string | null;
+  symptomSummary: string;
+}
+
+export interface SystemicIncidentSummaryDto {
+  id: string;
+  code: string;
+  title: string;
+  category: string;
+  status: SystemicIncidentStatus;
+  severity: SeverityLevel | string;
+  evidenceStrength: 'INSUFFICIENT' | 'EMERGING' | 'MODERATE' | 'STRONG';
+  systemicScore: number; // 0 to 1.0 heuristic score
+  district: string;
+  state: string;
+  signalCount: number;
+  leadingHypothesisTitle?: string | null;
+  leadingHypothesisScore?: number | null;
+  isControlledDemo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SystemicIncidentDto {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  category: string;
+  status: SystemicIncidentStatus;
+  severity: SeverityLevel | string;
+  evidenceStrength: 'INSUFFICIENT' | 'EMERGING' | 'MODERATE' | 'STRONG';
+  systemicScore: number;
+  factorBreakdown: SystemicFactorBreakdown;
+  district: string;
+  state: string;
+  infrastructureDomain: string;
+  canonicalChallengeId?: string | null;
+  clusterId?: string | null;
+  assignedOfficerId?: string | null;
+  assignedOfficerName?: string | null;
+  validatedAt?: string | null;
+  validatedById?: string | null;
+  validatedByName?: string | null;
+  validationReason?: string | null;
+  signals: SystemicIncidentSignalDto[];
+  graph: InfrastructureGraphDto;
+  hypotheses: RootCauseHypothesisDto[];
+  sentinelProbes: SentinelProbeRequestDto[];
+  evidenceGaps: string[];
+  recommendedInvestigations: string[];
+  solutionMemoryPrecedentIds: string[];
+  isControlledDemo: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
 }
 

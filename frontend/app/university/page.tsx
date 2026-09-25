@@ -36,6 +36,7 @@ import {
   Send,
   HelpCircle,
   Layers,
+  Network,
 } from 'lucide-react';
 import {
   UserRole,
@@ -1295,6 +1296,40 @@ export default function UniversityPortalPage() {
             whatHappensIfIdle="The challenge remains in the government queue awaiting alternative assignment."
           />
         )}
+
+        {/* Systemic Infrastructure Interventions Callout */}
+        <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 border border-purple-500/30 rounded-2xl p-5 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="p-3 bg-purple-500/20 text-purple-300 rounded-xl border border-purple-400/30 shrink-0">
+              <Network className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded border border-purple-700/50">
+                  Municipal Systemic Interventions
+                </span>
+                <span className="text-[11px] text-amber-300 font-medium">
+                  R&amp;D + Field Pilots
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white mt-1">
+                Engineering &amp; Infrastructure Research Opportunities
+              </h3>
+              <p className="text-xs text-purple-200/80 max-w-2xl mt-0.5">
+                Government-validated systemic infrastructure failures (water distribution, power grid, telemetry) are routed for multi-institutional university engineering consortia and prototype development.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/government/systemic-intelligence"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
+            >
+              <span>Explore Systemic Incidents</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
 
         {/* Tab Navigation */}
         <div className="border-b border-slate-200 flex flex-wrap gap-4 text-sm font-medium">

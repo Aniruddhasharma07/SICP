@@ -339,6 +339,101 @@ enum RiskProbability {
   HIGH
 }
 
+enum EvidenceEpistemicClass {
+  OBSERVED
+  COMPUTED
+  SOURCE_DERIVED
+  INFERRED
+  AI_INTERPRETED
+  HYPOTHESIZED
+  HUMAN_VALIDATED
+  VERIFIED_OUTCOME
+}
+
+enum InfrastructureImpactStatus {
+  OBSERVED_AFFECTED
+  POTENTIALLY_AFFECTED
+  OBSERVED_NORMAL
+  UNKNOWN
+  ROOT_CAUSE_CANDIDATE
+  MONITORING
+}
+
+enum SystemicIncidentStatus {
+  DETECTED
+  INVESTIGATING
+  FIELD_DISPATCHED
+  HUMAN_VALIDATED
+  INTERVENTION_ACTIVE
+  OUTCOME_PENDING
+  VERIFIED_RESOLVED
+  CLOSED
+}
+
+enum InfrastructureNodeType {
+  TREATMENT_PLANT
+  RESERVOIR
+  PUMP_HOUSE
+  FEEDER_MAIN
+  TRUNK_LINE
+  DISTRIBUTION_LINE
+  VALVE
+  SUBSTATION
+  TRANSFORMER
+  DRAINAGE_CHANNEL
+  SERVICE_AREA
+}
+
+enum InfrastructureProvenance {
+  GIS_IMPORT
+  UTILITY_MAP
+  MUNICIPAL_SCHEMATIC
+  FIELD_VERIFIED
+  INFERRED
+  CONTROLLED_DEMO
+}
+
+enum InfrastructureEdgeType {
+  FLOW_SUPPLY
+  FEEDER_BRANCH
+  GRAVITY_MAIN
+  RETURN_LOOP
+  BYPASS
+  DEPENDENCY
+}
+
+enum HypothesisStatus {
+  UNDER_EVALUATION
+  LEADING_HYPOTHESIS
+  REFUTED
+  HUMAN_VALIDATED
+  INCONCLUSIVE
+}
+
+enum SentinelProbeStatus {
+  DRAFT
+  DISPATCHED
+  ACTIVE
+  CONCLUDED
+  CANCELLED
+}
+
+enum SentinelChoice {
+  NORMAL_SERVICE
+  DEGRADED_PRESSURE
+  CONTAMINATION_ODOR
+  NO_SERVICE
+  UNSURE
+  OTHER
+}
+
+enum BranchDifferentialStatus {
+  CONFIRMED_AFFECTED
+  BRANCH_UNAFFECTED_DISPROVED_UPSTREAM
+  INCONCLUSIVE
+  INSUFFICIENT_EVIDENCE
+}
+
 enum RiskStatus {
   IDENTIFIED
   MITIGATING
@@ -503,6 +598,7 @@ model Challenge {
   proposals            ProjectProposal[]
   solutionMemories     SolutionMemory[]
   solutionApplications SolutionMemoryApplication[]
+  systemicSignals      SystemicIncidentSignal[]
 
   @@index([status])
   @@index([submitterId])
@@ -1384,4 +1480,206 @@ model ProjectRisk {
   @@index([projectId])
   @@index([severity])
   @@index([status])
+}
+
+// ==========================================
+// SYSTEMIC INTELLIGENCE SUBSYSTEM MODELS
+// ==========================================
+
+model SystemicIncident {
+  id                    String                  @id @default(uuid())
+  code                  String                  @unique // e.g. "SYS-2026-001"
+  title                 String
+  description           String
+  category              String
+  status                SystemicIncidentStatus  @default(DETECTED)
+  severity              SeverityLevel           @default(MODERATE)
+  evidenceStrength      String                  @default("EMERGING") // INSUFFICIENT, EMERGING, MODERATE, STRONG
+  systemicScore         Float                   @default(0.0) // 0 to 1.0 heuristic assessment score
+  district              String
+  state                 String
+  infrastructureDomain  String                  @default("WATER_DISTRIBUTION") // WATER_DISTRIBUTION, POWER_GRID, DRAINAGE
+  canonicalChallengeId  String?
+  clusterId             String?
+  assignedOfficerId     String?
+  assignedOfficerName   String?
+  validatedAt           DateTime?
+  validatedById         String?
+  validatedByName       String?
+  validationReason      String?
+  factorBreakdown       Json?
+  evidenceGaps          Json?
+  recommendedActions    Json?
+  precedentIds          String[]
+  isControlledDemo      Boolean                 @default(false)
+  version               Int                     @default(1)
+  metadata              Json?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  signals               SystemicIncidentSignal[]
+  hypotheses            RootCauseHypothesis[]
+  sentinelProbes        SentinelProbeRequest[]
+  nodeImpacts           IncidentNodeImpact[]
+
+  @@index([status])
+  @@index([category])
+  @@index([district, state])
+}
+
+model InfrastructureNode {
+  id                String                     @id @default(uuid())
+  code              String                     @unique // e.g. "WTP-01", "TRUNK-04"
+  name              String
+  type              InfrastructureNodeType
+  category          String                     @default("WATER")
+  latitude          Float?
+  longitude         Float?
+  district          String?
+  state             String?
+  capacity          String?
+  operationalStatus String                     @default("OPERATIONAL")
+  provenance        InfrastructureProvenance   @default(MUNICIPAL_SCHEMATIC)
+  serviceAreaName   String?
+  metadata          Json?
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  outEdges          InfrastructureEdge[]       @relation("SourceEdges")
+  inEdges           InfrastructureEdge[]       @relation("TargetEdges")
+  signals           SystemicIncidentSignal[]
+  nodeImpacts       IncidentNodeImpact[]
+  hypotheses        RootCauseHypothesis[]
+  sentinelProbes    SentinelProbeRequest[]
+
+  @@index([type])
+  @@index([category])
+  @@index([district, state])
+}
+
+model InfrastructureEdge {
+  id             String                 @id @default(uuid())
+  sourceNodeId   String
+  sourceNode     InfrastructureNode     @relation("SourceEdges", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNodeId   String
+  targetNode     InfrastructureNode     @relation("TargetEdges", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  edgeType       InfrastructureEdgeType @default(FLOW_SUPPLY)
+  capacityFlow   String?
+  bidirectional  Boolean                @default(false)
+  status         String                 @default("ACTIVE")
+  provenance     String                 @default("MUNICIPAL_SCHEMATIC")
+  metadata       Json?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+}
+
+model SystemicIncidentSignal {
+  id               String              @id @default(uuid())
+  incidentId       String
+  incident         SystemicIncident    @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  challengeId      String?
+  challenge        Challenge?          @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  title            String
+  category         String
+  severity         String              @default("MODERATE")
+  district         String?
+  state            String?
+  latitude         Float?
+  longitude        Float?
+  reportedAt       DateTime            @default(now())
+  closestNodeId    String?
+  closestNode      InfrastructureNode? @relation(fields: [closestNodeId], references: [id], onDelete: SetNull)
+  symptomSummary   String
+  isDirect         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+
+  @@index([incidentId])
+  @@index([challengeId])
+  @@index([closestNodeId])
+}
+
+model IncidentNodeImpact {
+  id             String                     @id @default(uuid())
+  incidentId     String
+  incident       SystemicIncident           @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  nodeId         String
+  node           InfrastructureNode         @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  impactStatus   InfrastructureImpactStatus @default(UNKNOWN)
+  reasoning      String
+  reportsCount   Int                        @default(0)
+  lastAssessedAt DateTime                   @default(now())
+
+  @@unique([incidentId, nodeId])
+  @@index([incidentId])
+  @@index([nodeId])
+}
+
+model RootCauseHypothesis {
+  id                     String              @id @default(uuid())
+  incidentId             String
+  incident               SystemicIncident    @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  title                  String
+  description            String
+  targetNodeId           String?
+  targetNode             InfrastructureNode? @relation(fields: [targetNodeId], references: [id], onDelete: SetNull)
+  failureMode            String
+  diagnosticSupportScore Float               @default(50.0) // 0 to 100 heuristic evidence support (NOT probability)
+  status                 HypothesisStatus    @default(UNDER_EVALUATION)
+  supportingEvidence     Json?               // Array of EvidenceItemDto
+  contradictingEvidence  Json?               // Array of EvidenceItemDto
+  missingEvidence        Json?               // Array of strings
+  falsificationCriteria  String              // "What would change our assessment?"
+  refutationReason       String?
+  validatedById          String?
+  validatedByName        String?
+  validatedAt            DateTime?
+  validationReason       String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  @@index([incidentId])
+  @@index([status])
+}
+
+model SentinelProbeRequest {
+  id                         String                    @id @default(uuid())
+  incidentId                 String
+  incident                   SystemicIncident          @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  targetNodeId               String?
+  targetNode                 InfrastructureNode?       @relation(fields: [targetNodeId], references: [id], onDelete: SetNull)
+  serviceAreaName            String
+  inquiryTitle               String
+  inquiryText                String                    // Strictly neutral, non-leading
+  status                     SentinelProbeStatus       @default(DRAFT)
+  totalSent                  Int                       @default(0)
+  totalResponses             Int                       @default(0)
+  branchVerificationOutcome  BranchDifferentialStatus  @default(INSUFFICIENT_EVIDENCE)
+  evidenceSummary            String?
+  dispatchedAt               DateTime?
+  closedAt                   DateTime?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+
+  responses                  SentinelProbeResponse[]
+
+  @@index([incidentId])
+  @@index([status])
+}
+
+model SentinelProbeResponse {
+  id                 String                @id @default(uuid())
+  probeRequestId     String
+  probeRequest       SentinelProbeRequest  @relation(fields: [probeRequestId], references: [id], onDelete: Cascade)
+  userId             String?
+  responseChoice     SentinelChoice        @default(NORMAL_SERVICE)
+  feedbackText       String?
+  latitude           Float?
+  longitude          Float?
+  isVerifiedLocation Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+
+  @@index([probeRequestId])
 }

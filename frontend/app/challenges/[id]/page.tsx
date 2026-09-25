@@ -51,6 +51,8 @@ import {
   FolderKanban,
   RefreshCw,
   Sparkles,
+  Network,
+  ArrowRight,
 } from 'lucide-react';
 
 interface ExtendedChallenge extends ChallengeDto {
@@ -412,6 +414,36 @@ export default function ChallengeDetailPage({ params }: { params: Promise<{ id: 
           <Alert variant="destructive">
             <span className="text-xs font-semibold">{error}</span>
           </Alert>
+        )}
+
+        {challenge.isSystemic && (
+          <div className="bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 border border-indigo-500/40 rounded-xl p-4 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                <Network className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-900/60 px-2 py-0.5 rounded border border-indigo-700/50">
+                    Systemic Infrastructure Link
+                  </span>
+                  <span className="text-[11px] text-amber-300">
+                    Multi-signal cluster detected
+                  </span>
+                </div>
+                <p className="text-xs text-slate-200 mt-0.5">
+                  This problem is correlated with upstream infrastructure network failures. View the Root-Cause Graph &amp; Heuer AMCH Dossier.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/government/systemic-intelligence"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shrink-0 transition"
+            >
+              <span>View Systemic Dossier</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         )}
 
         <Card>

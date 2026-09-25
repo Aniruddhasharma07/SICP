@@ -27,6 +27,7 @@ import { analyticsRouter } from './modules/analytics/analytics.routes';
 import { geospatialRouter } from './modules/geospatial/geospatial.routes';
 import { reportsRouter } from './modules/reports/reports.routes';
 import { relationshipRouter } from './modules/relationship/relationship.routes';
+import { systemicRouter } from './modules/systemic/systemic.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { authMiddleware } from './core/middlewares/auth.middleware';
 import { requirePermission } from './core/middlewares/rbac.middleware';
@@ -109,6 +110,7 @@ export function createApp(): Express {
   app.use('/api/v1/geospatial', geospatialRouter);
   app.use('/api/v1/reports', reportsRouter);
   app.use('/api/v1', relationshipRouter);
+  app.use('/api/v1/systemic-incidents', systemicRouter);
   app.use('/api/v1/admin', adminRouter);
 
   // Audit Logs Route (Protected by audit:view)

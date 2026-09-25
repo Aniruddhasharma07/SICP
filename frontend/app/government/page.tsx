@@ -41,6 +41,8 @@ import {
   PlusCircle,
   FileText,
   BookOpen,
+  Network,
+  Sparkles,
 } from 'lucide-react';
 import { ChallengeStatus, SeverityLevel, PriorityLevel } from '@sicp/shared';
 import { SolutionMemoryCard } from '../../src/components/intelligence/SolutionMemoryCard';
@@ -1017,6 +1019,44 @@ export default function GovernmentCommandCenterPage() {
             <RefreshCw className={`w-4 h-4 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh Queue</span>
           </Button>
+        </div>
+      </div>
+
+      {/* Systemic Intelligence Command Quick Banner */}
+      <div className="bg-gradient-to-r from-indigo-900 via-purple-950 to-slate-900 border border-indigo-500/30 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-400/30 shrink-0">
+              <Network className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-2 py-0.5 rounded-full">
+                  Systemic Intelligence Subsystem
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                  <Sparkles className="w-3 h-3" />
+                  Richards Heuer AMCH Active
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-white mt-1">
+                Infrastructure Root-Cause Intelligence &amp; Proactive Community Sentinel
+              </h2>
+              <p className="text-xs text-indigo-200/80 max-w-2xl mt-0.5">
+                Analyze multi-signal civic infrastructure clusters, trace lowest common ancestors in utility networks, dispatch neutral community sentinel probes, and validate competing root-cause hypotheses with full auditability.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto justify-end">
+            <Link
+              href="/government/systemic-intelligence"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-lg transition"
+            >
+              <span>Open Intelligence Hub</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
 

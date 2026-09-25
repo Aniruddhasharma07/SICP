@@ -33,6 +33,7 @@ import {
   GraduationCap,
   AlertTriangle,
   BookOpen,
+  Network,
 } from 'lucide-react';
 import { SolutionMemoryCard } from '../../src/components/intelligence/SolutionMemoryCard';
 import { HistoricalFailureWarning } from '../../src/components/intelligence/HistoricalFailureWarning';
@@ -477,6 +478,40 @@ export default function IndustryPortalPage() {
                 <span>Refresh</span>
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Systemic Infrastructure CSR Callout */}
+        <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border border-emerald-500/30 rounded-2xl p-5 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="p-3 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-400/30 shrink-0">
+              <Network className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/50">
+                  CSR Co-Funding &amp; Capital Grants
+                </span>
+                <span className="text-[11px] text-amber-300 font-medium">
+                  High-Impact Systemic Infrastructure
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white mt-1">
+                Systemic Infrastructure Capital Interventions
+              </h3>
+              <p className="text-xs text-emerald-200/80 max-w-2xl mt-0.5">
+                Co-fund high-leverage civic solutions addressing verified infrastructure failures. Deploy CSR capital alongside government matching funds to resolve systemic utility bottlenecks.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/government/systemic-intelligence"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
+            >
+              <span>View Systemic Incidents</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
