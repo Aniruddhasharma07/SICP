@@ -65,13 +65,13 @@ export default function SystemicIntelligenceHubPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 pb-16">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-24 selection:bg-blue-900 selection:text-white">
       {/* Top Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="bg-slate-900/90 border-b border-slate-800 backdrop-blur py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-blue-400 mb-1">
                 <Network className="w-4 h-4" />
                 SICP INSTITUTIONAL INTELLIGENCE SUBSYSTEM
               </div>

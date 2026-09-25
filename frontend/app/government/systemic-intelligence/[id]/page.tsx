@@ -395,14 +395,14 @@ export default function RootCauseDossierPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 pb-20">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-28 selection:bg-blue-900 selection:text-white">
       {/* Top Breadcrumb & Controls */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8">
+      <div className="bg-slate-900/90 border-b border-slate-800 backdrop-blur py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/government/systemic-intelligence"
-              className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800"
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-slate-800 hover:bg-slate-800/80 transition"
               title="Return to Hub"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -631,19 +631,28 @@ export default function RootCauseDossierPage() {
             </div>
 
             {validationSuccess || incident.status === SystemicIncidentStatus.HUMAN_VALIDATED ? (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2 text-xs animate-sicp-scale-in">
-                <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Investigation Hypothesis Formally Validated
+              <div className="p-4 bg-emerald-950/60 border-2 border-emerald-500/60 rounded-xl space-y-3 text-xs animate-sicp-scale-in shadow-lg shadow-emerald-950/50">
+                <div className="flex items-center justify-between pb-2 border-b border-emerald-500/30">
+                  <div className="flex items-center gap-2 font-black text-emerald-300 uppercase tracking-wide">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <span>Statutory Sign-Off Sealed</span>
+                  </div>
+                  <span className="font-mono text-[10px] bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 px-2 py-0.5 rounded">
+                    SEAL #GOV-VAL-2026
+                  </span>
                 </div>
-                <div className="text-emerald-800 dark:text-emerald-300">
-                  Validated by: <strong>{incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED Bhopal)'}</strong>
+                <div className="text-slate-200">
+                  <span className="text-slate-400">Authorized Signatory:</span>{' '}
+                  <strong className="text-emerald-300 font-bold">
+                    {incident.validatedByName || 'Er. Rajesh Varma (Executive Engineer, PHED Bhopal)'}
+                  </strong>
                 </div>
-                <div className="text-slate-600 dark:text-slate-400 italic">
-                  &quot;{incident.validationReason}&quot;
+                <div className="p-2.5 rounded-lg bg-emerald-900/30 border border-emerald-500/20 text-slate-300 italic text-[11px] leading-relaxed">
+                  &quot;{incident.validationReason || validationReason}&quot;
                 </div>
-                <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-700 dark:text-emerald-400">
-                  ✓ Officially sealed in municipal public registry. Unlocks University R&amp;D and Industry CSR coordination.
+                <div className="pt-2 border-t border-emerald-500/20 flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-emerald-400 font-mono">
+                  <span>✓ Signed with Digital Audit Fingerprint</span>
+                  <span>Authority: CPHEEO Manual Sec 14</span>
                 </div>
               </div>
             ) : (

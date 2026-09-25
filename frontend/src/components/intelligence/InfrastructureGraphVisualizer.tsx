@@ -122,8 +122,8 @@ export function InfrastructureGraphVisualizer({ graph, onSelectNode }: Infrastru
   // Calculate coordinates in a 900x480 coordinate space
   const nodePositions = new Map<string, { x: number; y: number }>();
   const width = 860;
-  const height = 440;
-  const layerY = [60, 140, 230, 320, 400];
+  const height = 480;
+  const layerY = [55, 135, 220, 305, 385];
 
   layers.forEach((layerNodes, lIdx) => {
     const count = layerNodes.length;
@@ -298,9 +298,9 @@ export function InfrastructureGraphVisualizer({ graph, onSelectNode }: Infrastru
       </div>
 
       {/* SVG Canvas */}
-      <div className="relative overflow-auto p-4 flex justify-center bg-slate-100/50 dark:bg-slate-950/50 min-h-[460px]">
+      <div className="relative overflow-auto p-4 flex justify-center bg-slate-950/70 min-h-[480px]">
         <svg
-          viewBox="0 0 880 460"
+          viewBox="0 0 880 480"
           className="w-full max-w-[880px] h-auto transition-transform duration-300"
           style={{ transform: `scale(${zoomLevel})` }}
         >
