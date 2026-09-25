@@ -39,7 +39,7 @@ export const GAMHARIA_INCIDENT_SUMMARY: SystemicIncidentSummaryDto = {
   title: 'Gamharia Block Multi-Village JJM Scheme — Feeder 3B-2 & Power Grid Transient Cascade',
   category: 'WATER',
   status: SystemicIncidentStatus.INVESTIGATING,
-  severity: SeverityLevel.CRITICAL,
+  severity: SeverityLevel.SEVERE,
   evidenceStrength: 'STRONG',
   systemicScore: 0.88,
   district: 'Seraikela Kharsawan',

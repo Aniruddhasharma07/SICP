@@ -518,7 +518,7 @@ export function RootCauseDossierDrawer({
                               ? 'success'
                               : gap.status === 'PENDING_DISPATCH'
                               ? 'warning'
-                              : 'danger'
+                              : 'destructive'
                           }
                           className="text-[9px] font-bold"
                         >
