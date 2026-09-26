@@ -162,7 +162,7 @@ export function IntelligenceTrace({
   const activeStage = activeStages.find(s => s.status === 'ACTIVE') || activeStages[0];
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-xs mb-6">
+    <div className="w-full max-w-full overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-xs mb-6">
       {/* Header bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">

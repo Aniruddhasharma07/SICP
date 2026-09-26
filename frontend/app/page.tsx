@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 
 import { SEED_JHARKHAND_CHALLENGES } from '../src/lib/scenarios/gamharia-incident-scenario';
+import { ProblemRelationshipSummary } from '../src/components/problem/ProblemRelationshipSummary';
 
 interface ChallengeItem {
   id: string;
@@ -503,8 +504,11 @@ export default function CivicPortalHomePage() {
                         {item.priorityScore !== undefined ? `${item.priorityScore}/100` : 'Score evaluating'}
                       </span>
                     </div>
+                    
+                    {/* Problem Relationship Intelligence Badge Row */}
+                    <ProblemRelationshipSummary challenge={item as any} />
 
-                    <div className="flex items-center justify-between text-xs text-slate-500">
+                    <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60">
                       <span>{item.supportVotesCount || 0} citizen endorsements</span>
                       <Link href={`/challenges/${item.id}`} className="text-blue-600 font-semibold hover:underline flex items-center gap-1">
                         <span>Workspace</span>

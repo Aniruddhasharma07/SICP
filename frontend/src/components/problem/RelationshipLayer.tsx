@@ -26,6 +26,7 @@ import { EvidenceChip } from '../ui/EvidenceChip';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { InfrastructureGraphVisualizer } from '../intelligence/InfrastructureGraphVisualizer';
+import { ProblemRelationshipGraph } from './ProblemRelationshipGraph';
 import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface RelationshipLayerProps {
@@ -48,6 +49,7 @@ export function RelationshipLayer({
   onContinueToInvestigation,
 }: RelationshipLayerProps) {
   const [showExpertDetails, setShowExpertDetails] = useState(false);
+  const [activeGraphTab, setActiveGraphTab] = useState<'topology' | 'knowledge'>('topology');
   const relationships = challenge.relationships || [];
   const hasRelationships = relationships.length > 0;
 
@@ -128,19 +130,73 @@ export function RelationshipLayer({
         </Button>
       </div>
 
-      {/* Interactive Infrastructure Topology Graph (Progressively Disclosed) */}
-      {showExpertDetails && linkedGraph && (
-        <div className="space-y-2 animate-sicp-fade-in">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-200 flex items-center gap-1.5">
-              <GitBranch className="w-3.5 h-3.5 text-blue-400" />
-              Connected Infrastructure Physical Lineage (880×480 Graph)
-            </span>
-            <span className="text-slate-400 text-[11px]">
-              Provenance: Municipal GIS Schematic + SCADA Telemetry
+      {/* Two Distinct Complementary Graphs (Progressively Disclosed) */}
+      {showExpertDetails && (
+        <div className="space-y-3 animate-sicp-fade-in">
+          {/* Segmented Graph Model Selector */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveGraphTab('topology')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                  activeGraphTab === 'topology'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                <GitBranch className="w-3.5 h-3.5" />
+                <span>Physical Infrastructure Topology DAG (880×480)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveGraphTab('knowledge')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                  activeGraphTab === 'knowledge'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                <Network className="w-3.5 h-3.5" />
+                <span>Semantic Problem Knowledge Graph</span>
+              </button>
+            </div>
+            <span className="text-[10.5px] font-mono text-slate-500 pr-2">
+              {activeGraphTab === 'topology' ? 'SCADA & GIS Lineage Flow' : 'Societal Knowledge & Stakeholder Web'}
             </span>
           </div>
-          <InfrastructureGraphVisualizer graph={linkedGraph} />
+
+          {activeGraphTab === 'topology' ? (
+            linkedGraph ? (
+              <div className="space-y-2 animate-sicp-fade-in">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <GitBranch className="w-3.5 h-3.5 text-blue-400" />
+                    Connected Infrastructure Physical Lineage (880×480 Graph)
+                  </span>
+                  <span className="text-slate-400 text-[11px]">
+                    Provenance: Municipal GIS Schematic + SCADA Telemetry
+                  </span>
+                </div>
+                <InfrastructureGraphVisualizer graph={linkedGraph} />
+              </div>
+            ) : (
+              <div className="p-6 bg-slate-950/40 rounded-xl border border-slate-800 text-center text-xs text-slate-400">
+                Physical SCADA telemetry mapping unavailable for this municipal zone.
+              </div>
+            )
+          ) : (
+            <div className="animate-sicp-fade-in">
+              <ProblemRelationshipGraph
+                problemId={challenge.id}
+                problemTitle={challenge.title}
+                onJumpToSection={sectionId => {
+                  const el = document.getElementById(sectionId);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
 

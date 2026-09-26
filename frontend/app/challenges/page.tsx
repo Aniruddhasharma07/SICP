@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 
 import { SEED_JHARKHAND_CHALLENGES } from '../../src/lib/scenarios/gamharia-incident-scenario';
+import { ProblemRelationshipSummary } from '../../src/components/problem/ProblemRelationshipSummary';
 
 export default function ChallengesExplorerPage() {
   const [challenges, setChallenges] = useState<ChallengeDto[]>(SEED_JHARKHAND_CHALLENGES as any);
@@ -236,83 +237,92 @@ export default function ChallengesExplorerPage() {
             {filteredChallenges.map((c) => {
               const sev = c.severity || SeverityLevel.MODERATE;
               return (
-                <Link key={c.id} href={`/challenges/${c.id}`} className="group">
-                  <Card className="hover:border-blue-400 hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden">
-                    <CardHeader className="p-4 pb-2 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <StatusBadge status={c.status} className="text-[10px]" />
-                        <div className="flex items-center gap-1.5">
-                          {c.isSystemic && (
-                            <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-[10px]">
-                              <Layers className="w-3 h-3 mr-1" />
-                              Systemic
-                            </Badge>
-                          )}
-                          <Badge
-                            variant={
-                              sev === SeverityLevel.CATASTROPHIC
-                                ? 'destructive'
-                                : sev === SeverityLevel.SEVERE
-                                ? 'warning'
-                                : 'secondary'
-                            }
-                            className="text-[10px]"
-                          >
-                            {sev}
+                <div
+                  key={c.id}
+                  className="group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all h-full flex flex-col justify-between overflow-visible"
+                >
+                  <div className="p-4 pb-2 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <StatusBadge status={c.status} className="text-[10px]" />
+                      <div className="flex items-center gap-1.5">
+                        {c.isSystemic && (
+                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800 text-[10px]">
+                            <Layers className="w-3 h-3 mr-1" />
+                            Systemic
                           </Badge>
-                        </div>
+                        )}
+                        <Badge
+                          variant={
+                            sev === SeverityLevel.CATASTROPHIC
+                              ? 'destructive'
+                              : sev === SeverityLevel.SEVERE
+                              ? 'warning'
+                              : 'secondary'
+                          }
+                          className="text-[10px]"
+                        >
+                          {sev}
+                        </Badge>
                       </div>
+                    </div>
 
-                      <CardTitle className="text-sm md:text-base group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
+                    <Link href={`/challenges/${c.id}`} className="block focus:outline-hidden">
+                      <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
                         {c.title}
-                      </CardTitle>
+                      </h3>
+                    </Link>
 
-                      <CardDescription className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                        {c.description}
-                      </CardDescription>
-                    </CardHeader>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {c.description}
+                    </p>
+                  </div>
 
-                    <CardContent className="p-4 pt-2 space-y-3">
-                      <div className="grid grid-cols-2 gap-2 text-xs py-2 border-t border-b border-slate-100">
-                        <div className="space-y-0.5">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase block">
-                            Priority Score
-                          </span>
-                          <span className="font-bold text-blue-600 font-mono text-sm flex items-center gap-1">
-                            <Flame className="w-3.5 h-3.5 text-amber-500" />
-                            {c.priorityScore !== undefined ? `${c.priorityScore}/100` : 'Evaluating'}
-                          </span>
-                        </div>
-
-                        <div className="space-y-0.5">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase block">
-                            Reach Footprint
-                          </span>
-                          <span className="font-semibold text-slate-800 text-xs flex items-center gap-1">
-                            <Users className="w-3.5 h-3.5 text-slate-400" />
-                            {c.affectedPopulation
-                              ? `${c.affectedPopulation.toLocaleString()} citizens`
-                              : 'Calculating'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                        <div className="flex items-center gap-1 truncate max-w-[180px]">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">
-                            {c.district ? `${c.district}, ${c.state || ''}` : 'Location pending'}
-                          </span>
-                        </div>
-
-                        <span className="text-blue-600 font-semibold text-xs group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                          <span>Workspace</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                  <div className="p-4 pt-2 space-y-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs py-2 border-t border-b border-slate-100 dark:border-slate-800/80">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                          Priority Score
+                        </span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400 font-mono text-sm flex items-center gap-1">
+                          <Flame className="w-3.5 h-3.5 text-amber-500" />
+                          {c.priorityScore !== undefined ? `${c.priorityScore}/100` : 'Evaluating'}
                         </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                          Reach Footprint
+                        </span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5 text-slate-400" />
+                          {c.affectedPopulation
+                            ? `${c.affectedPopulation.toLocaleString()} citizens`
+                            : 'Calculating'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Problem Relationship Intelligence Badge Row & Popover */}
+                    <ProblemRelationshipSummary challenge={c} />
+
+                    <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                      <div className="flex items-center gap-1 truncate max-w-[180px]">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">
+                          {c.district ? `${c.district}, ${c.state || ''}` : 'Location pending'}
+                        </span>
+                      </div>
+
+                      <Link
+                        href={`/challenges/${c.id}`}
+                        className="text-blue-600 dark:text-blue-400 font-semibold text-xs group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5 hover:underline"
+                      >
+                        <span>Workspace</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
