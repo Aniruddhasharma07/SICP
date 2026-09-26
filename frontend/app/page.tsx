@@ -247,8 +247,11 @@ export default function CivicPortalHomePage() {
                 </Button>
               </Link>
               <Link href="/challenges">
-                <Button size="lg" variant="outline" className="text-slate-200 border-slate-700 hover:bg-slate-900 text-sm h-12 px-6 gap-2">
-                  <Compass className="w-4 h-4" />
+                <Button
+                  size="lg"
+                  className="bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 hover:border-slate-600 text-sm h-12 px-6 gap-2 font-semibold shadow-xs transition-all group"
+                >
+                  <Compass className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
                   <span>Explore Problems</span>
                 </Button>
               </Link>
