@@ -319,14 +319,14 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
   }, [filteredPoints, validClusters, viewMode, mapLoaded]);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs space-y-0">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs space-y-0">
       {/* Map Controls Header */}
-      <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
+          <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Live Geospatial Problem Hotspots</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Live Geospatial Problem Hotspots</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Interactive OpenStreetMap rendering citizen-reported infrastructure failures with ground GPS coordinates
             </p>
           </div>
@@ -334,11 +334,13 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-white rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
+          <div className="flex items-center bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 text-xs font-medium">
             <button
               onClick={() => setViewMode('points')}
               className={`px-3 py-1 rounded-md transition ${
-                viewMode === 'points' ? 'bg-blue-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
+                viewMode === 'points'
+                  ? 'bg-blue-600 text-white font-bold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Report Points ({filteredPoints.length})
@@ -346,7 +348,9 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
             <button
               onClick={() => setViewMode('clusters')}
               className={`px-3 py-1 rounded-md transition ${
-                viewMode === 'clusters' ? 'bg-blue-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
+                viewMode === 'clusters'
+                  ? 'bg-blue-600 text-white font-bold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               District Clusters ({validClusters.length})
@@ -357,7 +361,7 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
           <select
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
-            className="h-8 text-xs rounded-lg border border-slate-300 bg-white px-2.5 text-slate-700 font-medium"
+            className="h-8 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-slate-700 dark:text-slate-200 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Categories</option>
             <option value="Water Supply">Water Supply</option>
@@ -375,7 +379,7 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
             <select
               value={selectedSeverity}
               onChange={e => setSelectedSeverity(e.target.value)}
-              className="h-8 text-xs rounded-lg border border-slate-300 bg-white px-2.5 text-slate-700 font-medium"
+              className="h-8 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-slate-700 dark:text-slate-200 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Severities</option>
               <option value="CATASTROPHIC">Catastrophic (Red)</option>
@@ -395,10 +399,10 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
       {/* Map Content & Details Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 min-h-[460px]">
         {/* Real Leaflet Map Container */}
-        <div className="lg:col-span-2 relative bg-slate-100 min-h-[440px]">
+        <div className="lg:col-span-2 relative bg-slate-100 dark:bg-slate-950 min-h-[440px]">
           {loading && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center z-10">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-10">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
                 <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                 <span>Loading live geocoded challenge points...</span>
               </div>
@@ -410,14 +414,14 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
 
           {/* Geospatial Honesty Notice Fallback */}
           {!loading && !hasValidGeographicData && (
-            <div className="absolute inset-0 bg-slate-50/95 flex flex-col items-center justify-center p-6 text-center z-20">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mb-3">
+            <div className="absolute inset-0 bg-slate-50/95 dark:bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-20">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 flex items-center justify-center mb-3">
                 <Compass className="w-6 h-6" />
               </div>
-              <h4 className="text-sm font-bold text-slate-800">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                 Not enough location data for a reliable heatmap.
               </h4>
-              <p className="text-xs text-slate-500 max-w-sm mt-1 mb-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1 mb-3">
                 Zero points are fabricated. When citizens report issues with GPS coordinates or district jurisdiction, authentic pins will appear automatically on this OpenStreetMap view.
               </p>
               <Link href="/challenges/new">
@@ -430,31 +434,31 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
           )}
 
           {/* Map Legend */}
-          <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-lg p-2.5 shadow-md z-[500] text-[11px] space-y-1">
-            <div className="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-1">
+          <div className="absolute bottom-3 left-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 shadow-md z-[500] text-[11px] space-y-1">
+            <div className="font-bold text-slate-800 dark:text-slate-200 text-[10px] uppercase tracking-wider mb-1">
               {viewMode === 'points' ? 'Severity Legend' : 'Cluster Density'}
             </div>
             {viewMode === 'points' ? (
               <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                  <span className="text-slate-600">Catastrophic</span>
+                  <span className="text-slate-600 dark:text-slate-300">Catastrophic</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-                  <span className="text-slate-600">Severe</span>
+                  <span className="text-slate-600 dark:text-slate-300">Severe</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <span className="text-slate-600">Moderate</span>
+                  <span className="text-slate-600 dark:text-slate-300">Moderate</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span className="text-slate-600">Minor</span>
+                  <span className="text-slate-600 dark:text-slate-300">Minor</span>
                 </div>
               </div>
             ) : (
-              <div className="space-y-1 text-slate-600">
+              <div className="space-y-1 text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-600 text-[9px] text-white flex items-center justify-center font-bold">!</span>
                   <span>High Density (&gt;= 3 reports)</span>
@@ -469,16 +473,16 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
         </div>
 
         {/* Selected Item / Inspector Side Panel */}
-        <div className="p-4 border-t lg:border-t-0 lg:border-l border-slate-200 bg-white flex flex-col justify-between overflow-y-auto max-h-[460px]">
+        <div className="p-4 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between overflow-y-auto max-h-[460px]">
           {activeItem ? (
             <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[10px]">
                   {activeItem.type === 'point' ? 'Selected Challenge' : 'District Summary'}
                 </span>
                 <button
                   onClick={() => setActiveItem(null)}
-                  className="text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -501,24 +505,24 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
                             {pt.severity}
                           </span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
                           {pt.title}
                         </h4>
                       </div>
 
-                      <div className="space-y-1 text-slate-600">
+                      <div className="space-y-1 text-slate-600 dark:text-slate-300">
                         <div className="flex items-center gap-1.5 text-[11px]">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{pt.district ? `${pt.district}, ` : ''}${pt.state || 'India'}</span>
                         </div>
-                        <div className="font-mono text-[10px] text-slate-400">
+                        <div className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
                           Coordinates: {pt.latitude.toFixed(4)}°N, {pt.longitude.toFixed(4)}°E
                         </div>
-                        <div className="text-[11px] bg-slate-50 p-2 rounded border border-slate-100">
-                          Status: <strong className="text-slate-800">{pt.status}</strong>
+                        <div className="text-[11px] bg-slate-50 dark:bg-slate-800/60 p-2 rounded border border-slate-100 dark:border-slate-800">
+                          Status: <strong className="text-slate-800 dark:text-slate-200">{pt.status}</strong>
                           {pt.affectedPopulation && (
                             <span className="block mt-0.5">
-                              Exposed: <strong>{pt.affectedPopulation.toLocaleString('en-IN')} citizens</strong>
+                              Exposed: <strong className="text-slate-800 dark:text-slate-200">{pt.affectedPopulation.toLocaleString('en-IN')} citizens</strong>
                             </span>
                           )}
                         </div>
@@ -539,36 +543,36 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
                   return (
                     <div className="space-y-2.5">
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                           {cl.district}, {cl.state}
                         </h4>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
                           Municipal Administrative Hotspot
                         </span>
                       </div>
 
-                      <div className="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-100 text-[11px]">
+                      <div className="space-y-1.5 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800 text-[11px]">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Total Challenges:</span>
-                          <span className="font-bold text-slate-800">{cl.challengeCount}</span>
+                          <span className="text-slate-500 dark:text-slate-400">Total Challenges:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{cl.challengeCount}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Systemic Incidents:</span>
-                          <span className="font-bold text-red-600">{cl.systemicCount}</span>
+                          <span className="text-slate-500 dark:text-slate-400">Systemic Incidents:</span>
+                          <span className="font-bold text-red-600 dark:text-red-400">{cl.systemicCount}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Population Footprint:</span>
-                          <span className="font-bold text-slate-800">
+                          <span className="text-slate-500 dark:text-slate-400">Population Footprint:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">
                             {cl.totalAffectedPopulation.toLocaleString('en-IN')}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Primary Domain:</span>
-                          <span className="font-bold text-blue-700">{cl.topCategory}</span>
+                          <span className="text-slate-500 dark:text-slate-400">Primary Domain:</span>
+                          <span className="font-bold text-blue-700 dark:text-blue-400">{cl.topCategory}</span>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                         Click on specific pin markers on the map to inspect individual community reports in this district.
                       </p>
                     </div>
@@ -577,16 +581,16 @@ export function GeospatialMap({ initialCategory }: GeospatialMapProps) {
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 space-y-2">
-              <Compass className="w-8 h-8 text-slate-300" />
-              <div className="text-xs font-semibold text-slate-600">Explore Ground Hotspots</div>
-              <p className="text-[11px] text-slate-400 max-w-xs">
+            <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 dark:text-slate-500 space-y-2">
+              <Compass className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+              <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Explore Ground Hotspots</div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs">
                 Click any marker pin on the map to inspect its verified coordinates, severity tier, and civic challenge docket.
               </p>
             </div>
           )}
 
-          <div className="pt-3 border-t border-slate-100 text-[10px] text-slate-400 flex items-center justify-between">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500 flex items-center justify-between">
             <span>Powered by Leaflet &amp; OpenStreetMap</span>
             <span>Zero Fabricated Data</span>
           </div>

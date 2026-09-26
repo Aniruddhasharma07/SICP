@@ -176,7 +176,7 @@ export default function OrganizationsPage() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           {/* Type Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 text-xs">
             {ORG_TYPES.map((t) => (
@@ -185,8 +185,8 @@ export default function OrganizationsPage() {
                 onClick={() => setSelectedType(t.id)}
                 className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
                   selectedType === t.id
-                    ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {t.label}
@@ -202,7 +202,7 @@ export default function OrganizationsPage() {
               placeholder="Filter by name or slug..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -211,27 +211,27 @@ export default function OrganizationsPage() {
         {loading ? (
           <div className="py-24 text-center space-y-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-            <p className="text-sm font-medium text-slate-600">Loading partner directory...</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading partner directory...</p>
           </div>
         ) : filteredOrgs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredOrgs.map((org) => (
               <div
                 key={org.id}
-                className="p-5 rounded-xl border border-slate-200 bg-white shadow-xs hover:border-blue-300 hover:shadow-md transition-all space-y-3 flex flex-col justify-between"
+                className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                       {getTypeIcon(org.type)}
                     </div>
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                         org.verificationStatus === 'VERIFIED'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                           : org.verificationStatus === 'PENDING_REVIEW'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : 'bg-slate-100 text-slate-600 border-slate-200'
+                          ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                       }`}
                     >
                       {org.verificationStatus}
@@ -239,16 +239,16 @@ export default function OrganizationsPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-base text-slate-900 line-clamp-1">{org.name}</h3>
-                    <span className="text-xs text-slate-400 font-mono">@{org.slug}</span>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 line-clamp-1">{org.name}</h3>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">@{org.slug}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1 text-xs text-slate-500 flex-wrap">
+                  <div className="flex items-center gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">
                       {org.type}
                     </Badge>
                     {org.accreditationGrade && (
-                      <Badge variant="secondary" className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      <Badge variant="secondary" className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                         Grade {org.accreditationGrade}
                       </Badge>
                     )}
@@ -257,15 +257,15 @@ export default function OrganizationsPage() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-500 font-medium">Partner Profile</span>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Partner Profile</span>
                   <Link
                     href={
                       org.type === 'UNIVERSITY'
                         ? `/university?orgId=${org.id}`
                         : `/dashboard`
                     }
-                    className="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1"
+                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1"
                   >
                     <span>Explore Portal</span>
                     <ExternalLink className="w-3 h-3" />
@@ -276,15 +276,15 @@ export default function OrganizationsPage() {
           </div>
         ) : (
           /* Zero Dead-End Empty State */
-          <div className="py-16 px-6 text-center space-y-4 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="w-12 h-12 rounded-full bg-slate-200/80 text-slate-500 mx-auto flex items-center justify-center">
+          <div className="py-16 px-6 text-center space-y-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="w-12 h-12 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 mx-auto flex items-center justify-center">
               <Building2 className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-semibold text-slate-800">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
                 No organizations found
               </h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                 {searchQuery || selectedType !== 'ALL'
                   ? 'No organization matches your search criteria. Try resetting your search filters.'
                   : 'No partner organizations are registered in this view yet.'}

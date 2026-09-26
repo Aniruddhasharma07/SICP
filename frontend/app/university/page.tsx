@@ -1194,48 +1194,48 @@ export default function UniversityPortalPage() {
         </div>
 
         {/* DEFINED ACADEMIC GOVERNANCE RULES */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
-            <Layers className="w-4 h-4 text-indigo-600" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+            <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Defined Academic Operating Rules &amp; Institutional Governance</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-            <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-1">
-              <div className="font-bold text-indigo-950 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-indigo-600" />
+            <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/60 space-y-1">
+              <div className="font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                 Rule 1: Institutional Accreditation
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 New universities self-register with AISHE / NAAC credentials. Government approval unlocks funded problem assignments.
               </p>
             </div>
 
-            <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 space-y-1">
-              <div className="font-bold text-blue-950 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-blue-600" />
+            <div className="p-3 bg-blue-50/50 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/60 space-y-1">
+              <div className="font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
                 Rule 2: Administrator Acceptance
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Only University Administrators can accept or decline government-routed civic problems on behalf of the institution.
               </p>
             </div>
 
-            <div className="p-3 bg-purple-50/50 rounded-xl border border-purple-100 space-y-1">
-              <div className="font-bold text-purple-950 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-purple-600" />
+            <div className="p-3 bg-purple-50/50 dark:bg-purple-950/40 rounded-xl border border-purple-100 dark:border-purple-900/60 space-y-1">
+              <div className="font-bold text-purple-950 dark:text-purple-200 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-purple-600 dark:bg-purple-400" />
                 Rule 3: Multidisciplinary Teams
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Research teams are led by Faculty members and incorporate Student Researchers and cross-departmental subject experts.
               </p>
             </div>
 
-            <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-1">
-              <div className="font-bold text-emerald-950 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-600" />
+            <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/40 rounded-xl border border-emerald-100 dark:border-emerald-900/60 space-y-1">
+              <div className="font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                 Rule 4: Government Review &amp; Rating
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Government officers evaluate and rate institutions across 4 dimensions: Technical Competence, Timeliness, Collaboration, and Civic Outcome Quality.
               </p>
             </div>
@@ -1376,13 +1376,13 @@ export default function UniversityPortalPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-slate-200 flex flex-wrap gap-4 text-sm font-medium">
+        <div className="border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 text-sm font-medium">
           <button
             onClick={() => setActiveTab('assigned')}
             className={`pb-3 border-b-2 flex items-center gap-2 transition ${
               activeTab === 'assigned'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Clock className="h-4 w-4" />
@@ -1392,8 +1392,8 @@ export default function UniversityPortalPage() {
             onClick={() => setActiveTab('teams')}
             className={`pb-3 border-b-2 flex items-center gap-2 transition ${
               activeTab === 'teams'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Users className="h-4 w-4" />
@@ -1403,8 +1403,8 @@ export default function UniversityPortalPage() {
             onClick={() => setActiveTab('proposals')}
             className={`pb-3 border-b-2 flex items-center gap-2 transition ${
               activeTab === 'proposals'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <FileText className="h-4 w-4" />
@@ -1414,8 +1414,8 @@ export default function UniversityPortalPage() {
             onClick={() => setActiveTab('faculty')}
             className={`pb-3 border-b-2 flex items-center gap-2 transition ${
               activeTab === 'faculty'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Award className="h-4 w-4" />
@@ -1425,8 +1425,8 @@ export default function UniversityPortalPage() {
             onClick={() => setActiveTab('partnerships')}
             className={`pb-3 border-b-2 flex items-center gap-2 transition ${
               activeTab === 'partnerships'
-                ? 'border-blue-600 text-blue-600 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Building2 className="h-4 w-4" />
@@ -2111,25 +2111,25 @@ export default function UniversityPortalPage() {
 
         {/* MODAL: Decline Assignment with Mandatory Reason */}
         {declineTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
-              <div className="flex items-center gap-3 text-rose-600">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <XCircle className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-slate-900">Decline University Assignment</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Decline University Assignment</h3>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 A formal reason is mandatory. The challenge will revert to APPROVED status so the Government Command Center can review the institutional decision and re-route the problem to an alternative institution with zero dead ends.
               </p>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     Primary Reason for Decline *
                   </label>
                   <select
                     value={declineReasonCategory}
                     onChange={e => setDeclineReasonCategory(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 p-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium"
                   >
                     <option value="No relevant faculty expertise">No relevant faculty expertise</option>
                     <option value="Insufficient capacity">Insufficient capacity</option>
@@ -2141,7 +2141,7 @@ export default function UniversityPortalPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     {declineReasonCategory === 'Other' ? 'Written Explanation (Mandatory - Min 10 chars) *' : 'Additional Technical Details (Optional)'}
                   </label>
                   <Textarea
@@ -2157,14 +2157,14 @@ export default function UniversityPortalPage() {
                     required={declineReasonCategory === 'Other'}
                   />
                   {declineReasonCategory === 'Other' && declineExplanation.trim().length > 0 && declineExplanation.trim().length < 10 && (
-                    <span className="text-[10px] text-rose-600 font-semibold block mt-1">
+                    <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold block mt-1">
                       Minimum 10 characters required ({declineExplanation.trim().length}/10)
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button
                   variant="outline"
                   size="sm"
@@ -2191,18 +2191,18 @@ export default function UniversityPortalPage() {
 
         {/* MODAL: Create Multidisciplinary Team */}
         {showTeamModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <form onSubmit={handleCreateTeam} className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
-              <div className="flex items-center gap-2 text-blue-600">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <form onSubmit={handleCreateTeam} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <Users className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-slate-900">Form Multidisciplinary Team</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Form Multidisciplinary Team</h3>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Establish an official multidisciplinary project team. You will be assigned as Lead Faculty.
               </p>
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Team Name</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Team Name</label>
                   <Input
                     placeholder="e.g. Advanced Water Filtration Research Group"
                     value={teamName}
@@ -2211,9 +2211,9 @@ export default function UniversityPortalPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Challenge</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Challenge</label>
                   <select
-                    className="w-full border border-slate-300 rounded p-2 bg-white"
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                     value={teamChallengeId}
                     onChange={e => setTeamChallengeId(e.target.value)}
                     required
@@ -2227,7 +2227,7 @@ export default function UniversityPortalPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" type="button" onClick={() => setShowTeamModal(false)}>
                   Cancel
                 </Button>
@@ -2241,15 +2241,15 @@ export default function UniversityPortalPage() {
 
         {/* MODAL: Invite Team Member */}
         {inviteTargetTeamId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <form onSubmit={handleInviteMember} className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
-              <div className="flex items-center gap-2 text-blue-600">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <form onSubmit={handleInviteMember} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <Users className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-slate-900">Invite Multidisciplinary Member</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Invite Multidisciplinary Member</h3>
               </div>
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">User ID / Email</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">User ID / Email</label>
                   <Input
                     placeholder="User ID of faculty, student, or industry mentor"
                     value={inviteUserId}
@@ -2258,9 +2258,9 @@ export default function UniversityPortalPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Role in Team</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Role in Team</label>
                   <select
-                    className="w-full border border-slate-300 rounded p-2 bg-white"
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                     value={inviteRole}
                     onChange={e => setInviteRole(e.target.value as TeamRole)}
                   >
@@ -2271,7 +2271,7 @@ export default function UniversityPortalPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" type="button" onClick={() => setInviteTargetTeamId(null)}>
                   Cancel
                 </Button>
@@ -2285,20 +2285,20 @@ export default function UniversityPortalPage() {
 
         {/* MODAL: Draft Solution Proposal */}
         {showProposalModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <form onSubmit={handleCreateProposal} className="bg-white rounded-2xl p-6 max-w-xl w-full shadow-2xl border border-slate-200 space-y-4 my-8">
-              <div className="flex items-center gap-2 text-indigo-600">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <form onSubmit={handleCreateProposal} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 my-8">
+              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                 <FileText className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-slate-900">Draft Solution Proposal</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Draft Solution Proposal</h3>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Draft an immutable versioned solution proposal. Once reviewed and approved by Government, the project can be formally activated.
               </p>
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Project</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Project</label>
                   <select
-                    className="w-full border border-slate-300 rounded p-2 bg-white"
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                     value={propProjectId}
                     onChange={e => setPropProjectId(e.target.value)}
                     required
@@ -2316,7 +2316,7 @@ export default function UniversityPortalPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Technical Approach</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Technical Approach</label>
                   <Textarea
                     placeholder="Describe engineering methodologies, technology components, prototype architecture..."
                     rows={3}
@@ -2326,7 +2326,7 @@ export default function UniversityPortalPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-semibold block text-slate-700 mb-1">Expected Societal Impact</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Expected Societal Impact</label>
                   <Textarea
                     placeholder="Measurable outcomes, beneficiaries reached, performance benchmarks..."
                     rows={2}
@@ -2337,17 +2337,17 @@ export default function UniversityPortalPage() {
                 </div>
 
                 {/* Institutional Precedent Callout */}
-                <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-lg text-xs text-blue-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-blue-950">
-                    <BookOpen className="w-3.5 h-3.5 text-blue-700" />
+                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-lg text-xs text-blue-900 dark:text-blue-200 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-950 dark:text-blue-100">
+                    <BookOpen className="w-3.5 h-3.5 text-blue-700 dark:text-blue-400" />
                     <span>Institutional Memory Check</span>
                   </div>
-                  <p className="text-[11px] text-blue-800 leading-relaxed">
+                  <p className="text-[11px] text-blue-800 dark:text-blue-300 leading-relaxed">
                     SICP cross-references proposal approaches with prior deployed civic solutions. Technical approaches that build upon verified precedents and avoid documented failure modes receive accelerated government review.
                   </p>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" type="button" onClick={() => setShowProposalModal(false)}>
                   Cancel
                 </Button>
@@ -2362,21 +2362,21 @@ export default function UniversityPortalPage() {
         {/* MODAL: Switch Registered University */}
         {showSwitchModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2 text-indigo-600">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                   <GraduationCap className="h-6 w-6" />
-                  <h3 className="text-lg font-bold text-slate-900">Switch Registered University</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Switch Registered University</h3>
                 </div>
                 <button
                   onClick={() => setShowSwitchModal(false)}
-                  className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 rounded-lg hover:bg-slate-100"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   ✕
                 </button>
               </div>
 
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Select an accredited institution to review civic problems assigned by Government, manage multidisciplinary research teams, and author technical proposals.
               </p>
 
@@ -2388,7 +2388,7 @@ export default function UniversityPortalPage() {
                   placeholder="Search registered university by name, state, or AISHE..."
                   value={switchSearch}
                   onChange={e => setSwitchSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -2412,26 +2412,26 @@ export default function UniversityPortalPage() {
                         key={u.id}
                         className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                           isActive
-                            ? 'border-indigo-500 bg-indigo-50/50 ring-2 ring-indigo-400/20'
-                            : 'border-slate-200 hover:border-indigo-300 bg-white'
+                            ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 ring-2 ring-indigo-400/20'
+                            : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 bg-white dark:bg-slate-900'
                         }`}
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-slate-900">{u.name}</span>
+                            <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{u.name}</span>
                             {isActive && (
                               <Badge className="bg-indigo-600 text-white text-[10px]">Active Session</Badge>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                             <span>{u.district}, {u.state}</span>
                             {u.aisheCode && <span>• AISHE: {u.aisheCode}</span>}
-                            {u.naacGrade && <span className="font-semibold text-emerald-700">• NAAC: {u.naacGrade}</span>}
+                            {u.naacGrade && <span className="font-semibold text-emerald-700 dark:text-emerald-400">• NAAC: {u.naacGrade}</span>}
                           </div>
                           {u.researchDomains && u.researchDomains.length > 0 && (
                             <div className="flex flex-wrap gap-1 pt-1">
                               {u.researchDomains.slice(0, 3).map((d: string, idx: number) => (
-                                <span key={idx} className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium">
+                                <span key={idx} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-medium border border-slate-200/50 dark:border-slate-700">
                                   {d}
                                 </span>
                               ))}
@@ -2443,7 +2443,7 @@ export default function UniversityPortalPage() {
                           <Button
                             size="sm"
                             disabled={actionLoading || isActive}
-                            className={isActive ? 'bg-slate-200 text-slate-500' : 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs'}
+                            className={isActive ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs'}
                             onClick={() => handleSwitchUniversity(u.id)}
                           >
                             {isActive ? 'Current Institution' : 'Switch & Access'}
@@ -2454,7 +2454,7 @@ export default function UniversityPortalPage() {
                   })}
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-slate-100">
+              <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" onClick={() => setShowSwitchModal(false)}>
                   Close
                 </Button>

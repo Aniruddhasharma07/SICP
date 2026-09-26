@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../lib/auth-context';
-import { getAuthorizedPortals } from './PortalSwitcher';
 import {
   ShieldCheck,
   Building2,
@@ -40,9 +39,9 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     badge: 'Civic Portal',
     badgeVariant: 'civic',
     roleLabel: 'Citizen / Community Monitor',
-    accentBg: 'bg-blue-50/80',
-    accentBorder: 'border-blue-200',
-    accentText: 'text-blue-900',
+    accentBg: 'bg-blue-50/90 dark:bg-blue-950/40',
+    accentBorder: 'border-blue-200 dark:border-blue-800',
+    accentText: 'text-blue-950 dark:text-blue-200',
     tagline: 'Grievance submission, SLA tracking, upvoting & ground verification',
     quickAction: {
       label: '+ Report New Issue',
@@ -54,13 +53,13 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     badge: 'Government Portal',
     badgeVariant: 'government',
     roleLabel: 'Municipal Officer / Department Authority',
-    accentBg: 'bg-purple-50/80',
-    accentBorder: 'border-purple-200',
-    accentText: 'text-purple-900',
+    accentBg: 'bg-purple-50/90 dark:bg-purple-950/40',
+    accentBorder: 'border-purple-200 dark:border-purple-800',
+    accentText: 'text-purple-950 dark:text-purple-200',
     tagline: 'SLA triage, university assignment, institutional ratings & pilot approval',
     quickAction: {
       label: 'Triage Priority Queue',
-      href: '/government#triage',
+      href: '/government?mode=QUEUE',
     },
   },
   university: {
@@ -68,13 +67,13 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     badge: 'University Portal',
     badgeVariant: 'university',
     roleLabel: 'Faculty PI / Student Researcher / Dean',
-    accentBg: 'bg-indigo-50/80',
-    accentBorder: 'border-indigo-200',
-    accentText: 'text-indigo-900',
+    accentBg: 'bg-indigo-50/90 dark:bg-indigo-950/40',
+    accentBorder: 'border-indigo-200 dark:border-indigo-800',
+    accentText: 'text-indigo-950 dark:text-indigo-200',
     tagline: 'Applied research, multidisciplinary teams, prototyping & solution memory',
     quickAction: {
       label: 'Browse R&D Calls',
-      href: '/university#opportunities',
+      href: '/university?tab=assigned',
     },
   },
   industry: {
@@ -82,13 +81,13 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     badge: 'Industry Portal',
     badgeVariant: 'industry',
     roleLabel: 'Corporate Partner / MSME / CSR Lead',
-    accentBg: 'bg-amber-50/80',
-    accentBorder: 'border-amber-200',
-    accentText: 'text-amber-900',
+    accentBg: 'bg-amber-50/90 dark:bg-amber-950/40',
+    accentBorder: 'border-amber-200 dark:border-amber-800',
+    accentText: 'text-amber-950 dark:text-amber-200',
     tagline: 'CSR co-funding, MSME prototype scaling, licensing & commercialization',
     quickAction: {
       label: 'Partner Self-Registration',
-      href: '/industry#register',
+      href: '/industry?tab=REGISTER',
     },
   },
   admin: {
@@ -129,17 +128,17 @@ export function PortalShellHeader({ portal }: { portal: PortalType }) {
               'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border shadow-2xs',
               isDark
                 ? 'bg-slate-800 text-emerald-400 border-slate-700'
-                : 'bg-white text-slate-900 border-slate-300'
+                : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700'
             )}
           >
             {meta.badge}
           </span>
 
-          <span className="font-bold tracking-tight text-sm flex items-center gap-1.5">
+          <span className="font-extrabold tracking-tight text-sm flex items-center gap-1.5">
             {meta.title}
           </span>
 
-          <span className={cn('hidden lg:inline text-xs opacity-75', isDark ? 'text-slate-300' : 'text-slate-600')}>
+          <span className={cn('hidden lg:inline text-xs font-medium', isDark ? 'text-slate-300' : 'text-slate-700 dark:text-slate-300')}>
             — {meta.tagline}
           </span>
         </div>
@@ -152,7 +151,7 @@ export function PortalShellHeader({ portal }: { portal: PortalType }) {
               className={cn(
                 'font-bold px-3 py-1 rounded-md text-[11px] transition-all flex items-center gap-1 shadow-2xs',
                 isDark
-                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               )}
             >
@@ -161,9 +160,9 @@ export function PortalShellHeader({ portal }: { portal: PortalType }) {
             </Link>
           )}
 
-          <div className="flex items-center gap-1 text-[11px] opacity-90 pl-2 border-l border-current/20">
-            <span className="font-semibold">Role:</span>
-            <span className="font-bold">{user?.role || 'CITIZEN'}</span>
+          <div className="flex items-center gap-1 text-[11px] font-semibold pl-2 border-l border-current/30">
+            <span className="opacity-80">Role:</span>
+            <span className="font-extrabold">{user?.role || 'CITIZEN'}</span>
           </div>
         </div>
       </div>

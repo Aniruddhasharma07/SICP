@@ -40,11 +40,11 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur border-t border-slate-200 py-1.5 px-3 shadow-lg select-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 py-1.5 px-3 shadow-lg select-none">
       <div className="flex items-center justify-around">
         {items.map(item => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
           const isPrimary = 'isPrimary' in item && item.isPrimary;
 
           return (
@@ -52,25 +52,25 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-1 text-[11px] font-medium transition-colors touch-manipulation',
+                'flex flex-col items-center justify-center min-w-[56px] min-h-[48px] px-1 text-[11px] font-semibold transition-colors touch-manipulation',
                 isPrimary
-                  ? 'text-blue-600 font-bold'
+                  ? 'text-blue-600 dark:text-blue-400 font-bold'
                   : isActive
-                  ? 'text-blue-600 font-semibold'
-                  : 'text-slate-500 hover:text-slate-900 active:text-blue-600'
+                  ? 'text-blue-600 dark:text-blue-400 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:text-blue-600'
               )}
             >
               <div
                 className={cn(
                   'flex items-center justify-center transition-all',
                   isPrimary
-                    ? 'w-9 h-9 -mt-3 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 ring-4 ring-white'
+                    ? 'w-9 h-9 -mt-3 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 ring-4 ring-white dark:ring-slate-900'
                     : 'w-6 h-6'
                 )}
               >
                 <Icon className={isPrimary ? 'w-5 h-5' : 'w-5 h-5'} />
               </div>
-              <span className={cn('truncate max-w-[64px]', isPrimary && 'text-[10px] mt-0.5 font-bold text-blue-700')}>
+              <span className={cn('truncate max-w-[64px]', isPrimary && 'text-[10px] mt-0.5 font-bold text-blue-700 dark:text-blue-300')}>
                 {item.label}
               </span>
             </Link>

@@ -22,15 +22,15 @@ export default function ChallengeDetailPage({
   if (pi.loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-slate-950 p-8 space-y-6">
-          <div className="h-10 w-64 bg-slate-800/60 rounded-xl animate-pulse" />
-          <div className="h-44 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+        <div className="min-h-[80vh] bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+          <div className="h-10 w-64 bg-slate-200 dark:bg-slate-800/60 rounded-xl animate-pulse" />
+          <div className="h-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-6">
-              <div className="h-64 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
-              <div className="h-64 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+              <div className="h-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
+              <div className="h-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
             </div>
-            <div className="lg:col-span-4 h-96 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+            <div className="lg:col-span-4 h-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
           </div>
         </div>
       </AppLayout>
@@ -40,10 +40,10 @@ export default function ChallengeDetailPage({
   if (!pi.challenge) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-          <div className="max-w-md w-full p-8 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-4 text-slate-100 shadow-2xl">
-            <h2 className="text-xl font-bold text-slate-100">Problem Record Not Found</h2>
-            <p className="text-xs text-slate-400">
+        <div className="min-h-[80vh] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+          <div className="max-w-md w-full p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-center space-y-4 text-slate-900 dark:text-slate-100 shadow-xl">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Problem Record Not Found</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {pi.error || 'The requested challenge ID does not exist in the SICP registry.'}
             </p>
             <Button

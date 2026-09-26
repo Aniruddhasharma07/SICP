@@ -105,17 +105,17 @@ export default function AuditTrailPage() {
     <AppLayout>
       <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Tamper-Evident Authority Audit Ledger
             </h1>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
               Privileged Telemetry
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Verifiable audit records tracking state changes, government officer validations, and statutory actions.
           </p>
         </div>
@@ -124,7 +124,7 @@ export default function AuditTrailPage() {
           <select
             value={resourceFilter}
             onChange={(e) => setResourceFilter(e.target.value)}
-            className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800"
+            className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200"
           >
             <option value="">All Resources</option>
             <option value="CHALLENGE">Challenges</option>
@@ -145,13 +145,13 @@ export default function AuditTrailPage() {
       {loading ? (
         <div className="py-24 text-center space-y-3">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-          <p className="text-sm font-medium text-slate-600">Retrieving audit telemetry...</p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Retrieving audit telemetry...</p>
         </div>
       ) : logs.length > 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="px-4 py-3">Timestamp</th>
                   <th className="px-4 py-3">Action</th>
@@ -160,32 +160,32 @@ export default function AuditTrailPage() {
                   <th className="px-4 py-3">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {logs.map((log) => {
                   const isExpanded = expandedLogId === log.id;
                   return (
                     <React.Fragment key={log.id}>
-                      <tr className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                      <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400 font-mono text-[11px]">
                           {new Date(log.createdAt).toLocaleString([], {
                             dateStyle: 'short',
                             timeStyle: 'medium',
                           })}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md font-mono text-[11px]">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono text-[11px] border border-slate-200/50 dark:border-slate-700">
                             {log.action}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="font-medium text-slate-700">
+                          <span className="font-medium text-slate-700 dark:text-slate-300">
                             {log.actorRole || 'SYSTEM'}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-slate-500">{log.resource}:</span>
-                            <span className="font-mono text-[11px] text-slate-700 max-w-[120px] truncate">
+                            <span className="text-slate-500 dark:text-slate-400">{log.resource}:</span>
+                            <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 max-w-[120px] truncate">
                               {log.resourceId}
                             </span>
                           </div>
@@ -193,28 +193,28 @@ export default function AuditTrailPage() {
                         <td className="px-4 py-3 whitespace-nowrap text-right">
                           <button
                             onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                            className="text-blue-600 hover:underline font-medium text-xs"
+                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs cursor-pointer"
                           >
                             {isExpanded ? 'Collapse' : 'Inspect'}
                           </button>
                         </td>
                       </tr>
                       {isExpanded && (
-                        <tr className="bg-slate-50">
+                        <tr className="bg-slate-50 dark:bg-slate-800/80">
                           <td colSpan={5} className="px-4 py-3 space-y-2">
-                            <div className="text-[11px] font-mono text-slate-600 space-y-1">
+                            <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300 space-y-1">
                               <div>
-                                <span className="font-bold text-slate-700">Request ID:</span> {log.requestId}
+                                <span className="font-bold text-slate-700 dark:text-slate-200">Request ID:</span> {log.requestId}
                               </div>
                               {log.reason && (
                                 <div>
-                                  <span className="font-bold text-slate-700">Reason:</span> {log.reason}
+                                  <span className="font-bold text-slate-700 dark:text-slate-200">Reason:</span> {log.reason}
                                 </div>
                               )}
                               {log.newState && (
                                 <div className="mt-2">
-                                  <span className="font-bold text-slate-700">Payload / Diff:</span>
-                                  <pre className="mt-1 p-2 rounded-md bg-slate-900 text-slate-200 text-[10px] overflow-x-auto">
+                                  <span className="font-bold text-slate-700 dark:text-slate-200">Payload / Diff:</span>
+                                  <pre className="mt-1 p-2 rounded-md bg-slate-900 text-slate-200 text-[10px] overflow-x-auto border border-slate-700">
                                     {JSON.stringify(log.newState, null, 2)}
                                   </pre>
                                 </div>
@@ -231,10 +231,10 @@ export default function AuditTrailPage() {
           </div>
         </div>
       ) : (
-        <div className="py-16 px-6 text-center space-y-3 bg-slate-50 rounded-xl border border-slate-200">
+        <div className="py-16 px-6 text-center space-y-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
           <ShieldCheck className="w-10 h-10 text-slate-400 mx-auto" />
-          <h3 className="text-sm font-semibold text-slate-800">No audit records found</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">No audit records found</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
             No audit logs currently match this filter criteria. Actions will appear here as governance actions occur.
           </p>
         </div>

@@ -48,10 +48,10 @@ const PORTAL_PRESETS: PortalPreset[] = [
     email: 'citizen@sicp.gov.in',
     role: 'CITIZEN',
     icon: Layers,
-    accentColor: 'text-blue-600',
-    activeBorder: 'border-blue-600 ring-2 ring-blue-500/20',
-    activeBg: 'bg-blue-50/80',
-    badgeBg: 'bg-blue-100 text-blue-800',
+    accentColor: 'text-blue-600 dark:text-blue-400',
+    activeBorder: 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-500/20',
+    activeBg: 'bg-blue-50/80 dark:bg-blue-950/40',
+    badgeBg: 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
   },
   {
     key: 'government',
@@ -61,10 +61,10 @@ const PORTAL_PRESETS: PortalPreset[] = [
     email: 'officer@sicp.gov.in',
     role: 'GOVERNMENT_OFFICER',
     icon: ShieldCheck,
-    accentColor: 'text-purple-600',
-    activeBorder: 'border-purple-600 ring-2 ring-purple-500/20',
-    activeBg: 'bg-purple-50/80',
-    badgeBg: 'bg-purple-100 text-purple-800',
+    accentColor: 'text-purple-600 dark:text-purple-400',
+    activeBorder: 'border-purple-600 dark:border-purple-500 ring-2 ring-purple-500/20',
+    activeBg: 'bg-purple-50/80 dark:bg-purple-950/40',
+    badgeBg: 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200',
   },
   {
     key: 'university',
@@ -74,10 +74,10 @@ const PORTAL_PRESETS: PortalPreset[] = [
     email: 'university@sicp.gov.in',
     role: 'UNIVERSITY_ADMIN',
     icon: GraduationCap,
-    accentColor: 'text-indigo-600',
-    activeBorder: 'border-indigo-600 ring-2 ring-indigo-500/20',
-    activeBg: 'bg-indigo-50/80',
-    badgeBg: 'bg-indigo-100 text-indigo-800',
+    accentColor: 'text-indigo-600 dark:text-indigo-400',
+    activeBorder: 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-500/20',
+    activeBg: 'bg-indigo-50/80 dark:bg-indigo-950/40',
+    badgeBg: 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200',
   },
   {
     key: 'industry',
@@ -87,10 +87,10 @@ const PORTAL_PRESETS: PortalPreset[] = [
     email: 'industry@sicp.gov.in',
     role: 'CSR_ORGANIZATION',
     icon: Briefcase,
-    accentColor: 'text-amber-600',
-    activeBorder: 'border-amber-600 ring-2 ring-amber-500/20',
-    activeBg: 'bg-amber-50/80',
-    badgeBg: 'bg-amber-100 text-amber-800',
+    accentColor: 'text-amber-600 dark:text-amber-400',
+    activeBorder: 'border-amber-600 dark:border-amber-500 ring-2 ring-amber-500/20',
+    activeBg: 'bg-amber-50/80 dark:bg-amber-950/40',
+    badgeBg: 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200',
   },
   {
     key: 'admin',
@@ -100,9 +100,9 @@ const PORTAL_PRESETS: PortalPreset[] = [
     email: 'admin@sicp.gov.in',
     role: 'SYSTEM_ADMIN',
     icon: Lock,
-    accentColor: 'text-emerald-500',
-    activeBorder: 'border-slate-900 ring-2 ring-slate-900/20',
-    activeBg: 'bg-slate-900 text-white',
+    accentColor: 'text-emerald-500 dark:text-emerald-400',
+    activeBorder: 'border-slate-900 dark:border-slate-700 ring-2 ring-slate-900/20',
+    activeBg: 'bg-slate-900 dark:bg-slate-950 text-white',
     badgeBg: 'bg-slate-800 text-emerald-400',
   },
 ];
@@ -206,25 +206,25 @@ export default function LoginPage() {
   const activePreset = PORTAL_PRESETS.find((p) => p.key === selectedPortal) || PORTAL_PRESETS[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white">
       <div className="w-full max-w-lg space-y-4">
         {/* Brand Header */}
         <div className="text-center space-y-1">
-          <Link href="/" className="inline-flex items-center gap-2.5 font-black text-2xl text-slate-900 tracking-tight">
+          <Link href="/" className="inline-flex items-center gap-2.5 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
             <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-xs">
               S
             </span>
             SICP Portal Entry
           </Link>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
             Societal Innovation Collaboration Portal — 5 Independent Stakeholder Shells
           </p>
         </div>
 
-        <Card className="shadow-md border-slate-200">
+        <Card className="shadow-md border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <CardHeader className="pb-3">
-            <CardTitle className="text-xl font-bold text-slate-900">Sign In</CardTitle>
-            <CardDescription className="text-xs text-slate-500">
+            <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">Sign In</CardTitle>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
               Select your portal persona to prefill development credentials, or enter your registered account.
             </CardDescription>
           </CardHeader>
@@ -242,9 +242,9 @@ export default function LoginPage() {
               )}
 
               {infoMessage && (
-                <Alert variant="info" className="py-2.5 bg-blue-50 border-blue-200 text-blue-900">
+                <Alert variant="info" className="py-2.5 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
                     <span className="text-xs font-semibold">{infoMessage}</span>
                   </div>
                 </Alert>
@@ -252,11 +252,11 @@ export default function LoginPage() {
 
               {/* 5 Portal Stakeholder Presets Selector */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span className="uppercase tracking-wider text-[11px] text-slate-400">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span className="uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400">
                     Select Your Portal
                   </span>
-                  <span className="text-[10px] text-slate-400">Click to switch persona</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Click to switch persona</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -272,18 +272,18 @@ export default function LoginPage() {
                           'p-3 rounded-xl border text-left transition-all flex flex-col justify-between select-none relative overflow-hidden',
                           isSelected
                             ? cn(p.activeBorder, p.activeBg, 'shadow-xs')
-                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60 dark:hover:bg-slate-800/60'
                         )}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="font-bold text-xs text-slate-900">{p.label}</span>
-                          <Icon className={cn('w-4 h-4', isSelected ? p.accentColor : 'text-slate-400')} />
+                          <span className="font-bold text-xs text-slate-900 dark:text-white">{p.label}</span>
+                          <Icon className={cn('w-4 h-4', isSelected ? p.accentColor : 'text-slate-400 dark:text-slate-500')} />
                         </div>
-                        <span className="text-[10px] text-slate-500 line-clamp-1">{p.sublabel}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">{p.sublabel}</span>
                         {isSelected && (
-                          <div className="mt-2 pt-1 border-t border-current/10 flex items-center justify-between text-[10px] font-semibold text-slate-600">
+                          <div className="mt-2 pt-1 border-t border-current/10 flex items-center justify-between text-[10px] font-semibold text-slate-600 dark:text-slate-300">
                             <span>Routes to:</span>
-                            <span className="font-mono text-[9px] bg-white/70 px-1 rounded">{p.destination}</span>
+                            <span className="font-mono text-[9px] bg-white/70 dark:bg-slate-800/70 border border-slate-200/50 dark:border-slate-700/50 px-1 rounded">{p.destination}</span>
                           </div>
                         )}
                       </button>
@@ -303,8 +303,8 @@ export default function LoginPage() {
                         className={cn(
                           'col-span-2 p-3 rounded-xl border text-left transition-all flex items-center justify-between select-none',
                           isSelected
-                            ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                            : 'bg-slate-900/90 border-slate-800 text-slate-200 hover:bg-slate-900'
+                            ? 'bg-slate-900 dark:bg-slate-950 border-slate-900 dark:border-slate-700 text-white shadow-md'
+                            : 'bg-slate-900/90 dark:bg-slate-950/90 border-slate-800 text-slate-200 hover:bg-slate-900 dark:hover:bg-slate-950'
                         )}
                       >
                         <div className="flex items-center gap-2.5">
@@ -331,13 +331,13 @@ export default function LoginPage() {
               </div>
 
               {/* Input Fields */}
-              <div className="space-y-3 pt-2 border-t border-slate-100">
+              <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-700">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       required
@@ -345,17 +345,17 @@ export default function LoginPage() {
                       disabled={isLoading}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="user@sicp.gov.in"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 text-xs bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-700">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="password"
                       required
@@ -363,14 +363,14 @@ export default function LoginPage() {
                       disabled={isLoading}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Password"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 text-xs bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     />
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
                   <span>Development Password:</span>
-                  <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                  <span className="font-mono font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                     Password@123
                   </span>
                 </div>
@@ -383,7 +383,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className={cn(
                   'w-full font-bold text-xs py-2.5 transition-all shadow-xs flex items-center justify-center gap-1.5',
-                  selectedPortal === 'admin' ? 'bg-slate-900 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-700'
+                  selectedPortal === 'admin' ? 'bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700' : 'bg-blue-600 hover:bg-blue-700'
                 )}
               >
                 {isLoading ? (
@@ -399,9 +399,9 @@ export default function LoginPage() {
                 )}
               </Button>
 
-              <div className="text-center text-xs text-slate-500">
+              <div className="text-center text-xs text-slate-500 dark:text-slate-400">
                 <span>Need a new account? </span>
-                <Link href="/register" className="text-blue-600 font-bold hover:underline">
+                <Link href="/register" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
                   Register here
                 </Link>
               </div>

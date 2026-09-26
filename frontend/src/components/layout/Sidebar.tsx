@@ -210,7 +210,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
         'hidden md:flex w-64 shrink-0 flex-col border-r min-h-[calc(100vh-4rem)] p-3.5 space-y-4 select-none',
         isDark
           ? 'bg-slate-950 border-slate-800 text-slate-200'
-          : 'bg-white/95 border-slate-200 text-slate-800 backdrop-blur-xs'
+          : 'bg-white/95 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 backdrop-blur-xs'
       )}
     >
       {/* Portal Identity Pill */}
@@ -249,7 +249,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
             <div
               className={cn(
                 'px-2 py-1 text-[10px] font-bold uppercase tracking-wider',
-                isDark ? 'text-slate-400' : 'text-slate-600'
+                isDark ? 'text-slate-400' : 'text-slate-600 dark:text-slate-400'
               )}
             >
               {section.title}
@@ -269,7 +269,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
                         : 'bg-slate-900 text-white shadow-xs'
                       : isDark
                       ? 'text-slate-300 hover:bg-slate-900 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                   )}
                 >
                   <div className="flex items-center gap-2.5 truncate">
@@ -331,7 +331,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
                   'flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 border border-transparent',
                   isDark
                     ? 'hover:bg-slate-900 text-slate-200 hover:text-white hover:border-slate-800'
-                    : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900 hover:border-slate-200'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:border-slate-700'
                 )}
               >
                 <span className="flex items-center gap-2 truncate">
@@ -345,12 +345,12 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
       </div>
 
       {/* User Context & Sign Out */}
-      <div className={cn('pt-2 border-t space-y-2', isDark ? 'border-slate-800' : 'border-slate-100')}>
+      <div className={cn('pt-2 border-t space-y-2', isDark ? 'border-slate-800' : 'border-slate-100 dark:border-slate-800')}>
         {user ? (
           <div
             className={cn(
               'flex items-center justify-between p-2 rounded-lg border text-xs',
-              isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-200/80 text-slate-800'
+              isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200'
             )}
           >
             <div className="flex items-center gap-2 min-w-0">

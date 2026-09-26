@@ -12,8 +12,8 @@ const GeospatialMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex items-center justify-center min-h-[440px] bg-slate-50 rounded-xl border border-slate-200">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+      <div className="flex items-center justify-center min-h-[440px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
           <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
           <span>Loading OpenStreetMap engine...</span>
         </div>
@@ -33,7 +33,7 @@ function MapContent() {
         description="National map of citizen-reported civic challenges, severity clusters, and municipal infrastructure hotspots."
         badge="Live Geospatial Intelligence"
       />
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs p-4 sm:p-6">
         <GeospatialMap initialCategory={category} />
       </div>
     </div>

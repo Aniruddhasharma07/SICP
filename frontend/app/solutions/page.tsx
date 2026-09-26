@@ -308,7 +308,7 @@ export default function SolutionsRepositoryPage() {
         )}
 
         {/* Canonical Memory Status Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs border-b border-slate-200">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs border-b border-slate-200 dark:border-slate-800">
           {[
             { id: '', label: 'All Precedents', count: total },
             { id: 'SUCCESSFUL', label: '🟢 Worked Before', count: analytics?.memoriesByOutcome?.successful ?? 0 },
@@ -323,14 +323,14 @@ export default function SolutionsRepositoryPage() {
                 'px-3.5 py-2 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer',
                 outcomeFilter === tab.id
                   ? 'bg-blue-600 text-white font-bold shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
               )}
             >
               <span>{tab.label}</span>
               {tab.count > 0 && (
                 <span className={cn(
                   'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
-                  outcomeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                  outcomeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 )}>
                   {tab.count}
                 </span>
@@ -340,10 +340,10 @@ export default function SolutionsRepositoryPage() {
         </div>
 
         {/* Search & Filter Toolbar */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 dark:text-slate-500" />
               <Input
                 type="text"
                 placeholder="Search solutions by keyword, technology, root cause, or location..."
@@ -357,15 +357,15 @@ export default function SolutionsRepositoryPage() {
             </Button>
           </form>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 text-xs">
-            <span className="text-slate-500 font-semibold flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
               <Filter className="w-3.5 h-3.5" /> Filters:
             </span>
 
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-700 text-xs"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-slate-700 dark:text-slate-200 text-xs"
             >
               <option value="">All Categories</option>
               <option value="WATER_SUPPLY">Water Supply</option>
@@ -380,7 +380,7 @@ export default function SolutionsRepositoryPage() {
             <select
               value={reusabilityFilter}
               onChange={e => setReusabilityFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-700 text-xs"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-slate-700 dark:text-slate-200 text-xs"
             >
               <option value="">All Reusability Classes</option>
               <option value="HIGHLY_REUSABLE">Highly Reusable</option>
@@ -392,7 +392,7 @@ export default function SolutionsRepositoryPage() {
             <select
               value={outcomeFilter}
               onChange={e => setOutcomeFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-slate-700 text-xs"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-slate-700 dark:text-slate-200 text-xs"
             >
               <option value="">All Outcomes</option>
               <option value="SUCCESSFUL">Successful</option>
@@ -419,7 +419,7 @@ export default function SolutionsRepositoryPage() {
 
             {selectedForCompare.length > 0 && (
               <div className="ml-auto flex items-center gap-2">
-                <span className="text-blue-700 font-semibold">{selectedForCompare.length} selected</span>
+                <span className="text-blue-700 dark:text-blue-400 font-semibold">{selectedForCompare.length} selected</span>
                 <Button
                   size="sm"
                   variant="primary"
@@ -448,14 +448,14 @@ export default function SolutionsRepositoryPage() {
             <p className="text-sm font-medium">Retrieving verified solutions from memory...</p>
           </div>
         ) : solutions.length === 0 ? (
-          <Card className="bg-white border-dashed border-2 border-slate-200 text-center py-16">
+          <Card className="bg-white dark:bg-slate-900 border-dashed border-2 border-slate-200 dark:border-slate-800 text-center py-16">
             <CardContent className="space-y-4 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
                 <Search className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-slate-900">No verified solutions found</h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">No verified solutions found</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   SICP strictly does not hallucinate or fabricate unverified cases. No solution memories matched your specific search criteria.
                 </p>
               </div>
@@ -482,7 +482,7 @@ export default function SolutionsRepositoryPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            <div className="text-xs text-slate-500 font-medium">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Showing {solutions.length} of {total} verified solution memories
             </div>
 
@@ -493,7 +493,7 @@ export default function SolutionsRepositoryPage() {
                   <Card
                     key={sol.id}
                     className={`transition-all hover:shadow-md border ${
-                      isSelected ? 'border-blue-500 ring-1 ring-blue-500 bg-blue-50/20' : 'border-slate-200'
+                      isSelected ? 'border-blue-500 ring-1 ring-blue-500 bg-blue-50/20 dark:bg-blue-950/20' : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
                     }`}
                   >
                     <CardHeader className="pb-3">
@@ -506,38 +506,38 @@ export default function SolutionsRepositoryPage() {
                               {sol.evidenceLevel}
                             </Badge>
                           </div>
-                          <CardTitle className="text-base font-bold text-slate-900 hover:text-blue-600 transition-colors">
+                          <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                             <Link href={`/solutions/${sol.id}`}>{sol.title}</Link>
                           </CardTitle>
                         </div>
 
-                        <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none bg-slate-50 px-2 py-1 rounded border border-slate-200">
+                        <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleCompare(sol.id)}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                           />
                           <span>Compare</span>
                         </label>
                       </div>
 
-                      <CardDescription className="text-xs text-slate-600 line-clamp-2 mt-1">
+                      <CardDescription className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1">
                         {sol.summary || sol.problemSummary}
                       </CardDescription>
                     </CardHeader>
 
                     <CardContent className="space-y-3 pt-0 text-xs">
                       {/* Technical Approach Snippet */}
-                      <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                        <span className="font-semibold text-slate-700">Approach: </span>
-                        <span className="text-slate-600 line-clamp-2">{sol.technicalApproach}</span>
+                      <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">Approach: </span>
+                        <span className="text-slate-600 dark:text-slate-300 line-clamp-2">{sol.technicalApproach}</span>
                       </div>
 
                       {/* Failure Warning Callout if present */}
                       {(sol.futureWarnings || sol.whatFailed) && (
-                        <div className="bg-amber-50/80 border border-amber-200 text-amber-900 p-2.5 rounded-lg flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 p-2.5 rounded-lg flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                           <div className="text-[11px] leading-tight">
                             <span className="font-semibold">Operational Warning: </span>
                             <span className="line-clamp-1">{sol.futureWarnings || sol.whatFailed}</span>
@@ -548,11 +548,11 @@ export default function SolutionsRepositoryPage() {
                       {/* Reusability Score Bar */}
                       {sol.reusabilityScore != null && (
                         <div className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-medium text-slate-500">
+                          <div className="flex justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
                             <span>Reusability Index</span>
-                            <span className="font-bold text-slate-800">{sol.reusabilityScore}/100</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{sol.reusabilityScore}/100</span>
                           </div>
-                          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
                                 sol.reusabilityScore >= 80
@@ -570,8 +570,8 @@ export default function SolutionsRepositoryPage() {
                       )}
 
                       {/* Card Footer Actions */}
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <div className="text-[11px] text-slate-400">
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500">
                           {sol.reuseCount > 0 ? `Reused ${sol.reuseCount} times` : 'Ready for adoption'}
                         </div>
                         <div className="flex items-center gap-2">
@@ -581,12 +581,12 @@ export default function SolutionsRepositoryPage() {
                               setDrawerCases([sol]);
                               setDrawerOpen(true);
                             }}
-                            className="text-[11px] font-semibold text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+                            className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                           >
                             Inspect Specs
                           </button>
                           <Link href={`/solutions/${sol.id}`}>
-                            <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700 p-0 flex items-center gap-1">
+                            <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-0 flex items-center gap-1 cursor-pointer">
                               <span>Full Case</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </Button>
@@ -604,15 +604,15 @@ export default function SolutionsRepositoryPage() {
         {/* Side-by-Side Solution Comparison Modal */}
         {comparisonModalOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
                 <div className="flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-bold text-slate-900 text-lg">Multi-Solution Comparative Evaluation</h3>
+                  <Layers className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">Multi-Solution Comparative Evaluation</h3>
                 </div>
                 <button
                   onClick={() => setComparisonModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-lg cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -620,20 +620,20 @@ export default function SolutionsRepositoryPage() {
 
               <div className="p-6 overflow-y-auto flex-1 space-y-6">
                 {comparisonLoading ? (
-                  <div className="py-12 text-center text-slate-500">
+                  <div className="py-12 text-center text-slate-500 dark:text-slate-400">
                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     <p className="text-xs">Computing side-by-side dimensions...</p>
                   </div>
                 ) : comparisonData ? (
                   <div className="space-y-6">
                     {/* Header Columns */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-200 pb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                       {comparisonData.solutions.map(sol => (
-                        <div key={sol.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <div key={sol.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
                           <Badge variant="outline" className="text-[10px]">
                             {sol.category}
                           </Badge>
-                          <h4 className="font-bold text-slate-900 text-sm line-clamp-2">{sol.title}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm line-clamp-2">{sol.title}</h4>
                           <div className="flex items-center gap-2 text-xs">
                             {getReusabilityBadge(sol.reusabilityClass)}
                           </div>
@@ -643,12 +643,12 @@ export default function SolutionsRepositoryPage() {
 
                     {/* Dimension 1: Problem & Root Cause */}
                     <div className="space-y-2">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         1. Problem Formulation & Root Cause
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {comparisonData.solutions.map(sol => (
-                          <div key={sol.id} className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                          <div key={sol.id} className="text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
                             {comparisonData.comparisonDimensions.problemAndRootCause[sol.id]}
                           </div>
                         ))}
@@ -657,12 +657,12 @@ export default function SolutionsRepositoryPage() {
 
                     {/* Dimension 2: Technology & Approach */}
                     <div className="space-y-2">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         2. Technical Architecture & Methodology
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {comparisonData.solutions.map(sol => (
-                          <div key={sol.id} className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200 font-mono text-[11px]">
+                          <div key={sol.id} className="text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-[11px]">
                             {comparisonData.comparisonDimensions.technologyAndApproach[sol.id]}
                           </div>
                         ))}
@@ -671,12 +671,12 @@ export default function SolutionsRepositoryPage() {
 
                     {/* Dimension 3: Outcomes & Impact */}
                     <div className="space-y-2">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         3. Field Outcomes & Verified Evidence
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {comparisonData.solutions.map(sol => (
-                          <div key={sol.id} className="text-xs text-slate-700 bg-emerald-50/50 p-3 rounded-lg border border-emerald-200">
+                          <div key={sol.id} className="text-xs text-slate-700 dark:text-slate-300 bg-emerald-50/50 dark:bg-emerald-950/40 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800">
                             {comparisonData.comparisonDimensions.outcomesAndImpact[sol.id]}
                           </div>
                         ))}
@@ -685,12 +685,12 @@ export default function SolutionsRepositoryPage() {
 
                     {/* Dimension 4: Failure Modes & Limitations */}
                     <div className="space-y-2">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         4. Known Failure Modes & Operational Warnings
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {comparisonData.solutions.map(sol => (
-                          <div key={sol.id} className="text-xs text-slate-700 bg-amber-50/60 p-3 rounded-lg border border-amber-200">
+                          <div key={sol.id} className="text-xs text-slate-700 dark:text-slate-300 bg-amber-50/60 dark:bg-amber-950/40 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
                             {comparisonData.comparisonDimensions.limitationsAndFailureModes[sol.id]}
                           </div>
                         ))}
@@ -700,7 +700,7 @@ export default function SolutionsRepositoryPage() {
                 ) : null}
               </div>
 
-              <div className="p-4 border-t border-slate-200 flex justify-end bg-slate-50">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800/60">
                 <Button variant="outline" onClick={() => setComparisonModalOpen(false)}>
                   Close Comparison
                 </Button>
@@ -712,8 +712,8 @@ export default function SolutionsRepositoryPage() {
         {/* AI Knowledge Assistant Drawer */}
         {assistantOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex justify-end">
-            <div className="bg-white w-full max-w-xl h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-xl h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 border-l border-slate-200 dark:border-slate-800">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-200" />
                   <div>
@@ -723,7 +723,7 @@ export default function SolutionsRepositoryPage() {
                 </div>
                 <button
                   onClick={() => setAssistantOpen(false)}
-                  className="text-white/80 hover:text-white p-1 rounded-lg"
+                  className="text-white/80 hover:text-white p-1 rounded-lg cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -731,12 +731,12 @@ export default function SolutionsRepositoryPage() {
 
               <div className="flex-1 p-4 overflow-y-auto space-y-4">
                 {/* Intro banner */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 space-y-1">
+                <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-xs text-blue-900 dark:text-blue-200 space-y-1">
                   <div className="font-semibold flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     Strict Anti-Hallucination Guarantee
                   </div>
-                  <p className="text-slate-600 text-[11px]">
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px]">
                     This assistant does not invent synthetic precedents. Every cited solution, project, and failure warning is backed by actual database records and verified field audits.
                   </p>
                 </div>
@@ -744,7 +744,7 @@ export default function SolutionsRepositoryPage() {
                 {/* Prompt Suggestions */}
                 {!assistantResponse && !assistantLoading && (
                   <div className="space-y-2 pt-2">
-                    <span className="text-xs font-semibold text-slate-500">Sample inquiries:</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Sample inquiries:</span>
                     <div className="space-y-1.5">
                       {[
                         'What solutions have worked for fluoride and turbidity in groundwater?',
@@ -757,10 +757,10 @@ export default function SolutionsRepositoryPage() {
                             setAssistantQuery(sample);
                             handleAskAssistant(sample);
                           }}
-                          className="w-full text-left p-2.5 rounded-lg border border-slate-200 text-xs text-slate-700 hover:bg-slate-50 hover:border-blue-300 transition-colors flex items-center justify-between"
+                          className="w-full text-left p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between cursor-pointer"
                         >
                           <span>{sample}</span>
-                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                         </button>
                       ))}
                     </div>
@@ -769,7 +769,7 @@ export default function SolutionsRepositoryPage() {
 
                 {/* Loading State */}
                 {assistantLoading && (
-                  <div className="py-12 text-center text-slate-500 space-y-2">
+                  <div className="py-12 text-center text-slate-500 dark:text-slate-400 space-y-2">
                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
                     <p className="text-xs font-medium">Scanning verified institutional memory...</p>
                   </div>
@@ -780,7 +780,7 @@ export default function SolutionsRepositoryPage() {
                   <div className="space-y-4 animate-in fade-in duration-200">
                     {/* Confidence & Evidence Quality */}
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-500">Evidence Quality:</span>
+                      <span className="font-medium text-slate-500 dark:text-slate-400">Evidence Quality:</span>
                       <Badge
                         variant={
                           assistantResponse.evidenceQuality === 'HIGH_CONFIDENCE'
@@ -795,15 +795,15 @@ export default function SolutionsRepositoryPage() {
                     </div>
 
                     {/* Synthesized Answer */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 leading-relaxed whitespace-pre-line">
+                    <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-xs text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
                       {assistantResponse.answer}
                     </div>
 
                     {/* Historical Warnings */}
                     {assistantResponse.historicalWarnings.length > 0 && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1.5">
-                        <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-3 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
+                        <div className="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           Precedent Failure Warnings
                         </div>
                         <ul className="list-disc pl-4 space-y-1 text-[11px]">
@@ -817,21 +817,21 @@ export default function SolutionsRepositoryPage() {
                     {/* Cited Records */}
                     {assistantResponse.citations.length > 0 && (
                       <div className="space-y-2">
-                        <span className="text-xs font-bold text-slate-700">Verified Evidence Sources:</span>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Verified Evidence Sources:</span>
                         <div className="space-y-1.5">
                           {assistantResponse.citations.map((cite, i) => (
                             <Link
                               key={i}
                               href={cite.actionUrl}
-                              className="block p-2.5 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+                              className="block p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/40 dark:hover:bg-blue-950/40 transition-colors"
                             >
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-bold text-blue-700">{cite.recordTitle}</span>
+                                <span className="font-bold text-blue-700 dark:text-blue-400">{cite.recordTitle}</span>
                                 <Badge variant="outline" className="text-[10px]">
                                   {cite.recordType}
                                 </Badge>
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                                 {cite.relevanceContext}
                               </p>
                             </Link>
@@ -842,8 +842,8 @@ export default function SolutionsRepositoryPage() {
 
                     {/* Suggested Follow-Ups */}
                     {assistantResponse.suggestedFollowUpQuestions.length > 0 && (
-                      <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                        <span className="text-xs font-semibold text-slate-500">Related follow-ups:</span>
+                      <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Related follow-ups:</span>
                         <div className="space-y-1">
                           {assistantResponse.suggestedFollowUpQuestions.map((q, i) => (
                             <button
@@ -852,7 +852,7 @@ export default function SolutionsRepositoryPage() {
                                 setAssistantQuery(q);
                                 handleAskAssistant(q);
                               }}
-                              className="w-full text-left text-[11px] text-slate-600 hover:text-blue-600 hover:underline py-1 block"
+                              className="w-full text-left text-[11px] text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 block cursor-pointer"
                             >
                               • {q}
                             </button>
@@ -865,7 +865,7 @@ export default function SolutionsRepositoryPage() {
               </div>
 
               {/* Chat Input Footer */}
-              <div className="p-4 border-t border-slate-200 bg-slate-50">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
                 <form
                   onSubmit={e => {
                     e.preventDefault();
@@ -878,7 +878,7 @@ export default function SolutionsRepositoryPage() {
                     placeholder="Ask about solutions, failures, or reusability..."
                     value={assistantQuery}
                     onChange={e => setAssistantQuery(e.target.value)}
-                    className="flex-1 bg-white text-xs"
+                    className="flex-1 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs"
                     disabled={assistantLoading}
                   />
                   <Button

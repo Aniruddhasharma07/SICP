@@ -198,19 +198,19 @@ export default function ComplaintDashboardPage() {
     <AppLayout portal="citizen">
       <div className="space-y-6 py-2">
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 border border-blue-900/40 shadow-xl relative overflow-hidden">
+        <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-6 sm:p-7 border border-slate-800 shadow-md relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
+            <div className="space-y-2.5 max-w-2xl">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-1.5">
                   <ShieldAlert className="w-3.5 h-3.5 text-blue-400" />
                   <span>Civic Redressal &amp; Public Tracking Portal</span>
                 </span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                   Real-Time Governance
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
                 Civic Grievance &amp; Innovation Center
               </h1>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
@@ -220,14 +220,14 @@ export default function ComplaintDashboardPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/challenges/new">
-                <Button className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-10 px-5 shadow-lg shadow-blue-600/30">
+                <Button className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-10 px-5 shadow-xs">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   Report a Civic Problem
                 </Button>
               </Link>
               <Button
                 variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs h-10"
+                className="bg-slate-800/80 hover:bg-slate-700 text-slate-100 border-slate-700 text-xs h-10 font-semibold"
                 onClick={() => setAssistantOpen(true)}
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
@@ -235,7 +235,7 @@ export default function ComplaintDashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs h-10"
+                className="bg-slate-800/80 hover:bg-slate-700 text-slate-100 border-slate-700 text-xs h-10 font-semibold"
                 onClick={fetchComplaints}
                 disabled={loading}
               >
@@ -254,26 +254,25 @@ export default function ComplaintDashboardPage() {
         )}
 
         {/* Systemic Incident SI-204 Intelligence Banner */}
-        <div className="bg-gradient-to-r from-amber-950 via-slate-900 to-indigo-950 border-2 border-amber-500/50 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-slate-900 dark:bg-slate-950 border-2 border-amber-500/60 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
             <div className="space-y-2.5 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-black flex items-center gap-1.5 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                   ACTIVE SYSTEMIC INCIDENT: SI-204
                 </span>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-200 border border-slate-700">
                   Gamharia Block, Seraikela Kharsawan
                 </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-800">
                   JJM Infrastructure Graph Correlated
                 </span>
-                <span className="text-[10px] font-mono text-slate-300 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">
+                <span className="text-[10px] font-mono text-slate-300 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
                   Evidence Strength: 84/100 (8/12 Signals)
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-amber-200 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-amber-100 tracking-tight">
                 25 Correlated Citizen Reports Aggregated Across 3 Habitations
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -283,9 +282,9 @@ export default function ComplaintDashboardPage() {
             <div className="flex items-center gap-3 shrink-0">
               <Button
                 onClick={() => setDossierOpen(true)}
-                className="bg-amber-500 hover:bg-amber-400 text-black font-black text-xs h-11 px-5 shadow-lg shadow-amber-500/25 flex items-center gap-2 transition transform hover:scale-[1.02]"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs h-10 px-4 rounded-lg shadow-sm flex items-center gap-2 transition cursor-pointer"
               >
-                <BrainCircuit className="w-4 h-4 text-black" />
+                <BrainCircuit className="w-4 h-4 text-slate-950" />
                 <span>Open Systemic Dossier &amp; Graph</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
@@ -294,60 +293,69 @@ export default function ComplaintDashboardPage() {
         </div>
 
         {/* Citizen Navigation Tabs */}
-        <div className="border-b border-slate-200 flex flex-wrap gap-4 text-sm font-medium">
+        <div className="border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-2 text-sm font-semibold">
           <button
             onClick={() => setActiveTab('MY_GRIEVANCES')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'MY_GRIEVANCES'
-                ? 'border-blue-600 text-blue-700 font-bold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>My Submitted Grievances ({myComplaints.length})</span>
+            <span>My Submitted Grievances</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              {myComplaints.length}
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('COMMUNITY_HOTSPOTS')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'COMMUNITY_HOTSPOTS'
-                ? 'border-blue-600 text-blue-700 font-bold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>Community Hotspots &amp; Support ({filteredComplaints.length})</span>
+            <span>Community Hotspots &amp; Support</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              {filteredComplaints.length}
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('RESOLVED_IMPACT')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 px-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'RESOLVED_IMPACT'
-                ? 'border-blue-600 text-blue-700 font-bold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Verified Outcomes &amp; Feedback ({resolvedComplaints.length})</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Verified Outcomes &amp; Feedback</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              {resolvedComplaints.length}
+            </span>
           </button>
         </div>
 
         {/* Search and Category Filter Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="relative w-full sm:w-96">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
             <Input
               type="text"
               placeholder="Search by title, ward, or category..."
-              className="pl-9 h-9 text-xs bg-white"
+              className="pl-9 h-9 text-xs"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-xs text-slate-500 whitespace-nowrap">Category:</span>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Category:</span>
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="h-9 text-xs rounded-lg border border-slate-300 bg-white px-3 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="h-9 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-slate-800 dark:text-slate-200 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer"
             >
               <option value="ALL">All Categories</option>
               <option value="WATER_SANITATION">Water &amp; Sanitation</option>
@@ -359,8 +367,8 @@ export default function ComplaintDashboardPage() {
               <option value="ENVIRONMENT">Environment</option>
             </select>
             <Link href="/map">
-              <Button variant="outline" className="h-9 text-xs gap-1.5 whitespace-nowrap bg-white">
-                <MapPin className="w-3.5 h-3.5 text-blue-600" />
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5 whitespace-nowrap">
+                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 View Hotspot Map
               </Button>
             </Link>
@@ -391,44 +399,48 @@ export default function ComplaintDashboardPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {myComplaints.map(item => (
-                  <Card key={item.id} className="hover:shadow-md transition border-slate-200 flex flex-col">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <Badge variant="outline" className="text-[10px] font-semibold text-slate-700 bg-slate-50">
-                          {item.category.replace('_', ' ')}
+                  <Card key={item.id} className="hover:shadow-md transition-all border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="secondary" className="text-[10px] font-bold">
+                          {item.category.replace(/_/g, ' ')}
                         </Badge>
                         <StatusBadge status={item.status} />
                       </div>
-                      <CardTitle className="text-sm font-bold text-slate-900 line-clamp-2 hover:text-blue-600 transition">
+                      <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <Link href={`/challenges/${item.id}`}>{item.title}</Link>
                       </CardTitle>
-                      <CardDescription className="text-xs text-slate-500 line-clamp-2 mt-1">
+                      <CardDescription className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1.5 leading-relaxed">
                         {item.description}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-600">
+                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-700 dark:text-slate-300">
                       <div className="space-y-2 mb-4">
                         {item.district && (
-                          <div className="flex items-center gap-1.5 text-slate-500">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                            <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                             <span className="truncate">{item.district}, {item.state || 'India'}</span>
                           </div>
                         )}
-                        <div className="flex items-center justify-between text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-100">
-                          <span className="text-slate-500">Priority Score:</span>
-                          <span className="font-bold text-slate-800">{item.priorityScore || 50}/100</span>
+                        <div className="flex items-center justify-between text-[11px] bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 font-medium">
+                          <span className="text-slate-600 dark:text-slate-400">Priority Score:</span>
+                          <span className="font-extrabold text-slate-900 dark:text-slate-100">{item.priorityScore || 50}/100</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-[11px] text-slate-400">
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-200/80 dark:border-slate-800">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                           {new Date(item.createdAt).toLocaleDateString()}
                         </span>
                         <Link href={`/challenges/${item.id}`}>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs text-blue-600 hover:text-blue-700 px-2 font-medium">
-                            Track Status
-                            <ArrowRight className="w-3 h-3 ml-1" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs font-bold text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-3 cursor-pointer"
+                          >
+                            <span>Track Status</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1" />
                           </Button>
                         </Link>
                       </div>
@@ -448,59 +460,65 @@ export default function ComplaintDashboardPage() {
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
               </div>
             ) : filteredComplaints.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs">
+              <div className="text-center py-12 text-slate-600 dark:text-slate-400 text-xs font-medium">
                 No matching community problems found.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredComplaints.map(item => (
-                  <Card key={item.id} className="hover:shadow-md transition border-slate-200 flex flex-col">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <Badge variant="outline" className="text-[10px] font-semibold text-slate-700 bg-slate-50">
-                          {item.category.replace('_', ' ')}
+                  <Card key={item.id} className="hover:shadow-md transition-all border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="secondary" className="text-[10px] font-bold">
+                          {item.category.replace(/_/g, ' ')}
                         </Badge>
                         <StatusBadge status={item.status} />
                       </div>
-                      <CardTitle className="text-sm font-bold text-slate-900 line-clamp-2 hover:text-blue-600 transition">
+                      <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <Link href={`/challenges/${item.id}`}>{item.title}</Link>
                       </CardTitle>
-                      <CardDescription className="text-xs text-slate-500 line-clamp-2 mt-1">
+                      <CardDescription className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1.5 leading-relaxed">
                         {item.description}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-600">
+                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-700 dark:text-slate-300">
                       <div className="space-y-2 mb-4">
                         {item.district && (
-                          <div className="flex items-center gap-1.5 text-slate-500">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                            <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                             <span className="truncate">{item.district}, {item.state || 'India'}</span>
                           </div>
                         )}
-                        <div className="flex items-center justify-between text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-100">
-                          <span className="text-slate-500">Community Support:</span>
-                          <span className="font-bold text-blue-600">{item.supportVotesCount || 0} votes</span>
+                        <div className="flex items-center justify-between text-[11px] bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 font-medium">
+                          <span className="text-slate-600 dark:text-slate-400">Community Support:</span>
+                          <span className="font-extrabold text-blue-600 dark:text-blue-400">{item.supportVotesCount || 0} votes</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={`h-8 text-xs font-semibold gap-1.5 ${
-                            upvotedIds.has(item.id)
-                              ? 'bg-blue-50 text-blue-700 border-blue-300'
-                              : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                          onClick={() => handleUpvote(item.id)}
-                          disabled={upvotedIds.has(item.id)}
-                        >
-                          <ThumbsUp className="w-3.5 h-3.5" />
-                          {upvotedIds.has(item.id) ? 'Endorsed' : 'Endorse Issue'}
-                        </Button>
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-200/80 dark:border-slate-800 gap-2">
+                        {upvotedIds.has(item.id) ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Endorsed
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            className="h-8 text-xs font-bold gap-1.5 shadow-xs cursor-pointer"
+                            onClick={() => handleUpvote(item.id)}
+                          >
+                            <ThumbsUp className="w-3.5 h-3.5" />
+                            <span>Endorse Issue</span>
+                          </Button>
+                        )}
                         <Link href={`/challenges/${item.id}`}>
-                          <Button variant="ghost" size="sm" className="h-8 text-xs text-blue-600 hover:text-blue-700 px-2">
-                            View Details
-                            <ArrowRight className="w-3 h-3 ml-1" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs font-bold text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-3 cursor-pointer"
+                          >
+                            <span>View Details</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1" />
                           </Button>
                         </Link>
                       </div>
@@ -515,9 +533,9 @@ export default function ComplaintDashboardPage() {
         {/* TAB 3: VERIFIED OUTCOMES & FEEDBACK */}
         {activeTab === 'RESOLVED_IMPACT' && (
           <div className="space-y-4">
-            <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="text-xs text-emerald-900">
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-950 dark:text-emerald-200 leading-relaxed">
                 <span className="font-bold">Citizen Ground Feedback Loop:</span> These challenges have reached field pilot or deployment. Citizens living in the affected ward are invited to verify ground reality, rate solution effectiveness, and confirm whether the issue is resolved.
               </div>
             </div>
@@ -527,44 +545,44 @@ export default function ComplaintDashboardPage() {
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
             ) : resolvedComplaints.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs">
+              <div className="text-center py-12 text-slate-600 dark:text-slate-400 text-xs font-medium">
                 No active pilot or resolved solutions awaiting feedback in your filter.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {resolvedComplaints.map(item => (
-                  <Card key={item.id} className="hover:shadow-md transition border-slate-200 flex flex-col">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <Badge variant="outline" className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border-emerald-200">
-                          {item.category.replace('_', ' ')}
+                  <Card key={item.id} className="hover:shadow-md transition-all border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="success" className="text-[10px] font-bold">
+                          {item.category.replace(/_/g, ' ')}
                         </Badge>
                         <StatusBadge status={item.status} />
                       </div>
-                      <CardTitle className="text-sm font-bold text-slate-900 line-clamp-2 hover:text-emerald-700 transition">
+                      <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors">
                         <Link href={`/challenges/${item.id}`}>{item.title}</Link>
                       </CardTitle>
-                      <CardDescription className="text-xs text-slate-500 line-clamp-2 mt-1">
+                      <CardDescription className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1.5 leading-relaxed">
                         {item.description}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-600">
+                    <CardContent className="pt-0 flex-1 flex flex-col justify-between text-xs text-slate-700 dark:text-slate-300">
                       <div className="space-y-2 mb-4">
                         {item.district && (
-                          <div className="flex items-center gap-1.5 text-slate-500">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                            <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                             <span className="truncate">{item.district}, {item.state || 'India'}</span>
                           </div>
                         )}
-                        <div className="text-[11px] bg-emerald-50/60 p-2 rounded-lg border border-emerald-100 text-emerald-800">
-                          Solution deployed in field. Citizen verification active.
+                        <div className="text-[11px] bg-emerald-50/80 dark:bg-emerald-950/50 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 font-medium">
+                          Solution deployed in field. Citizen ground verification active.
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-200/80 dark:border-slate-800">
                         <Link href={`/challenges/${item.id}`}>
-                          <Button size="sm" className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
-                            Submit Ground Feedback
-                            <ArrowRight className="w-3 h-3 ml-1" />
+                          <Button size="sm" variant="success" className="h-8 text-xs font-bold">
+                            <span>Submit Ground Feedback</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1" />
                           </Button>
                         </Link>
                       </div>
@@ -578,33 +596,34 @@ export default function ComplaintDashboardPage() {
 
         {/* AI Citizen Assistant Drawer / Modal */}
         {assistantOpen && (
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
               {/* Drawer Header */}
-              <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 sm:p-5 flex items-center justify-between">
+              <div className="bg-slate-900 dark:bg-slate-950 border-b border-slate-800 text-white p-4 sm:p-5 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-blue-500/20 text-amber-300">
-                    <Sparkles className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <Sparkles className="w-5 h-5 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm sm:text-base">AI Citizen Assistant</h3>
-                    <p className="text-xs text-blue-200">Grounded in verified SICP municipal solutions &amp; citizen rights</p>
+                    <h3 className="font-bold text-sm sm:text-base text-white">AI Citizen Assistant</h3>
+                    <p className="text-xs text-slate-300">Grounded in verified SICP municipal solutions &amp; citizen rights</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setAssistantOpen(false)}
-                  className="text-white/70 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition"
+                  className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition"
+                  aria-label="Close Assistant"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Drawer Content */}
-              <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
+              <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs bg-slate-50/50 dark:bg-slate-950/40">
                 {!assistantResponse && !assistantLoading && (
-                  <div className="text-center py-6 text-slate-500 space-y-3">
-                    <BrainCircuit className="w-10 h-10 text-slate-300 mx-auto" />
-                    <p className="max-w-md mx-auto">
+                  <div className="text-center py-6 text-slate-600 dark:text-slate-400 space-y-3">
+                    <BrainCircuit className="w-10 h-10 text-slate-400 dark:text-slate-500 mx-auto" />
+                    <p className="max-w-md mx-auto text-xs leading-relaxed">
                       Ask any question regarding public grievances, municipal resolution standards, or historical engineering solutions.
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 pt-2">
@@ -619,7 +638,7 @@ export default function ComplaintDashboardPage() {
                             setAssistantQuery(prompt);
                             handleAskAssistant(prompt);
                           }}
-                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 px-3 py-1.5 rounded-full text-[11px] font-medium transition"
+                          className="bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-full text-[11px] font-medium transition border border-slate-200 dark:border-slate-700 shadow-2xs"
                         >
                           {prompt}
                         </button>
@@ -630,30 +649,30 @@ export default function ComplaintDashboardPage() {
 
                 {assistantLoading && (
                   <div className="flex flex-col items-center justify-center py-10 gap-3">
-                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                    <span className="text-slate-500 text-xs font-medium">Searching verified solution memories &amp; standards...</span>
+                    <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                    <span className="text-slate-600 dark:text-slate-400 text-xs font-semibold">Searching verified solution memories &amp; standards...</span>
                   </div>
                 )}
 
                 {assistantResponse && (
                   <div className="space-y-4">
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <div className="flex items-center gap-2 mb-2 font-bold text-slate-900">
-                        <Sparkles className="w-4 h-4 text-blue-600" />
+                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+                      <div className="flex items-center gap-2 mb-2 font-bold text-slate-900 dark:text-slate-100">
+                        <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span>Assistant Answer</span>
                       </div>
-                      <p className="text-slate-700 text-xs leading-relaxed whitespace-pre-line">
+                      <p className="text-slate-700 dark:text-slate-200 text-xs leading-relaxed whitespace-pre-line">
                         {assistantResponse.answer}
                       </p>
                     </div>
 
                     {assistantResponse.citations.length > 0 && (
                       <div className="space-y-1.5">
-                        <span className="font-bold text-slate-800 text-[11px]">Verified Citations &amp; Blueprints:</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-200 text-[11px]">Verified Citations &amp; Blueprints:</span>
                         <div className="space-y-1">
                           {assistantResponse.citations.map((cite, i) => (
-                            <div key={i} className="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-[11px]">
-                              <span className="font-medium text-slate-800">{cite.recordTitle}</span>
+                            <div key={i} className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] shadow-2xs">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{cite.recordTitle}</span>
                               <Badge variant="outline" className="text-[10px]">{cite.recordType.replace('_', ' ')}</Badge>
                             </div>
                           ))}
@@ -665,18 +684,18 @@ export default function ComplaintDashboardPage() {
               </div>
 
               {/* Drawer Footer Input */}
-              <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-2">
+              <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
                 <Input
                   type="text"
                   placeholder="Ask a question about civic problem resolution..."
-                  className="h-10 text-xs bg-white flex-1"
+                  className="h-10 text-xs bg-slate-50 dark:bg-slate-950 flex-1 border-slate-300 dark:border-slate-700"
                   value={assistantQuery}
                   onChange={e => setAssistantQuery(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAskAssistant()}
                   disabled={assistantLoading}
                 />
                 <Button
-                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs h-10 px-4 shrink-0 font-bold"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-10 px-4 shrink-0 font-bold"
                   onClick={() => handleAskAssistant()}
                   disabled={assistantLoading || !assistantQuery.trim()}
                 >

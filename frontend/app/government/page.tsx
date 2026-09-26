@@ -987,13 +987,13 @@ export default function GovernmentCommandCenterPage() {
       )}
 
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 p-6 rounded-2xl text-white shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 p-6 rounded-2xl text-white shadow-xl">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
             <span className="p-2 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-400/30">
               <ShieldCheck className="w-6 h-6" />
             </span>
-            <h1 className="text-2xl font-black tracking-tight">Government Civic Command Center</h1>
+            <h1 className="text-2xl font-black tracking-tight text-white">Government Civic Command Center</h1>
           </div>
           <p className="text-sm text-slate-300 max-w-2xl">
             Real-time civic SLA compliance, severity validation, systemic clustering, and automated university matching for field deployment.
@@ -1025,7 +1025,7 @@ export default function GovernmentCommandCenterPage() {
       </div>
 
       {/* Systemic Intelligence Command Quick Banner */}
-      <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border border-indigo-500/40 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-slate-950 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border border-indigo-500/40 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none" />
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
           <div className="flex items-start sm:items-center gap-3.5">
@@ -1072,14 +1072,14 @@ export default function GovernmentCommandCenterPage() {
       </div>
 
       {/* Section Mode Switcher */}
-      <div className="flex border-b border-slate-200 gap-4 text-sm font-medium">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-4 text-sm font-medium">
         <button
           type="button"
           onClick={() => setPortalMode('QUEUE')}
           className={`pb-3 border-b-2 flex items-center gap-2 transition ${
             portalMode === 'QUEUE'
-              ? 'border-blue-600 text-blue-700 font-bold'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
@@ -1093,8 +1093,8 @@ export default function GovernmentCommandCenterPage() {
           }}
           className={`pb-3 border-b-2 flex items-center gap-2 transition ${
             portalMode === 'UNIVERSITIES'
-              ? 'border-blue-600 text-blue-700 font-bold'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <GraduationCap className="w-4 h-4" />
@@ -1108,8 +1108,8 @@ export default function GovernmentCommandCenterPage() {
           }}
           className={`pb-3 border-b-2 flex items-center gap-2 transition ${
             portalMode === 'INDUSTRY'
-              ? 'border-blue-600 text-blue-700 font-bold'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'border-blue-600 text-blue-700 dark:text-blue-400 font-bold'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
           }`}
         >
           <Building className="w-4 h-4" />
@@ -1120,52 +1120,52 @@ export default function GovernmentCommandCenterPage() {
       {portalMode === 'QUEUE' && (
         <>
       {/* Defined Operational Rules: Government Agency & Urban Local Body */}
-      <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white p-5 shadow-sm space-y-3">
+      <div className="rounded-2xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-sm">
+          <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-sm">
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-black">
               2
             </span>
             <span>Defined Operational Rules: Government Agency &amp; Municipal Command</span>
           </div>
-          <span className="text-[11px] font-semibold bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200">
+          <span className="text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
             Authoritative Civic Oversight
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-          <div className="p-3 bg-white/90 rounded-xl border border-blue-100 space-y-1">
-            <div className="font-bold text-slate-900 flex items-center gap-1.5">
+          <div className="p-3 bg-white/90 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               1. 72-Hour Statutory SLA
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
               Every incoming problem must be acknowledged, assigned a nodal officer, and undergo severity validation within 72 hours.
             </p>
           </div>
-          <div className="p-3 bg-white/90 rounded-xl border border-blue-100 space-y-1">
-            <div className="font-bold text-slate-900 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="p-3 bg-white/90 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               2. Ground Reality Verification
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
               Assigned officers must authoritatively verify impact footprint, affected population, and geolocation prior to resource commitment.
             </p>
           </div>
-          <div className="p-3 bg-white/90 rounded-xl border border-blue-100 space-y-1">
-            <div className="font-bold text-slate-900 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-purple-600" />
+          <div className="p-3 bg-white/90 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               3. Systemic Cluster Integrity
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
               Context-aware duplicates are automatically consolidated into master root causes; administrative disaggregation requires logged justification.
             </p>
           </div>
-          <div className="p-3 bg-white/90 rounded-xl border border-blue-100 space-y-1">
-            <div className="font-bold text-slate-900 flex items-center gap-1.5">
-              <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+          <div className="p-3 bg-white/90 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <GraduationCap className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               4. University &amp; CSR Routing
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
               Complex root causes with no municipal off-the-shelf remedy are dispatched to accredited universities and matched with CSR co-funders.
             </p>
           </div>
@@ -1179,18 +1179,18 @@ export default function GovernmentCommandCenterPage() {
           onClick={() => setActiveTab('CRITICAL_SLA')}
           className={`cursor-pointer p-4 rounded-xl border transition-all duration-200 ${
             activeTab === 'CRITICAL_SLA'
-              ? 'border-rose-500 bg-rose-50/60 shadow-md ring-2 ring-rose-400/20'
-              : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow'
+              ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/40 shadow-md ring-2 ring-rose-400/20'
+              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow'
           }`}
         >
-          <div className="flex items-center justify-between text-rose-600 mb-1.5">
+          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 mb-1.5">
             <span className="text-xs font-bold uppercase tracking-wider">Critical & Breached</span>
             <Flame className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-rose-700">
+          <div className="text-2xl font-black text-rose-700 dark:text-rose-300">
             {metrics?.slaBreachedCount !== undefined ? metrics.slaBreachedCount + metrics.urgentCount : '—'}
           </div>
-          <p className="text-xs text-rose-600 mt-1 font-medium">
+          <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-semibold">
             {metrics?.slaBreachedCount || 0} overdue breaches
           </p>
         </div>
@@ -1198,16 +1198,16 @@ export default function GovernmentCommandCenterPage() {
         {/* 2. SLA Warning (<24h) */}
         <div
           onClick={() => setActiveTab('CRITICAL_SLA')}
-          className="cursor-pointer p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow transition-all"
+          className="cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow transition-all"
         >
-          <div className="flex items-center justify-between text-amber-600 mb-1.5">
+          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-1.5">
             <span className="text-xs font-bold uppercase tracking-wider">SLA Warning (&lt;24h)</span>
             <Clock className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-amber-700">
+          <div className="text-2xl font-black text-amber-700 dark:text-amber-300">
             {metrics?.slaWarningCount ?? '—'}
           </div>
-          <p className="text-xs text-amber-600 mt-1 font-medium">Requires immediate assignment</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">Requires immediate assignment</p>
         </div>
 
         {/* 3. Pending Review */}
@@ -1215,18 +1215,18 @@ export default function GovernmentCommandCenterPage() {
           onClick={() => setActiveTab('PENDING_REVIEW')}
           className={`cursor-pointer p-4 rounded-xl border transition-all duration-200 ${
             activeTab === 'PENDING_REVIEW'
-              ? 'border-blue-500 bg-blue-50/60 shadow-md ring-2 ring-blue-400/20'
-              : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow'
+              ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-400/20'
+              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow'
           }`}
         >
-          <div className="flex items-center justify-between text-blue-600 mb-1.5">
+          <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 mb-1.5">
             <span className="text-xs font-bold uppercase tracking-wider">Pending Review</span>
             <ShieldAlert className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-blue-700">
+          <div className="text-2xl font-black text-blue-700 dark:text-blue-300">
             {metrics?.pendingValidationCount ?? '—'}
           </div>
-          <p className="text-xs text-blue-600 mt-1 font-medium">Awaiting evaluation</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold">Awaiting evaluation</p>
         </div>
 
         {/* 4. Routed to University */}
@@ -1234,18 +1234,18 @@ export default function GovernmentCommandCenterPage() {
           onClick={() => setActiveTab('ROUTED_UNIVERSITY')}
           className={`cursor-pointer p-4 rounded-xl border transition-all duration-200 ${
             activeTab === 'ROUTED_UNIVERSITY'
-              ? 'border-emerald-500 bg-emerald-50/60 shadow-md ring-2 ring-emerald-400/20'
-              : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow'
+              ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 shadow-md ring-2 ring-emerald-400/20'
+              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow'
           }`}
         >
-          <div className="flex items-center justify-between text-emerald-600 mb-1.5">
+          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-1.5">
             <span className="text-xs font-bold uppercase tracking-wider">Routed to Uni</span>
             <GraduationCap className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-emerald-700">
+          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
             {metrics?.routedToUniversityCount ?? '—'}
           </div>
-          <p className="text-xs text-emerald-600 mt-1 font-medium">Research underway</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">Research underway</p>
         </div>
 
         {/* 5. Systemic Clusters */}
@@ -1253,18 +1253,18 @@ export default function GovernmentCommandCenterPage() {
           onClick={() => setActiveTab('SYSTEMIC')}
           className={`cursor-pointer p-4 rounded-xl border transition-all duration-200 ${
             activeTab === 'SYSTEMIC'
-              ? 'border-purple-500 bg-purple-50/60 shadow-md ring-2 ring-purple-400/20'
-              : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow'
+              ? 'border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 shadow-md ring-2 ring-purple-400/20'
+              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow'
           }`}
         >
-          <div className="flex items-center justify-between text-purple-600 mb-1.5">
+          <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 mb-1.5">
             <span className="text-xs font-bold uppercase tracking-wider">Systemic Clusters</span>
             <Layers className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-purple-700">
+          <div className="text-2xl font-black text-purple-700 dark:text-purple-300">
             {metrics?.systemicClustersCount ?? '—'}
           </div>
-          <p className="text-xs text-purple-600 mt-1 font-medium">Multi-site aggregation</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 font-semibold">Multi-site aggregation</p>
         </div>
       </div>
 
@@ -1273,14 +1273,14 @@ export default function GovernmentCommandCenterPage() {
         <CardContent className="p-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Tabs */}
-            <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200/80">
+            <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => setActiveTab('CRITICAL_SLA')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'CRITICAL_SLA'
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? 'bg-rose-600 text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
                 }`}
               >
                 Critical & SLA Breached
@@ -1290,8 +1290,8 @@ export default function GovernmentCommandCenterPage() {
                 onClick={() => setActiveTab('PENDING_REVIEW')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'PENDING_REVIEW'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
                 }`}
               >
                 Pending Validation
@@ -1301,8 +1301,8 @@ export default function GovernmentCommandCenterPage() {
                 onClick={() => setActiveTab('SYSTEMIC')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'SYSTEMIC'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? 'bg-purple-600 text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
                 }`}
               >
                 Systemic Clusters
@@ -1312,8 +1312,8 @@ export default function GovernmentCommandCenterPage() {
                 onClick={() => setActiveTab('ROUTED_UNIVERSITY')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'ROUTED_UNIVERSITY'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
                 }`}
               >
                 Routed to Universities
@@ -1323,8 +1323,8 @@ export default function GovernmentCommandCenterPage() {
                 onClick={() => setActiveTab('ALL')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'ALL'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
                 }`}
               >
                 All Records
@@ -1332,15 +1332,15 @@ export default function GovernmentCommandCenterPage() {
             </div>
 
             {/* Quick Count Badge */}
-            <div className="text-xs text-slate-500 font-medium">
-              Showing <span className="font-bold text-slate-800">{items.length}</span> active tasks
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+              Showing <span className="font-bold text-slate-900 dark:text-slate-100">{items.length}</span> active tasks
             </div>
           </div>
 
           {/* Search & Category Filter */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="md:col-span-8 relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 dark:text-slate-500" />
               <Input
                 placeholder="Search by problem title, district, or keywords..."
                 value={searchQuery}
@@ -1352,7 +1352,7 @@ export default function GovernmentCommandCenterPage() {
               <select
                 value={categoryFilter}
                 onChange={e => setCategoryFilter(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 shadow-2xs focus:border-blue-500 focus:outline-hidden"
               >
                 <option value="">All Categories</option>
                 <option value="Water Supply">Water Supply</option>
@@ -1368,7 +1368,7 @@ export default function GovernmentCommandCenterPage() {
                 variant="outline"
                 size="sm"
                 onClick={fetchQueue}
-                className="shrink-0 px-3"
+                className="shrink-0 px-3 font-semibold"
               >
                 Filter
               </Button>
@@ -1431,10 +1431,10 @@ export default function GovernmentCommandCenterPage() {
                 key={challenge.id}
                 className={`overflow-hidden transition-all duration-200 border-2 ${
                   isBreached
-                    ? 'border-rose-400 bg-rose-50/20'
+                    ? 'border-rose-400 dark:border-rose-600 bg-rose-50/20 dark:bg-rose-950/20'
                     : isWarning
-                    ? 'border-amber-400 bg-amber-50/20'
-                    : 'border-slate-200/90 hover:border-blue-400'
+                    ? 'border-amber-400 dark:border-amber-600 bg-amber-50/20 dark:bg-amber-950/20'
+                    : 'border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-400 dark:hover:border-blue-500'
                 }`}
               >
                 <div className="p-5 space-y-4">
@@ -1468,22 +1468,22 @@ export default function GovernmentCommandCenterPage() {
                           SLA WARNING ({hoursLeft}h LEFT)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                          <Clock className="w-3 h-3 text-slate-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <Clock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {hoursLeft > 0 ? `${Math.round(hoursLeft / 24)}d deadline` : 'Active'}
                         </span>
                       )}
 
                       {/* Systemic Cluster Badge */}
                       {challenge.isSystemic && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                          <Layers className="w-3 h-3 text-purple-600" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                          <Layers className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                           Systemic Cluster ({challenge.clusterChildrenCount} linked)
                         </span>
                       )}
 
                       {/* Category */}
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
                         {challenge.category}
                       </span>
                     </div>
@@ -1491,11 +1491,11 @@ export default function GovernmentCommandCenterPage() {
                     {/* Priority Score Tag */}
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-xs text-slate-400 uppercase font-bold tracking-wider">Priority Score</div>
-                        <div className="text-sm font-black text-slate-800">{challenge.priorityScore}/100</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Priority Score</div>
+                        <div className="text-sm font-black text-slate-900 dark:text-slate-100">{challenge.priorityScore}/100</div>
                       </div>
                       <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm ${
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-2xs ${
                           challenge.priorityScore >= 75
                             ? 'bg-rose-600'
                             : challenge.priorityScore >= 50
@@ -1514,25 +1514,25 @@ export default function GovernmentCommandCenterPage() {
                       href={`/challenges/${challenge.id}`}
                       className="group inline-flex items-center gap-2"
                     >
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {challenge.title}
                       </h3>
-                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                      <ExternalLink className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                     </Link>
-                    <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                       {challenge.description}
                     </p>
                   </div>
 
                   {/* Context Info Footer */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
                     <div className="flex flex-wrap items-center gap-4">
                       <span>
-                        📍 <span className="font-semibold text-slate-700">{challenge.district || 'Regional'}, {challenge.state || 'National'}</span>
+                        📍 <span className="font-semibold text-slate-800 dark:text-slate-200">{challenge.district || 'Regional'}, {challenge.state || 'National'}</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <span>👥 Footprint:</span>
-                        <span className="font-bold text-slate-800">
+                        <span className="font-bold text-slate-900 dark:text-slate-100">
                           {challenge.impact?.verifiedValue !== undefined && challenge.impact.verifiedValue !== null
                             ? `${challenge.impact.verifiedValue.toLocaleString()} ${challenge.impact.unit?.toLowerCase().replace(/_/g, ' ') || 'citizens'}`
                             : challenge.impact?.value !== undefined && challenge.impact.value !== null
@@ -1542,24 +1542,24 @@ export default function GovernmentCommandCenterPage() {
                             : 'Data Pending'}
                         </span>
                         {challenge.impact?.verificationStatus === 'VERIFIED' ? (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             ✓ Verified
                           </span>
                         ) : challenge.impact?.verificationStatus === 'CALCULATED' ? (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                             Calculated
                           </span>
                         ) : challenge.impact?.verificationStatus === 'UNKNOWN' ? (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 text-rose-800 border border-rose-200">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
                             Unverified
                           </span>
                         ) : null}
                       </span>
                       <span>
-                        👍 <span className="font-semibold text-slate-700">{challenge.supportVotesCount}</span> endorsements
+                        👍 <span className="font-semibold text-slate-800 dark:text-slate-200">{challenge.supportVotesCount}</span> endorsements
                       </span>
                       <span>
-                        Officer: <span className="font-semibold text-slate-800">{challenge.sla?.assignedOfficer?.fullName || 'Unassigned'}</span>
+                        Officer: <span className="font-semibold text-slate-900 dark:text-slate-100">{challenge.sla?.assignedOfficer?.fullName || 'Unassigned'}</span>
                       </span>
                     </div>
 
@@ -1570,9 +1570,9 @@ export default function GovernmentCommandCenterPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => openImpactModal(challenge)}
-                        className="text-xs h-8 border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                        className="text-xs h-8 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-semibold"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                        <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />
                         <span>Verify Impact</span>
                       </Button>
 
@@ -1581,9 +1581,9 @@ export default function GovernmentCommandCenterPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => openAssignOfficerModal(challenge)}
-                        className="text-xs h-8"
+                        className="text-xs h-8 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                       >
-                        <UserPlus className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+                        <UserPlus className="w-3.5 h-3.5 mr-1 text-indigo-600 dark:text-indigo-400" />
                         <span>{challenge.sla?.assignedOfficer ? 'Reassign Officer' : 'Assign Officer'}</span>
                       </Button>
 
@@ -1595,7 +1595,7 @@ export default function GovernmentCommandCenterPage() {
                             size="sm"
                             disabled={actionLoading}
                             onClick={() => handleTransition(challenge, ChallengeStatus.UNDER_GOV_REVIEW)}
-                            className="text-blue-700 border-blue-300 hover:bg-blue-50 text-xs h-8"
+                            className="text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs h-8 font-semibold"
                           >
                             <Check className="w-3.5 h-3.5 mr-1" />
                             <span>Begin Review</span>
@@ -1606,7 +1606,7 @@ export default function GovernmentCommandCenterPage() {
                             size="sm"
                             disabled={actionLoading}
                             onClick={() => handleTransition(challenge, ChallengeStatus.APPROVED)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-xs h-8 font-bold"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 font-bold shadow-2xs"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                             <span>Approve Challenge</span>
@@ -1622,17 +1622,17 @@ export default function GovernmentCommandCenterPage() {
                             size="sm"
                             disabled={actionLoading}
                             onClick={() => handleTransition(challenge, ChallengeStatus.APPROVED)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-xs h-8 font-bold"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 font-bold shadow-2xs"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                             <span>Approve Challenge</span>
                           </Button>
 
                           <Button
-                            variant="outline"
+                            variant="primary"
                             size="sm"
                             onClick={() => openMatchingModal(challenge)}
-                            className="text-indigo-700 border-indigo-300 hover:bg-indigo-50 text-xs h-8 font-bold"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 font-bold shadow-2xs"
                           >
                             <GraduationCap className="w-3.5 h-3.5 mr-1" />
                             <span>Match University</span>
@@ -1645,7 +1645,7 @@ export default function GovernmentCommandCenterPage() {
                               setSelectedChallenge(challenge);
                               setRequestInfoModalOpen(true);
                             }}
-                            className="text-amber-700 border-amber-300 hover:bg-amber-50 text-xs h-8"
+                            className="text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-xs h-8 font-semibold"
                           >
                             <HelpCircle className="w-3.5 h-3.5 mr-1" />
                             <span>Request Info</span>
@@ -1658,7 +1658,7 @@ export default function GovernmentCommandCenterPage() {
                               setSelectedChallenge(challenge);
                               setRejectModalOpen(true);
                             }}
-                            className="text-rose-700 border-rose-300 hover:bg-rose-50 text-xs h-8"
+                            className="text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs h-8 font-semibold"
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" />
                             <span>Reject</span>
@@ -1676,19 +1676,19 @@ export default function GovernmentCommandCenterPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             {interestedMatch && (
                               <span
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800"
                                 title="This institution officially declared readiness to research this problem"
                               >
-                                <Send className="w-3 h-3 text-indigo-600 shrink-0" />
+                                <Send className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
                                 Interest: {interestedMatch.universityName || 'Accredited University'}
                               </span>
                             )}
                             {rejectedMatch && (
                               <span
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 px-2 py-0.5 rounded-lg bg-rose-50 border border-rose-200"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 dark:text-rose-300 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800"
                                 title={rejectedMatch.rejectionReason || 'Previous university declined assignment'}
                               >
-                                <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />
+                                <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
                                 Declined: {rejectedMatch.rejectionReason?.substring(0, 35) || 'Institutional constraint'}...
                               </span>
                             )}
@@ -1696,7 +1696,7 @@ export default function GovernmentCommandCenterPage() {
                               variant="primary"
                               size="sm"
                               onClick={() => openMatchingModal(challenge)}
-                              className="bg-indigo-600 hover:bg-indigo-700 text-xs h-8 font-bold shadow-xs"
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 font-bold shadow-2xs"
                             >
                               <GraduationCap className="w-3.5 h-3.5 mr-1" />
                               <span>{rejectedMatch ? 'Re-route University' : interestedMatch ? 'Route to University' : 'Assign University (Next Step)'}</span>
@@ -1707,7 +1707,7 @@ export default function GovernmentCommandCenterPage() {
 
                       {/* If already ASSIGNED_TO_UNIVERSITY */}
                       {challenge.status === ChallengeStatus.ASSIGNED_TO_UNIVERSITY && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Routed: {challenge.universityMatches[0]?.universityName || 'Partner University'}
                         </span>
@@ -1719,7 +1719,7 @@ export default function GovernmentCommandCenterPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => openIndustryModal(challenge)}
-                          className="border-blue-300 text-blue-700 hover:bg-blue-50 text-xs h-8 font-bold shadow-xs flex items-center gap-1"
+                          className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs h-8 font-bold shadow-2xs flex items-center gap-1"
                         >
                           <Building className="w-3.5 h-3.5" />
                           <span>Industry & CSR</span>
@@ -1738,7 +1738,7 @@ export default function GovernmentCommandCenterPage() {
                             setUnmergeError(null);
                             setUnmergeModalOpen(true);
                           }}
-                          className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs h-8 font-semibold"
+                          className="text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-xs h-8 font-semibold"
                         >
                           <Layers className="w-3.5 h-3.5 mr-1" />
                           <span>Unmerge / Disaggregate</span>
@@ -1782,13 +1782,13 @@ export default function GovernmentCommandCenterPage() {
 
         return (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <span>University & Academic Verification Queue</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Review incoming institutional registrations, verify AISHE / NAAC credentials, and manage university authorizations.
                 </p>
               </div>
@@ -1797,12 +1797,12 @@ export default function GovernmentCommandCenterPage() {
                   size="sm"
                   variant="primary"
                   onClick={() => setAddUniModalOpen(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-2xs"
                 >
                   <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
                   Add New University
                 </Button>
-                <Button size="sm" variant="outline" onClick={fetchOrganizations} disabled={orgLoading} className="text-xs">
+                <Button size="sm" variant="outline" onClick={fetchOrganizations} disabled={orgLoading} className="text-xs font-semibold">
                   <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${orgLoading ? 'animate-spin' : ''}`} />
                   Refresh Queue
                 </Button>
@@ -1816,16 +1816,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   uniQueueFilter === 'PENDING_REVIEW'
-                    ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-amber-300'
+                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-amber-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Verification</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pending Verification</span>
                   <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 </div>
-                <div className="text-2xl font-black text-amber-700 font-mono mt-1">{uniPending}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Awaiting government review</div>
+                <div className="text-2xl font-black text-amber-700 dark:text-amber-300 font-mono mt-1">{uniPending}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Awaiting government review</div>
               </div>
 
               <div
@@ -1833,16 +1833,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   uniQueueFilter === 'VERIFIED'
-                    ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-emerald-300'
+                    ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-400 ring-2 ring-emerald-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verified Institutions</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Verified Institutions</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <div className="text-2xl font-black text-emerald-700 font-mono mt-1">{uniVerified}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Active in university portal</div>
+                <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 font-mono mt-1">{uniVerified}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Active in university portal</div>
               </div>
 
               <div
@@ -1850,16 +1850,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   uniQueueFilter === 'INFORMATION_REQUESTED'
-                    ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-blue-300'
+                    ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-400 ring-2 ring-blue-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Info Requested</span>
-                  <HelpCircle className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Info Requested</span>
+                  <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="text-2xl font-black text-blue-700 font-mono mt-1">{uniInfoReq}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Under applicant update</div>
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-300 font-mono mt-1">{uniInfoReq}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Under applicant update</div>
               </div>
 
               <div
@@ -1867,21 +1867,21 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   uniQueueFilter === 'REJECTED'
-                    ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-rose-300'
+                    ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-400 ring-2 ring-rose-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-rose-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Rejected</span>
-                  <XCircle className="w-4 h-4 text-rose-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Rejected</span>
+                  <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                 </div>
-                <div className="text-2xl font-black text-rose-700 font-mono mt-1">{uniRejected}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Can correct & resubmit</div>
+                <div className="text-2xl font-black text-rose-700 dark:text-rose-300 font-mono mt-1">{uniRejected}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Can correct & resubmit</div>
               </div>
             </div>
 
             {/* Filter Controls & Search */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                 {(['ALL', 'PENDING_REVIEW', 'VERIFIED', 'INFORMATION_REQUESTED', 'REJECTED'] as const).map((filter) => (
                   <button
@@ -1891,7 +1891,7 @@ export default function GovernmentCommandCenterPage() {
                       'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
                       uniQueueFilter === filter
                         ? 'bg-indigo-600 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     )}
                   >
                     {filter === 'ALL' && `All Universities (${universities.length})`}
@@ -1904,22 +1904,22 @@ export default function GovernmentCommandCenterPage() {
               </div>
 
               <div className="relative w-full sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={uniQueueSearch}
                   onChange={(e) => setUniQueueSearch(e.target.value)}
                   placeholder="Search university, AISHE, district..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
 
             {/* University Queue Table */}
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-3">University Profile</th>
                       <th className="p-3">Location</th>
@@ -1930,13 +1930,13 @@ export default function GovernmentCommandCenterPage() {
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredUnis.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-500">
-                          <GraduationCap className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p className="font-semibold text-slate-700">No university registrations match current filters.</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">Change filter status or register a new university.</p>
+                        <td colSpan={7} className="p-8 text-center text-slate-600 dark:text-slate-400">
+                          <GraduationCap className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">No university registrations match current filters.</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Change filter status or register a new university.</p>
                         </td>
                       </tr>
                     ) : (
@@ -1947,7 +1947,7 @@ export default function GovernmentCommandCenterPage() {
                         const aishe = u.metadata?.aisheCode || 'N/A';
 
                         return (
-                          <tr key={u.id} className="hover:bg-slate-50/80 transition">
+                          <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
                             <td className="p-3">
                               <div className="font-bold text-slate-900">{u.name}</div>
                               <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
@@ -2093,17 +2093,17 @@ export default function GovernmentCommandCenterPage() {
 
         return (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-amber-600" />
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   <span>Industry, MSME &amp; CSR Verification Queue</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Review corporate onboarding submissions, verify statutory CIN/Udyam credentials, and authorize enterprise partnerships.
                 </p>
               </div>
-              <Button size="sm" variant="outline" onClick={fetchOrganizations} disabled={orgLoading} className="text-xs">
+              <Button size="sm" variant="outline" onClick={fetchOrganizations} disabled={orgLoading} className="text-xs font-semibold">
                 <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${orgLoading ? 'animate-spin' : ''}`} />
                 Refresh Queue
               </Button>
@@ -2116,16 +2116,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   indQueueFilter === 'PENDING_REVIEW'
-                    ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-amber-300'
+                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-amber-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Verification</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pending Verification</span>
                   <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 </div>
-                <div className="text-2xl font-black text-amber-700 font-mono mt-1">{indPending}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Awaiting government review</div>
+                <div className="text-2xl font-black text-amber-700 dark:text-amber-300 font-mono mt-1">{indPending}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Awaiting government review</div>
               </div>
 
               <div
@@ -2133,16 +2133,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   indQueueFilter === 'VERIFIED'
-                    ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-emerald-300'
+                    ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-400 ring-2 ring-emerald-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verified Partners</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Verified Partners</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <div className="text-2xl font-black text-emerald-700 font-mono mt-1">{indVerified}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Active in industry portal</div>
+                <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 font-mono mt-1">{indVerified}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Active in industry portal</div>
               </div>
 
               <div
@@ -2150,16 +2150,16 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   indQueueFilter === 'INFORMATION_REQUESTED'
-                    ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-blue-300'
+                    ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-400 ring-2 ring-blue-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Info Requested</span>
-                  <HelpCircle className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Info Requested</span>
+                  <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="text-2xl font-black text-blue-700 font-mono mt-1">{indInfoReq}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Under applicant update</div>
+                <div className="text-2xl font-black text-blue-700 dark:text-blue-300 font-mono mt-1">{indInfoReq}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Under applicant update</div>
               </div>
 
               <div
@@ -2167,21 +2167,21 @@ export default function GovernmentCommandCenterPage() {
                 className={cn(
                   'p-4 rounded-xl border transition-all cursor-pointer select-none',
                   indQueueFilter === 'REJECTED'
-                    ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/20 shadow-xs'
-                    : 'bg-white border-slate-200 hover:border-rose-300'
+                    ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-400 ring-2 ring-rose-400/20 shadow-2xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-rose-300'
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Rejected</span>
-                  <XCircle className="w-4 h-4 text-rose-600" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Rejected</span>
+                  <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                 </div>
-                <div className="text-2xl font-black text-rose-700 font-mono mt-1">{indRejected}</div>
-                <div className="text-[11px] text-slate-500 mt-1">Can correct & resubmit</div>
+                <div className="text-2xl font-black text-rose-700 dark:text-rose-300 font-mono mt-1">{indRejected}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Can correct & resubmit</div>
               </div>
             </div>
 
             {/* Filter Controls & Search */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                 {(['ALL', 'INDUSTRY', 'STARTUP', 'MSME', 'CSR'] as const).map((subtype) => (
                   <button
@@ -2191,13 +2191,13 @@ export default function GovernmentCommandCenterPage() {
                       'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
                       indSubtypeFilter === subtype
                         ? 'bg-amber-600 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     )}
                   >
                     {subtype}
                   </button>
                 ))}
-                <span className="text-slate-300 mx-1">|</span>
+                <span className="text-slate-300 dark:text-slate-700 mx-1">|</span>
                 {(['ALL', 'PENDING_REVIEW', 'VERIFIED', 'INFORMATION_REQUESTED', 'REJECTED'] as const).map((filter) => (
                   <button
                     key={filter}
@@ -2205,8 +2205,8 @@ export default function GovernmentCommandCenterPage() {
                     className={cn(
                       'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
                       indQueueFilter === filter
-                        ? 'bg-slate-900 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     )}
                   >
                     {filter === 'ALL' && 'All Statuses'}
@@ -2219,22 +2219,22 @@ export default function GovernmentCommandCenterPage() {
               </div>
 
               <div className="relative w-full sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={indQueueSearch}
                   onChange={(e) => setIndQueueSearch(e.target.value)}
                   placeholder="Search industry, sector, city..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             {/* Industry Queue Table */}
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-3">Organization Profile</th>
                       <th className="p-3">Subtype</th>
@@ -2245,12 +2245,12 @@ export default function GovernmentCommandCenterPage() {
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredInds.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-500">
-                          <Briefcase className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p className="font-semibold text-slate-700">No industry partner registrations match current filters.</p>
+                        <td colSpan={7} className="p-8 text-center text-slate-600 dark:text-slate-400">
+                          <Briefcase className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">No industry partner registrations match current filters.</p>
                         </td>
                       </tr>
                     ) : (
@@ -2510,11 +2510,11 @@ export default function GovernmentCommandCenterPage() {
             )}
 
             {/* Official Reviewer Decision Panel */}
-            <div className="p-4 rounded-xl bg-slate-100/70 border border-slate-300 space-y-3 pt-3">
-              <span className="font-bold text-slate-900 text-xs block">Government Officer Decision:</span>
+            <div className="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 space-y-3 pt-3">
+              <span className="font-bold text-slate-900 dark:text-slate-100 text-xs block">Government Officer Decision:</span>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                   Review Justification / Specific Instructions *
                 </label>
                 <textarea
@@ -2528,17 +2528,17 @@ export default function GovernmentCommandCenterPage() {
                       ? 'e.g. Please upload the revised NAAC Cycle 4 certificate and provide updated dean signatory.'
                       : 'e.g. Statutory registration documents could not be validated.'
                   }
-                  className="w-full rounded-lg border border-slate-300 p-2 text-xs bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
-              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setVerifModalOpen(false)}
                   disabled={actionLoading}
-                  className="text-xs"
+                  className="text-xs font-semibold"
                 >
                   Cancel
                 </Button>
@@ -2546,28 +2546,28 @@ export default function GovernmentCommandCenterPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs border-rose-300 text-rose-800 hover:bg-rose-50"
+                  className="text-xs border-rose-300 dark:border-rose-700 text-rose-800 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold"
                   onClick={() => handleReviewVerificationSubmit('REJECTED')}
                   disabled={actionLoading}
                 >
-                  <XCircle className="w-3.5 h-3.5 mr-1 text-rose-600" />
+                  <XCircle className="w-3.5 h-3.5 mr-1 text-rose-600 dark:text-rose-400" />
                   Reject
                 </Button>
 
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs border-blue-300 text-blue-800 hover:bg-blue-50"
+                  className="text-xs border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 font-semibold"
                   onClick={() => handleReviewVerificationSubmit('INFORMATION_REQUESTED')}
                   disabled={actionLoading}
                 >
-                  <HelpCircle className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                  <HelpCircle className="w-3.5 h-3.5 mr-1 text-blue-600 dark:text-blue-400" />
                   Request More Info
                 </Button>
 
                 <Button
                   size="sm"
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs"
+                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-2xs"
                   onClick={() => handleReviewVerificationSubmit('VERIFIED')}
                   disabled={actionLoading}
                 >

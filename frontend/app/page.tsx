@@ -303,20 +303,20 @@ export default function CivicPortalHomePage() {
         </section>
 
         {/* Interactive Societal Innovation Pipeline Visualizer */}
-        <section className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-5">
+        <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-5">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                   13-Stage Canonical Intelligence Continuum
                 </span>
               </div>
-              <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+              <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 How SICP Transforms Civic Problems into Verified Interventions
               </h2>
             </div>
-            <span className="text-xs text-slate-500 font-medium self-start md:self-auto">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium self-start md:self-auto">
               Click any stage to inspect the intelligence continuum
             </span>
           </div>
@@ -332,23 +332,23 @@ export default function CivicPortalHomePage() {
                   onClick={() => setActivePipelineStep(idx)}
                   className={`text-left p-3 rounded-xl border transition-all duration-150 ${
                     isSelected
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                      ? 'bg-slate-900 dark:bg-slate-950 text-white border-slate-900 dark:border-blue-500 shadow-xs ring-2 ring-blue-500/30'
+                      : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-blue-300' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-blue-300' : 'text-slate-500 dark:text-slate-400'}`}>
                       Step {step.step}
                     </span>
                     <span
                       className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-semibold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {step.badge}
                     </span>
                   </div>
-                  <h4 className="font-bold text-xs leading-tight line-clamp-1">{step.title}</h4>
+                  <h4 className={`font-bold text-xs leading-tight line-clamp-1 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{step.title}</h4>
                 </button>
               );
             })}
@@ -379,14 +379,14 @@ export default function CivicPortalHomePage() {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 SICP 5-Portal Digital Architecture
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Five distinct, dedicated workspaces serving each societal sector with granular RBAC enforcement.
               </p>
             </div>
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 self-start sm:self-auto">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800 self-start sm:self-auto">
               {authorizedPortals.length} Authorized Workspaces
             </span>
           </div>
@@ -394,7 +394,7 @@ export default function CivicPortalHomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {authorizedPortals.map((portal) => (
               <Link key={portal.id} href={portal.path} className="group">
-                <Card className="h-full hover:shadow-lg transition-all duration-200 hover:border-blue-400 bg-white flex flex-col justify-between overflow-hidden">
+                <Card className="h-full hover:shadow-lg transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col justify-between overflow-hidden">
                   <CardHeader className="p-5 pb-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-3xl">{portal.icon}</span>
@@ -402,15 +402,15 @@ export default function CivicPortalHomePage() {
                         {portal.badge}
                       </Badge>
                     </div>
-                    <CardTitle className="text-base font-bold group-hover:text-blue-600 transition-colors pt-1">
+                    <CardTitle className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pt-1">
                       {portal.name}
                     </CardTitle>
-                    <CardDescription className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                    <CardDescription className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
                       {portal.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-5 pt-0">
-                    <div className="flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:translate-x-1 transition-transform border-t border-slate-100 pt-3">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform border-t border-slate-100 dark:border-slate-800 pt-3">
                       <span>Enter Workspace</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
@@ -425,10 +425,10 @@ export default function CivicPortalHomePage() {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Recent Civic Problems Under Evaluation
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Explore real community problems reported by citizens across active administrative jurisdictions.
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function CivicPortalHomePage() {
                   className={`px-3 py-1 rounded-full font-medium transition-all ${
                     selectedCategory === cat
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   {cat === 'ALL' ? 'All Domains' : cat}
@@ -454,12 +454,12 @@ export default function CivicPortalHomePage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-48 rounded-2xl bg-slate-100 animate-pulse border border-slate-200" />
+                <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
               ))}
             </div>
           ) : filteredChallenges.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300 space-y-2">
-              <p className="text-sm font-semibold text-slate-700">No problems found in this category.</p>
+            <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 space-y-2">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No problems found in this category.</p>
               <Link href="/challenges/new">
                 <Button size="sm" className="text-xs">Report First Problem</Button>
               </Link>

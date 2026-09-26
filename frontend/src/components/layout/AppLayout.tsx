@@ -29,7 +29,7 @@ export function AppLayout({ children, portal }: AppLayoutProps) {
       : 'citizen');
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col overflow-x-hidden w-full relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col overflow-x-hidden w-full relative">
       <AppHeader />
       <PortalShellHeader portal={effectivePortal} />
       <div className="flex flex-1 min-w-0 w-full overflow-x-hidden">

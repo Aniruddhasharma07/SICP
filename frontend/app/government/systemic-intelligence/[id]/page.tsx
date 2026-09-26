@@ -522,14 +522,14 @@ export default function RootCauseDossierPage() {
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-blue-400 bg-blue-950/60 border border-blue-800/80 px-2 py-0.5 rounded">
                   {incident.code}
                 </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="text-xs text-slate-300">
                   {incident.district}, {incident.state} | {incident.infrastructureDomain}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white">
                 {incident.title}
               </h1>
             </div>

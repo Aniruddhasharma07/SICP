@@ -100,28 +100,28 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-xs">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs">
         <div className="flex h-16 items-center justify-between px-4 md:px-8">
           {/* Logo & Portal Branding */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 text-slate-900 group">
+            <Link href="/" className="flex items-center gap-2.5 text-slate-900 dark:text-white group">
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-xs transition-transform group-hover:scale-105">
                 S
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold tracking-tight text-base text-slate-950">SICP</span>
-                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="font-extrabold tracking-tight text-base text-slate-950 dark:text-white">SICP</span>
+                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     PRODUCTION
                   </span>
                 </div>
-                <span className="hidden lg:block text-[10px] font-medium text-slate-500 -mt-0.5">
+                <span className="hidden lg:block text-[10px] font-semibold text-slate-600 dark:text-slate-400 -mt-0.5">
                   Societal Innovation Collaboration Portal
                 </span>
               </div>
             </Link>
-            <div className="h-5 w-px bg-slate-200 hidden sm:block mx-1" />
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block mx-1" />
             <PortalSwitcher />
           </div>
 
@@ -130,13 +130,13 @@ export function AppHeader() {
             <button
               onClick={() => setIsSearchOpen(true)}
               aria-label="Search problems, projects, solutions and institutions"
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-200/90 bg-slate-50/70 text-slate-500 hover:border-slate-300 hover:bg-white hover:text-slate-700 text-xs font-medium transition-all shadow-2xs group"
+              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all shadow-2xs group cursor-pointer"
             >
               <span className="flex items-center gap-2.5 truncate">
-                <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
                 <span className="truncate">Search problems, solutions, faculty...</span>
               </span>
-              <kbd className="px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-white border border-slate-200/90 rounded-md shadow-2xs shrink-0">
+              <kbd className="px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-2xs shrink-0">
                 Ctrl K
               </kbd>
             </button>
@@ -168,21 +168,21 @@ export function AppHeader() {
               <div className="relative" ref={notifRef}>
                 <button
                   onClick={() => setIsNotifOpen((prev) => !prev)}
-                  className="relative p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                  className="relative p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   title="Notifications"
                 >
                   <Bell className="w-4 h-4" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[9px] font-bold text-white">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
 
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white border border-slate-200 shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                         Notifications ({unreadCount} unread)
                       </span>
                       {unreadCount > 0 && (
@@ -192,7 +192,7 @@ export function AppHeader() {
                               .filter((n) => !n.read)
                               .forEach((n) => markAsRead(n.id));
                           }}
-                          className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 font-medium"
+                          className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                         >
                           <CheckCheck className="w-3 h-3" />
                           Mark all as read
@@ -200,28 +200,28 @@ export function AppHeader() {
                       )}
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                       {notifications.length > 0 ? (
                         notifications.slice(0, 8).map((n) => (
                           <div
                             key={n.id}
                             className={`p-3 text-xs transition-colors ${
-                              n.read ? 'bg-white hover:bg-slate-50' : 'bg-blue-50/40 hover:bg-blue-50/70'
+                              n.read ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50' : 'bg-blue-50/50 dark:bg-blue-950/40 hover:bg-blue-50/80 dark:hover:bg-blue-950/60'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <span className="font-semibold text-slate-900 line-clamp-1">{n.title}</span>
-                              <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                              <span className="font-bold text-slate-900 dark:text-slate-100 line-clamp-1">{n.title}</span>
+                              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
                                 {formatRelativeDate(n.createdAt)}
                               </span>
                             </div>
-                            <p className="text-slate-600 mt-1 line-clamp-2">{n.message}</p>
-                            <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100/60">
-                              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{n.type}</span>
+                            <p className="text-slate-700 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
+                            <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{n.type}</span>
                               {!n.read && (
                                 <button
                                   onClick={() => markAsRead(n.id)}
-                                  className="text-[11px] text-blue-600 hover:underline font-medium"
+                                  className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                                 >
                                   Mark read
                                 </button>
@@ -230,17 +230,17 @@ export function AppHeader() {
                           </div>
                         ))
                       ) : (
-                        <div className="py-8 px-4 text-center text-xs text-slate-400">
+                        <div className="py-8 px-4 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
                           No notifications yet. You will be alerted when your challenges, proposals, or reviews update.
                         </div>
                       )}
                     </div>
 
-                    <div className="p-2 border-t border-slate-100 bg-slate-50 text-center">
+                    <div className="p-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-center">
                       <Link
                         href="/dashboard"
                         onClick={() => setIsNotifOpen(false)}
-                        className="text-xs font-semibold text-blue-600 hover:underline"
+                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                       >
                         View Dashboard Activity &rarr;
                       </Link>
@@ -259,7 +259,7 @@ export function AppHeader() {
                   </Badge>
                 </Link>
 
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
                   <Link
                     href="/dashboard"
                     className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs hover:ring-2 hover:ring-blue-300 transition-all"
@@ -267,11 +267,11 @@ export function AppHeader() {
                   >
                     {user.fullName.charAt(0).toUpperCase()}
                   </Link>
-                  <span className="hidden lg:inline text-xs font-semibold text-slate-800 max-w-[130px] truncate">
+                  <span className="hidden lg:inline text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[130px] truncate">
                     {user.fullName}
                   </span>
-                  <Button variant="ghost" size="sm" onClick={() => logout()} title="Sign out" className="p-1.5 hover:bg-rose-50">
-                    <LogOut className="w-4 h-4 text-slate-400 hover:text-rose-600 transition-colors" />
+                  <Button variant="ghost" size="sm" onClick={() => logout()} title="Sign out" className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40">
+                    <LogOut className="w-4 h-4 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors" />
                   </Button>
                 </div>
               </div>

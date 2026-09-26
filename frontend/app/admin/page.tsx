@@ -540,52 +540,52 @@ export default function SystemAdminPortalPage() {
         )}
 
         {/* Defined Operational Rules: Platform Administration & Superuser Governance */}
-        <div className="rounded-2xl border border-purple-200/80 bg-gradient-to-r from-purple-50/90 via-indigo-50/50 to-white p-5 shadow-sm space-y-3">
+        <div className="rounded-2xl border border-purple-200/80 dark:border-purple-800/60 bg-gradient-to-r from-purple-50/90 via-indigo-50/50 to-white dark:from-purple-950/40 dark:via-indigo-950/20 dark:to-slate-900 p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-purple-900 font-bold text-sm">
+            <div className="flex items-center gap-2 text-purple-900 dark:text-purple-300 font-bold text-sm">
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-600 text-white text-xs font-black">
                 5
               </span>
               <span>Defined Operational Rules: Platform Administration &amp; Superuser Governance</span>
             </div>
-            <span className="text-[11px] font-semibold bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full border border-purple-200">
+            <span className="text-[11px] font-semibold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
               System Admin Mandate
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 bg-white/90 rounded-xl border border-purple-100 space-y-1">
-              <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+            <div className="p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-1">
+              <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                 1. Server-Side Enforcement
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 All admin APIs enforce strict cryptographic JWT validation. Hiding the portal in the UI is never sufficient.
               </p>
             </div>
-            <div className="p-3 bg-white/90 rounded-xl border border-purple-100 space-y-1">
-              <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-1">
+              <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 2. Organization Governance
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Superuser oversight of institution status (ACTIVE / SUSPENDED), university accreditations, and corporate partnerships.
               </p>
             </div>
-            <div className="p-3 bg-white/90 rounded-xl border border-purple-100 space-y-1">
-              <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
+            <div className="p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-1">
+              <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 3. Immutable Forensic Ledger
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Every cluster merge, unmerge, status override, and rating is archived in the tamper-evident audit ledger.
               </p>
             </div>
-            <div className="p-3 bg-white/90 rounded-xl border border-purple-100 space-y-1">
-              <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-1">
+              <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 4. Microservice Telemetry
               </div>
-              <p className="text-slate-600 text-[11px] leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                 Real-time health monitoring of PostgreSQL, PostGIS, pgvector, Redis BullMQ, and FastAPI AI pipelines.
               </p>
             </div>
@@ -593,13 +593,13 @@ export default function SystemAdminPortalPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-slate-200 flex flex-wrap gap-4 text-sm font-medium">
+        <div className="border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 text-sm font-medium">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'overview'
-                ? 'border-purple-600 text-purple-700 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-purple-600 text-purple-700 dark:text-purple-400 font-semibold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <Activity className="h-4 w-4" />
@@ -607,10 +607,10 @@ export default function SystemAdminPortalPage() {
           </button>
           <button
             onClick={() => setActiveTab('organizations')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'organizations'
-                ? 'border-purple-600 text-purple-700 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-purple-600 text-purple-700 dark:text-purple-400 font-semibold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <Building2 className="h-4 w-4" />
@@ -618,10 +618,10 @@ export default function SystemAdminPortalPage() {
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'users'
-                ? 'border-purple-600 text-purple-700 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-purple-600 text-purple-700 dark:text-purple-400 font-semibold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <Users className="h-4 w-4" />
@@ -629,10 +629,10 @@ export default function SystemAdminPortalPage() {
           </button>
           <button
             onClick={() => setActiveTab('audit')}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            className={`pb-3 border-b-2 flex items-center gap-2 transition cursor-pointer ${
               activeTab === 'audit'
-                ? 'border-purple-600 text-purple-700 font-semibold'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-purple-600 text-purple-700 dark:text-purple-400 font-semibold'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             <FileText className="h-4 w-4" />
@@ -645,61 +645,61 @@ export default function SystemAdminPortalPage() {
           <div className="space-y-6">
             {/* System Status KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Registered Users</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.users.total}</div>
-                  <div className="text-[11px] text-emerald-600 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Registered Users</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.users.total}</div>
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
                     {overview.metrics.users.active} active accounts
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Organizations</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.organizations.total}</div>
-                  <div className="text-[11px] text-blue-600 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Organizations</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.organizations.total}</div>
+                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium mt-1">
                     {overview.metrics.organizations.byVerification['VERIFIED'] || 0} verified
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Civic Challenges</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.challenges.total}</div>
-                  <div className="text-[11px] text-purple-600 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Civic Challenges</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.challenges.total}</div>
+                  <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium mt-1">
                     {overview.metrics.challenges.systemic} systemic clusters
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Active Projects</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.projects.active}</div>
-                  <div className="text-[11px] text-slate-500 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Active Projects</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.projects.active}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
                     {overview.metrics.projects.completed} completed
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Solution Memories</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.solutionMemories.published}</div>
-                  <div className="text-[11px] text-emerald-600 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Solution Memories</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.solutionMemories.published}</div>
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
                     Published & reusable
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border-slate-200">
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <CardContent className="p-4">
-                  <div className="text-xs text-slate-500 font-medium">Audit Records</div>
-                  <div className="text-2xl font-bold text-slate-900 mt-1">{overview.metrics.auditLogs.total}</div>
-                  <div className="text-[11px] text-slate-500 font-medium mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Audit Records</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{overview.metrics.auditLogs.total}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
                     Tamper-evident logs
                   </div>
                 </CardContent>
@@ -708,50 +708,50 @@ export default function SystemAdminPortalPage() {
 
             {/* Telemetry Architecture Panel */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-slate-200">
+              <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Server className="h-5 w-5 text-indigo-600" />
+                  <CardTitle className="text-base flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                    <Server className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                     Core Infrastructure & Process Telemetry
                   </CardTitle>
-                  <CardDescription>Live Node.js and container telemetry</CardDescription>
+                  <CardDescription className="text-slate-500 dark:text-slate-400">Live Node.js and container telemetry</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-xs">
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Service Identifier:</span>
-                    <span className="font-mono font-semibold text-slate-900">{overview.telemetry.service}</span>
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">Service Identifier:</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">{overview.telemetry.service}</span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Node Runtime / Platform:</span>
-                    <span className="font-mono font-semibold text-slate-900">
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">Node Runtime / Platform:</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                       {overview.telemetry.nodeVersion} ({overview.telemetry.platform})
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Memory Allocation (RSS):</span>
-                    <span className="font-mono font-semibold text-slate-900">
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">Memory Allocation (RSS):</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                       {overview.telemetry.memoryUsageMb.rss} MB
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">V8 Heap (Used / Total):</span>
-                    <span className="font-mono font-semibold text-slate-900">
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">V8 Heap (Used / Total):</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                       {overview.telemetry.memoryUsageMb.heapUsed} MB / {overview.telemetry.memoryUsageMb.heapTotal} MB
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">PostgreSQL Engine:</span>
-                    <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">PostgreSQL Engine:</span>
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                       <CheckCircle2 className="h-3 w-3" />
                       {overview.telemetry.database.provider}
                     </span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span className="text-slate-500">Queue & Redis State:</span>
-                    <span className={`inline-flex items-center gap-1.5 font-semibold px-2 py-0.5 rounded ${
+                    <span className="text-slate-500 dark:text-slate-400">Queue & Redis State:</span>
+                    <span className={`inline-flex items-center gap-1.5 font-semibold px-2 py-0.5 rounded border ${
                       overview.telemetry.redis.status === 'CONNECTED'
-                        ? 'text-emerald-700 bg-emerald-50'
-                        : 'text-amber-700 bg-amber-50'
+                        ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'
+                        : 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800'
                     }`}>
                       {overview.telemetry.redis.status === 'CONNECTED' ? (
                         <CheckCircle2 className="h-3 w-3" />
@@ -765,31 +765,31 @@ export default function SystemAdminPortalPage() {
               </Card>
 
               {/* RBAC Breakdown Panel */}
-              <Card className="border-slate-200">
+              <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Users className="h-5 w-5 text-purple-600" />
+                  <CardTitle className="text-base flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     Granular User Roles Distribution (15 Roles)
                   </CardTitle>
-                  <CardDescription>Multi-portal role breakdown across all institutional participants</CardDescription>
+                  <CardDescription className="text-slate-500 dark:text-slate-400">Multi-portal role breakdown across all institutional participants</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2 text-xs">
                   {Object.entries(overview.metrics.users.byRole).map(([role, count]) => (
-                    <div key={role} className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                    <div key={role} className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-medium text-slate-800">{role}</span>
-                        {role === 'SYSTEM_ADMIN' && <Badge className="bg-purple-100 text-purple-800 text-[10px]">Superuser</Badge>}
+                        <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{role}</span>
+                        {role === 'SYSTEM_ADMIN' && <Badge className="bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-[10px]">Superuser</Badge>}
                         {['GOVERNMENT_OFFICER', 'GOVERNMENT_DEPARTMENT'].includes(role) && (
-                          <Badge className="bg-blue-100 text-blue-800 text-[10px]">Government</Badge>
+                          <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[10px]">Government</Badge>
                         )}
                         {['UNIVERSITY_ADMIN', 'FACULTY', 'STUDENT'].includes(role) && (
-                          <Badge className="bg-amber-100 text-amber-800 text-[10px]">Academia</Badge>
+                          <Badge className="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[10px]">Academia</Badge>
                         )}
                         {['INDUSTRY_PARTNER', 'MSME', 'CSR_ORGANIZATION', 'STARTUP'].includes(role) && (
-                          <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Industry</Badge>
+                          <Badge className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px]">Industry</Badge>
                         )}
                       </div>
-                      <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded font-mono">{count}</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono border border-slate-200/50 dark:border-slate-700">{count}</span>
                     </div>
                   ))}
                 </CardContent>
@@ -801,7 +801,7 @@ export default function SystemAdminPortalPage() {
         {/* TAB 2: Organization Governance */}
         {activeTab === 'organizations' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -815,7 +815,7 @@ export default function SystemAdminPortalPage() {
                 <select
                   value={orgFilterType}
                   onChange={e => setOrgFilterType(e.target.value)}
-                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 bg-white"
+                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 >
                   <option value="">All Types (University, Industry, CSR...)</option>
                   <option value="UNIVERSITY">University</option>
@@ -828,7 +828,7 @@ export default function SystemAdminPortalPage() {
                 <select
                   value={orgFilterVerif}
                   onChange={e => setOrgFilterVerif(e.target.value)}
-                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 bg-white"
+                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 >
                   <option value="">All Verification Statuses</option>
                   <option value="PENDING_REVIEW">Pending Review</option>
@@ -844,10 +844,10 @@ export default function SystemAdminPortalPage() {
               </Button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-3">Organization</th>
                       <th className="p-3">Type</th>
@@ -858,10 +858,10 @@ export default function SystemAdminPortalPage() {
                       <th className="p-3 text-right">Governance Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {orgs.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-500">
+                        <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-slate-400">
                           No organizations found matching your search criteria.
                         </td>
                       </tr>
@@ -869,10 +869,10 @@ export default function SystemAdminPortalPage() {
                       orgs.map(o => {
                         const lastRating = o.metadata?.lastRatingScore ?? null;
                         return (
-                          <tr key={o.id} className="hover:bg-slate-50/80 transition">
+                          <tr key={o.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                             <td className="p-3">
-                              <div className="font-semibold text-slate-900">{o.name}</div>
-                              <div className="text-[11px] text-slate-500 font-mono">slug: {o.slug}</div>
+                              <div className="font-semibold text-slate-900 dark:text-slate-100">{o.name}</div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">slug: {o.slug}</div>
                             </td>
                             <td className="p-3">
                               <Badge variant="outline" className="text-[10px] font-semibold">
@@ -880,14 +880,14 @@ export default function SystemAdminPortalPage() {
                               </Badge>
                             </td>
                             <td className="p-3">
-                              <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded text-[11px] ${
+                              <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded text-[11px] border ${
                                 o.verificationStatus === 'VERIFIED'
-                                  ? 'bg-emerald-50 text-emerald-700'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                                   : o.verificationStatus === 'PENDING_REVIEW'
-                                  ? 'bg-amber-50 text-amber-700 animate-pulse'
+                                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 animate-pulse'
                                   : o.verificationStatus === 'REJECTED'
-                                  ? 'bg-rose-50 text-rose-700'
-                                  : 'bg-slate-100 text-slate-600'
+                                  ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                               }`}>
                                 {o.verificationStatus === 'VERIFIED' && <CheckCircle2 className="h-3 w-3" />}
                                 {o.verificationStatus === 'PENDING_REVIEW' && <Clock className="h-3 w-3" />}
@@ -898,21 +898,21 @@ export default function SystemAdminPortalPage() {
                               {lastRating !== null ? (
                                 <div className="flex items-center gap-1.5">
                                   <Award className="h-3.5 w-3.5 text-amber-500" />
-                                  <span className="font-bold text-slate-900 font-mono">{lastRating}/100</span>
+                                  <span className="font-bold text-slate-900 dark:text-slate-100 font-mono">{lastRating}/100</span>
                                 </div>
                               ) : (
-                                <span className="text-slate-400 italic">Not rated</span>
+                                <span className="text-slate-400 dark:text-slate-500 italic">Not rated</span>
                               )}
                             </td>
-                            <td className="p-3 text-[11px] text-slate-600">
+                            <td className="p-3 text-[11px] text-slate-600 dark:text-slate-300">
                               <div>{o.counts.users} users &bull; {o.counts.ledProjects} projects</div>
                               <div>{o.counts.partnerships} partnerships</div>
                             </td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 o.status === 'ACTIVE'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-rose-100 text-rose-800'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                                  : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                               }`}>
                                 {o.status}
                               </span>
@@ -935,7 +935,7 @@ export default function SystemAdminPortalPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-7 text-[11px] px-2 border-amber-300 text-amber-800 hover:bg-amber-50"
+                                  className="h-7 text-[11px] px-2 border-amber-300 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/60"
                                   onClick={() => {
                                     setRatingTargetOrg(o);
                                     setDimTechnical(85);
@@ -947,7 +947,7 @@ export default function SystemAdminPortalPage() {
                                     setRatingModalOpen(true);
                                   }}
                                 >
-                                  <Award className="h-3 w-3 mr-1 text-amber-600" />
+                                  <Award className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400" />
                                   Rate
                                 </Button>
                                 <Button
@@ -955,8 +955,8 @@ export default function SystemAdminPortalPage() {
                                   variant="ghost"
                                   className={`h-7 text-[11px] px-2 ${
                                     o.status === 'ACTIVE'
-                                      ? 'text-rose-600 hover:bg-rose-50'
-                                      : 'text-emerald-600 hover:bg-emerald-50'
+                                      ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50'
+                                      : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
                                   }`}
                                   onClick={() => handleToggleOrgStatus(o)}
                                   disabled={actionLoading}
@@ -979,7 +979,7 @@ export default function SystemAdminPortalPage() {
         {/* TAB 3: User Directory & RBAC Status Management */}
         {activeTab === 'users' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -993,7 +993,7 @@ export default function SystemAdminPortalPage() {
                 <select
                   value={userFilterRole}
                   onChange={e => setUserFilterRole(e.target.value)}
-                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 bg-white"
+                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 >
                   <option value="">All 15 RBAC Roles</option>
                   <option value="CITIZEN">Citizen</option>
@@ -1014,10 +1014,10 @@ export default function SystemAdminPortalPage() {
               </Button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-3">User & Email</th>
                       <th className="p-3">RBAC Role</th>
@@ -1028,69 +1028,69 @@ export default function SystemAdminPortalPage() {
                       <th className="p-3 text-right">Access Control</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-500">
+                        <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-slate-400">
                           No users found matching query.
                         </td>
                       </tr>
                     ) : (
                       users.map(u => (
-                        <tr key={u.id} className="hover:bg-slate-50/80 transition">
+                        <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
                           <td className="p-3">
-                            <div className="font-semibold text-slate-900">{u.fullName}</div>
-                            <div className="text-[11px] text-slate-500 font-mono">{u.email}</div>
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">{u.fullName}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{u.email}</div>
                           </td>
                           <td className="p-3">
                             <Badge variant="outline" className={`text-[10px] font-mono ${
                               u.role === 'SYSTEM_ADMIN'
-                                ? 'border-purple-300 text-purple-800 bg-purple-50'
+                                ? 'border-purple-300 dark:border-purple-800 text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60'
                                 : u.role.startsWith('GOV')
-                                ? 'border-blue-300 text-blue-800 bg-blue-50'
-                                : 'border-slate-300 text-slate-800'
+                                ? 'border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60'
+                                : 'border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200'
                             }`}>
                               {u.role}
                             </Badge>
                           </td>
-                          <td className="p-3 text-slate-600">
+                          <td className="p-3 text-slate-600 dark:text-slate-300">
                             {u.organization ? (
                               <div>
-                                <span className="font-medium text-slate-900">{u.organization.name}</span>
-                                <span className="text-[10px] text-slate-400 block">({u.organization.type})</span>
+                                <span className="font-medium text-slate-900 dark:text-slate-100">{u.organization.name}</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">({u.organization.type})</span>
                               </div>
                             ) : (
-                              <span className="text-slate-400 italic">Independent Citizen</span>
+                              <span className="text-slate-400 dark:text-slate-500 italic">Independent Citizen</span>
                             )}
                           </td>
                           <td className="p-3">
                             {u.emailVerified ? (
-                              <span className="text-emerald-600 flex items-center gap-1 font-semibold">
+                              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
                                 <CheckCircle2 className="h-3 w-3" /> Yes
                               </span>
                             ) : (
-                              <span className="text-slate-400">Pending</span>
+                              <span className="text-slate-400 dark:text-slate-500">Pending</span>
                             )}
                           </td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                              u.isActive ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                             }`}>
                               {u.isActive ? 'ACTIVE' : 'DEACTIVATED'}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-500 font-mono text-[11px]">
+                          <td className="p-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
                             {new Date(u.createdAt).toLocaleDateString()}
                           </td>
                           <td className="p-3 text-right">
                             {u.role === 'SYSTEM_ADMIN' ? (
-                              <span className="text-[10px] text-slate-400 italic">Protected Superuser</span>
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">Protected Superuser</span>
                             ) : (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className={`h-7 text-[11px] px-2 ${
-                                  u.isActive ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'
+                                  u.isActive ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
                                 }`}
                                 onClick={() => handleToggleUserStatus(u)}
                                 disabled={actionLoading}
@@ -1112,12 +1112,12 @@ export default function SystemAdminPortalPage() {
         {/* TAB 4: Immutable Audit Trail */}
         {activeTab === 'audit' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <div className="flex items-center gap-3">
                 <select
                   value={auditResource}
                   onChange={e => setAuditResource(e.target.value)}
-                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 bg-white"
+                  className="h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 >
                   <option value="">All Audited Resources</option>
                   <option value="Challenge">Challenge</option>
@@ -1132,15 +1132,15 @@ export default function SystemAdminPortalPage() {
                   Query Trail
                 </Button>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
                 Displaying latest {auditLogs.length} cryptographically sequenced ledger events
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-3">Timestamp</th>
                       <th className="p-3">Action</th>
@@ -1150,39 +1150,39 @@ export default function SystemAdminPortalPage() {
                       <th className="p-3">State Mutation</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-[11px]">
                     {auditLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-slate-500 font-sans">
+                        <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-slate-400 font-sans">
                           No audit entries recorded for selected resource.
                         </td>
                       </tr>
                     ) : (
                       auditLogs.map(log => (
-                        <tr key={log.id} className="hover:bg-slate-50/80 transition">
-                          <td className="p-3 text-slate-500 whitespace-nowrap">
+                        <tr key={log.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                          <td className="p-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             {new Date(log.createdAt).toLocaleString()}
                           </td>
                           <td className="p-3">
-                            <span className="font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded">
+                            <span className="font-bold text-purple-900 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded">
                               {log.action}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-800">
-                            <div><span className="font-sans font-semibold">{log.resource}</span></div>
-                            <div className="text-[10px] text-slate-400">{log.resourceId}</div>
+                          <td className="p-3 text-slate-800 dark:text-slate-200">
+                            <div><span className="font-sans font-semibold text-slate-900 dark:text-slate-100">{log.resource}</span></div>
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500">{log.resourceId}</div>
                           </td>
                           <td className="p-3">
-                            <div className="text-slate-800">{log.actorRole || 'SYSTEM'}</div>
-                            <div className="text-[10px] text-slate-400">{log.actorId ? `${log.actorId.slice(0, 8)}...` : 'Automated'}</div>
+                            <div className="text-slate-800 dark:text-slate-200">{log.actorRole || 'SYSTEM'}</div>
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500">{log.actorId ? `${log.actorId.slice(0, 8)}...` : 'Automated'}</div>
                           </td>
-                          <td className="p-3 font-sans text-slate-600 max-w-xs truncate">
-                            {log.reason || <span className="text-slate-400 italic">No notes</span>}
+                          <td className="p-3 font-sans text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                            {log.reason || <span className="text-slate-400 dark:text-slate-500 italic">No notes</span>}
                           </td>
                           <td className="p-3">
-                            <details className="cursor-pointer text-blue-600 hover:underline">
+                            <details className="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline">
                               <summary className="font-sans text-[10px]">View Diff</summary>
-                              <div className="mt-1 p-2 bg-slate-900 text-slate-100 rounded text-[10px] max-w-xs overflow-x-auto whitespace-pre">
+                              <div className="mt-1 p-2 bg-slate-900 text-slate-100 rounded text-[10px] max-w-xs overflow-x-auto whitespace-pre border border-slate-800">
                                 {JSON.stringify({ prev: log.previousState, next: log.newState }, null, 2)}
                               </div>
                             </details>
@@ -1199,25 +1199,25 @@ export default function SystemAdminPortalPage() {
 
         {/* MODAL 1: Organization Verification Review */}
         {verifModalOpen && selectedOrg && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
-                  <ShieldCheck className="w-5 h-5 text-purple-600" />
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-base">
+                  <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <h3>Review Organization Verification</h3>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Authoritatively verify or reject institutional accreditation for {selectedOrg.name}.
                 </p>
               </div>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Decision Outcome</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Decision Outcome</label>
                   <select
                     value={verifStatus}
                     onChange={e => setVerifStatus(e.target.value as 'APPROVED' | 'REJECTED')}
-                    className="w-full h-9 rounded-lg border border-slate-300 px-2 font-medium"
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-2 font-medium"
                   >
                     <option value="APPROVED">APPROVED &bull; Verify Institution</option>
                     <option value="REJECTED">REJECTED &bull; Reject Accreditation</option>
@@ -1225,7 +1225,7 @@ export default function SystemAdminPortalPage() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                     Administrative Review Notes (Recorded in Audit Ledger)
                   </label>
                   <textarea
@@ -1233,18 +1233,18 @@ export default function SystemAdminPortalPage() {
                     value={verifNotes}
                     onChange={e => setVerifNotes(e.target.value)}
                     placeholder="e.g. Verified official university charter & NAAC accreditation documents."
-                    className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:ring-2 focus:ring-purple-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-2 text-xs focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" onClick={() => setVerifModalOpen(false)} disabled={actionLoading}>
                   Cancel
                 </Button>
                 <Button
                   size="sm"
-                  className={verifStatus === 'APPROVED' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'}
+                  className={verifStatus === 'APPROVED' ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold' : 'bg-rose-600 hover:bg-rose-700 text-white font-semibold'}
                   onClick={handleReviewVerification}
                   isLoading={actionLoading}
                 >
@@ -1257,25 +1257,25 @@ export default function SystemAdminPortalPage() {
 
         {/* MODAL 2: Structured Organization Rating Modal */}
         {ratingModalOpen && ratingTargetOrg && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold text-base">
                   <Award className="w-5 h-5 text-amber-500" />
                   <h3>Official Institutional Evaluation & Rating</h3>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Rate {ratingTargetOrg.name} across 4 standardized performance dimensions with immutable audit preservation.
                 </p>
               </div>
 
               {/* Calculated Score Display */}
-              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 flex items-center justify-between">
+              <div className="bg-amber-50 dark:bg-amber-950/40 rounded-xl p-3 border border-amber-200 dark:border-amber-800/80 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-amber-900">Composite Rating Score</div>
-                  <div className="text-[11px] text-amber-700">Weighted average across dimensions</div>
+                  <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">Composite Rating Score</div>
+                  <div className="text-[11px] text-amber-700 dark:text-amber-300">Weighted average across dimensions</div>
                 </div>
-                <div className="text-2xl font-bold text-amber-900 font-mono">
+                <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 font-mono">
                   {Math.round((dimTechnical + dimTimeliness + dimCollaboration + dimOutcome) / 4)}/100
                 </div>
               </div>
@@ -1283,9 +1283,9 @@ export default function SystemAdminPortalPage() {
               {/* Sliders */}
               <div className="space-y-3 text-xs">
                 <div>
-                  <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     <span>Technical Competence (25%)</span>
-                    <span className="font-mono text-purple-700">{dimTechnical}/100</span>
+                    <span className="font-mono text-purple-700 dark:text-purple-400 font-bold">{dimTechnical}/100</span>
                   </div>
                   <input
                     type="range"
@@ -1293,14 +1293,14 @@ export default function SystemAdminPortalPage() {
                     max="100"
                     value={dimTechnical}
                     onChange={e => setDimTechnical(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     <span>Timeliness & SLA Delivery (25%)</span>
-                    <span className="font-mono text-blue-700">{dimTimeliness}/100</span>
+                    <span className="font-mono text-blue-700 dark:text-blue-400 font-bold">{dimTimeliness}/100</span>
                   </div>
                   <input
                     type="range"
@@ -1308,14 +1308,14 @@ export default function SystemAdminPortalPage() {
                     max="100"
                     value={dimTimeliness}
                     onChange={e => setDimTimeliness(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     <span>Stakeholder Collaboration (25%)</span>
-                    <span className="font-mono text-emerald-700">{dimCollaboration}/100</span>
+                    <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{dimCollaboration}/100</span>
                   </div>
                   <input
                     type="range"
@@ -1323,14 +1323,14 @@ export default function SystemAdminPortalPage() {
                     max="100"
                     value={dimCollaboration}
                     onChange={e => setDimCollaboration(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     <span>Civic Outcome Quality (25%)</span>
-                    <span className="font-mono text-indigo-700">{dimOutcome}/100</span>
+                    <span className="font-mono text-indigo-700 dark:text-indigo-400 font-bold">{dimOutcome}/100</span>
                   </div>
                   <input
                     type="range"
@@ -1338,12 +1338,12 @@ export default function SystemAdminPortalPage() {
                     max="100"
                     value={dimOutcome}
                     onChange={e => setDimOutcome(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                     Evidence Citation URL (Optional)
                   </label>
                   <input
@@ -1351,12 +1351,12 @@ export default function SystemAdminPortalPage() {
                     value={ratingEvidence}
                     onChange={e => setRatingEvidence(e.target.value)}
                     placeholder="https://sicp.gov.in/evaluations/report-2026.pdf"
-                    className="w-full h-8 rounded-lg border border-slate-300 px-2.5 text-xs focus:ring-2 focus:ring-amber-500 font-mono"
+                    className="w-full h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-2.5 text-xs focus:ring-2 focus:ring-amber-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                     Rating Justification & Notes (Mandatory)
                   </label>
                   <textarea
@@ -1364,20 +1364,20 @@ export default function SystemAdminPortalPage() {
                     value={ratingReason}
                     onChange={e => setRatingReason(e.target.value)}
                     placeholder="e.g. Consistently delivers sensor calibration milestones ahead of schedule with strong community engagement."
-                    className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:ring-2 focus:ring-amber-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-2 text-xs focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
               </div>
 
               {/* History Preview if available */}
               {ratingTargetOrg.metadata?.ratings && ratingTargetOrg.metadata.ratings.length > 0 && (
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-[11px] text-slate-600">
-                  <span className="font-semibold text-slate-800">Preserved History: </span>
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">Preserved History: </span>
                   {ratingTargetOrg.metadata.ratings.length} prior evaluation(s) on record.
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" onClick={() => setRatingModalOpen(false)} disabled={actionLoading}>
                   Cancel
                 </Button>

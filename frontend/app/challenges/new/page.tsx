@@ -1264,10 +1264,10 @@ export default function NewChallengePage() {
         {/* Page Header with Language Toggle */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
               {lang === 'hi' ? 'नागरिक समस्या दर्ज करें' : 'Report a Civic Challenge'}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
               {lang === 'hi'
                 ? 'चरणबद्ध 7-चरणीय नागरिक अंतर्ग्रहण प्रणाली: तथ्य प्रदान करें, AI समझेगा, अधिकारी निर्णय लेंगे।'
                 : 'Guided 7-step civic intake: Citizen provides facts, AI interprets, Government decides.'}
@@ -1298,16 +1298,16 @@ export default function NewChallengePage() {
         </div>
 
         {/* Mobile Step Progress Indicator (360px - 640px) */}
-        <div className="sm:hidden bg-white rounded-xl border border-slate-200 shadow-xs p-3 space-y-2" role="region" aria-label="Mobile step progress">
+        <div className="sm:hidden bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs p-3 space-y-2" role="region" aria-label="Mobile step progress">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-slate-900 dark:text-slate-100">
               Step {currentStep} of 7: {STEP_LABELS[currentStep - 1]}
             </span>
-            <span className="text-slate-500 font-mono font-bold">
+            <span className="text-slate-500 dark:text-slate-400 font-mono font-bold">
               {Math.round((currentStep / 7) * 100)}%
             </span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-valuenow={currentStep} aria-valuemin={1} aria-valuemax={7}>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-valuenow={currentStep} aria-valuemin={1} aria-valuemax={7}>
             <div
               className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / 7) * 100}%` }}
@@ -1316,7 +1316,7 @@ export default function NewChallengePage() {
         </div>
 
         {/* Unified 7-Step Navigation Bar */}
-        <nav aria-label="Reporting steps" className="bg-white rounded-xl border border-slate-200 shadow-xs p-2 overflow-x-auto">
+        <nav aria-label="Reporting steps" className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs p-2 overflow-x-auto">
           <div className="flex items-center min-w-[700px] justify-between">
             {[
               { num: 1, label: '01 Problem' },
@@ -1339,23 +1339,23 @@ export default function NewChallengePage() {
                   disabled={isLocked}
                   aria-current={isActive ? 'step' : undefined}
                   onClick={() => setCurrentStep(step.num)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none min-h-[36px] ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none min-h-[36px] cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-blue-600 text-white shadow-2xs'
                       : isComplete
-                      ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                      ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
                       : isLocked
-                      ? 'text-slate-400 opacity-60 cursor-not-allowed'
-                      : 'text-slate-700 hover:bg-slate-100'
+                      ? 'text-slate-500 dark:text-slate-400 opacity-70 cursor-not-allowed'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                   title={isLocked ? (step.num === 5 ? 'Pin location in Step 02 first' : 'Complete previous required steps') : ''}
                 >
                   {isComplete && !isActive ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" aria-hidden="true" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                   ) : isLocked ? (
-                    <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                    <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 shrink-0" aria-hidden="true" />
                   ) : (
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'}`}>
                       {step.num}
                     </span>
                   )}
@@ -1379,25 +1379,25 @@ export default function NewChallengePage() {
             STEP 01: TELL US THE PROBLEM
            ========================================================================= */}
         {currentStep === 1 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 01 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">What is happening?</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 01 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">What is happening?</CardTitle>
                 </div>
                 <Badge variant="secondary">Intake Guidance</Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Describe the civic problem in your own words. Official category and severity will be determined during government review.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Problem Headline */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-800 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>Problem Headline <span className="text-red-500">*</span></span>
-                  <span className="text-[11px] text-slate-400">Short summary (min 5 characters)</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Short summary (min 5 characters)</span>
                 </label>
                 <Input
                   placeholder="e.g., Severe road damage with deep potholes near village bus stop"
@@ -1405,14 +1405,14 @@ export default function NewChallengePage() {
                   onChange={e => setTitle(e.target.value)}
                   className={fieldErrors.title ? 'border-red-500' : ''}
                 />
-                {fieldErrors.title && <p className="text-xs text-red-600">{fieldErrors.title}</p>}
+                {fieldErrors.title && <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.title}</p>}
               </div>
 
               {/* Problem Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-800 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>Detailed Description <span className="text-red-500">*</span></span>
-                  <span className="text-[11px] text-slate-400">Be specific (min 20 characters)</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Be specific (min 20 characters)</span>
                 </label>
                 <Textarea
                   rows={4}
@@ -1421,19 +1421,19 @@ export default function NewChallengePage() {
                   onChange={e => setDescription(e.target.value)}
                   className={fieldErrors.description ? 'border-red-500' : ''}
                 />
-                {fieldErrors.description && <p className="text-xs text-red-600">{fieldErrors.description}</p>}
+                {fieldErrors.description && <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.description}</p>}
               </div>
 
               {/* Optional Category Guidance */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-800 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>Category Guidance (Optional)</span>
-                  <span className="text-[11px] text-slate-400">Citizen suggestion only</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Citizen suggestion only</span>
                 </label>
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat} value={cat}>
@@ -1441,7 +1441,7 @@ export default function NewChallengePage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-slate-500 italic">
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                   Note: Your selection guides initial intake. Official classification, root causes, and priority will be assigned during government review.
                 </p>
               </div>
@@ -1517,12 +1517,12 @@ export default function NewChallengePage() {
             STEP 02: PIN THE LOCATION
            ========================================================================= */}
         {currentStep === 2 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 02 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">Pin the Location</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 02 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">Pin the Location</CardTitle>
                 </div>
                 <Badge
                   variant={
@@ -1542,7 +1542,7 @@ export default function NewChallengePage() {
                     : 'Location Missing'}
                 </Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Location helps SICP identify nearby reports, route the challenge to the right municipal authorities, and understand geographic impact.
               </CardDescription>
             </CardHeader>
@@ -1550,8 +1550,8 @@ export default function NewChallengePage() {
               {/* Interactive Map Picker */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-blue-600" />
+                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <span>Interactive Map Pinning</span>
                   </label>
                   <Button
@@ -1562,7 +1562,7 @@ export default function NewChallengePage() {
                     isLoading={gpsState === 'LOCATING'}
                     className="text-xs"
                   >
-                    <Compass className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                    <Compass className="w-3.5 h-3.5 mr-1 text-blue-600 dark:text-blue-400" />
                     Use My Device GPS
                   </Button>
                 </div>
@@ -1579,16 +1579,16 @@ export default function NewChallengePage() {
                 />
 
                 {isReverseGeocoding && (
-                  <div className="flex items-center gap-2 p-2.5 bg-blue-50/70 rounded-lg text-xs text-blue-700 border border-blue-200 animate-pulse">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600 shrink-0" />
+                  <div className="flex items-center gap-2 p-2.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-lg text-xs text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 animate-pulse">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>Resolving district and state from OpenStreetMap...</span>
                   </div>
                 )}
 
                 {resolvedLocationDetails && (
-                  <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
+                  <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
                     <div className="space-y-0.5">
-                      <span className="font-semibold text-slate-800">Auto-Resolved Area:</span>{' '}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">Auto-Resolved Area:</span>{' '}
                       <span>
                         {[
                           resolvedLocationDetails.locality,
@@ -1604,7 +1604,7 @@ export default function NewChallengePage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="text-[11px] text-blue-600 h-7 px-2 hover:bg-blue-50"
+                      className="text-[11px] text-blue-600 dark:text-blue-400 h-7 px-2 hover:bg-blue-50 dark:hover:bg-blue-950"
                       onClick={() => {
                         if (resolvedLocationDetails.district) setDistrict(resolvedLocationDetails.district);
                         if (resolvedLocationDetails.state) setState(resolvedLocationDetails.state);
@@ -1617,8 +1617,8 @@ export default function NewChallengePage() {
                 )}
 
                 {locationNotice && (
-                  <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>{locationNotice}</span>
                   </p>
                 )}
@@ -1627,7 +1627,7 @@ export default function NewChallengePage() {
               {/* District & State Administrative Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-800">
+                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                     District <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -1636,11 +1636,11 @@ export default function NewChallengePage() {
                     onChange={e => setDistrict(e.target.value)}
                     className={fieldErrors.district ? 'border-red-500' : ''}
                   />
-                  {fieldErrors.district && <p className="text-xs text-red-600">{fieldErrors.district}</p>}
+                  {fieldErrors.district && <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.district}</p>}
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-800">
+                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                     State <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -1649,13 +1649,13 @@ export default function NewChallengePage() {
                     onChange={e => setState(e.target.value)}
                     className={fieldErrors.state ? 'border-red-500' : ''}
                   />
-                  {fieldErrors.state && <p className="text-xs text-red-600">{fieldErrors.state}</p>}
+                  {fieldErrors.state && <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.state}</p>}
                 </div>
               </div>
 
               {/* Landmark / Address */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   Landmark or Street Address (Optional)
                 </label>
                 <Input
@@ -1666,11 +1666,11 @@ export default function NewChallengePage() {
               </div>
 
               {/* Policy Guidance Alert */}
-              <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-800 border border-blue-200 leading-relaxed">
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-lg text-xs text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 leading-relaxed">
                 <strong>Location Intelligence Rule:</strong> Without coordinates, basic AI understanding is permitted, but local duplicate detection and proximity warnings will remain locked until a map pin is placed.
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+            <CardFooter className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(1)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -1691,31 +1691,31 @@ export default function NewChallengePage() {
             STEP 03: ADD EVIDENCE
            ========================================================================= */}
         {currentStep === 3 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 03 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">Add Evidence</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 03 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">Add Evidence</CardTitle>
                 </div>
                 <Badge variant="secondary">
                   {[images.length, audioItem ? 1 : 0, videos.length, documents.length].reduce((a, b) => a + b, 0)} Items Added
                 </Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Photographs, audio recordings, video clips, and documents provide direct evidence for multimodal AI problem intelligence.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Evidence Type Tabs */}
-              <div className="flex border-b border-slate-200 text-xs font-semibold">
+              <div className="flex border-b border-slate-200 dark:border-slate-800 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setActiveEvidenceTab('photo')}
                   className={`flex items-center gap-1.5 py-2.5 px-4 border-b-2 transition-colors ${
                     activeEvidenceTab === 'photo'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <Camera className="w-4 h-4" />
@@ -1726,8 +1726,8 @@ export default function NewChallengePage() {
                   onClick={() => setActiveEvidenceTab('audio')}
                   className={`flex items-center gap-1.5 py-2.5 px-4 border-b-2 transition-colors ${
                     activeEvidenceTab === 'audio'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <Mic className="w-4 h-4" />
@@ -1738,8 +1738,8 @@ export default function NewChallengePage() {
                   onClick={() => setActiveEvidenceTab('video')}
                   className={`flex items-center gap-1.5 py-2.5 px-4 border-b-2 transition-colors ${
                     activeEvidenceTab === 'video'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <VideoIcon className="w-4 h-4" />
@@ -1750,8 +1750,8 @@ export default function NewChallengePage() {
                   onClick={() => setActiveEvidenceTab('document')}
                   className={`flex items-center gap-1.5 py-2.5 px-4 border-b-2 transition-colors ${
                     activeEvidenceTab === 'document'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -1762,10 +1762,10 @@ export default function NewChallengePage() {
               {/* Photo Evidence Tab */}
               {activeEvidenceTab === 'photo' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors bg-slate-50">
-                    <Camera className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">Upload Photographs</p>
-                    <p className="text-xs text-slate-500 mt-0.5">JPEG, PNG, WebP up to 15MB each (Max 6 photos)</p>
+                  <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center hover:border-blue-400 transition-colors bg-slate-50 dark:bg-slate-800/50">
+                    <Camera className="w-8 h-8 mx-auto text-slate-400 dark:text-slate-500 mb-2" />
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Upload Photographs</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">JPEG, PNG, WebP up to 15MB each (Max 6 photos)</p>
                     <label className="mt-3 inline-block">
                       <input
                         type="file"
@@ -1783,15 +1783,15 @@ export default function NewChallengePage() {
                   {images.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {images.map(img => (
-                        <div key={img.id} className="relative group rounded-lg overflow-hidden border border-slate-200 bg-white">
+                        <div key={img.id} className="relative group rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover" />
-                          <div className="p-1.5 flex items-center justify-between text-[11px] text-slate-600 truncate">
+                          <div className="p-1.5 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 truncate">
                             <span className="truncate">{img.name}</span>
                             <button
                               type="button"
                               onClick={() => setImages(images.filter(i => i.id !== img.id))}
-                              className="text-red-500 hover:text-red-700 p-1"
+                              className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1806,19 +1806,19 @@ export default function NewChallengePage() {
               {/* Audio Evidence Tab (Clean Evidence - NO Voice-to-Text Terminology) */}
               {activeEvidenceTab === 'audio' && (
                 <div className="space-y-4">
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                          <Mic className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                          <Mic className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                           <span>Record Audio Evidence</span>
                         </h4>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Describe what you observed in your own words. Gemini multimodal AI will analyze the audio recording as direct evidence.
                         </p>
                       </div>
                       {audioRecordingState === 'RECORDING' && (
-                        <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200 animate-pulse">
+                        <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-red-600 bg-red-50 dark:bg-red-950/60 px-2.5 py-1 rounded-full border border-red-200 dark:border-red-800 animate-pulse">
                           <span className="w-2 h-2 rounded-full bg-red-600" />
                           {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, '0')}
                         </span>
@@ -1832,9 +1832,9 @@ export default function NewChallengePage() {
                           variant="outline"
                           size="sm"
                           onClick={startAudioRecording}
-                          className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+                          className="text-xs border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
                         >
-                          <Mic className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                          <Mic className="w-3.5 h-3.5 mr-1 text-blue-600 dark:text-blue-400" />
                           Start Recording
                         </Button>
                       ) : (
@@ -1850,7 +1850,7 @@ export default function NewChallengePage() {
                         </Button>
                       )}
 
-                      <span className="text-xs text-slate-400">or upload audio file:</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">or upload audio file:</span>
 
                       <label className="inline-block">
                         <input
@@ -1859,25 +1859,25 @@ export default function NewChallengePage() {
                           className="hidden"
                           onChange={e => handleAudioUpload(e.target.files)}
                         />
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-semibold cursor-pointer hover:bg-slate-50">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
                           Upload Audio File (MP3, WAV, M4A)
                         </span>
                       </label>
                     </div>
 
                     {audioNotice && (
-                      <p className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
                         {audioNotice}
                       </p>
                     )}
 
                     {audioItem && (
-                      <div className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+                      <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <Mic className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <div className="truncate">
-                            <p className="text-xs font-semibold text-slate-800 truncate">{audioItem.name}</p>
-                            <p className="text-[10px] text-slate-500">
+                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{audioItem.name}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
                               {(audioItem.size / 1024).toFixed(1)} KB • {audioItem.duration ? `${audioItem.duration}s` : 'Audio File'}
                             </p>
                           </div>
@@ -1888,7 +1888,7 @@ export default function NewChallengePage() {
                           <button
                             type="button"
                             onClick={deleteAudioEvidence}
-                            className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50"
+                            className="p-1.5 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-950"
                             title="Remove Audio"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1903,10 +1903,10 @@ export default function NewChallengePage() {
               {/* Video Evidence Tab */}
               {activeEvidenceTab === 'video' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50">
-                    <VideoIcon className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">Upload Short Video Clip</p>
-                    <p className="text-xs text-slate-500 mt-0.5">MP4, WebM up to 50MB (max 60 seconds recommended)</p>
+                  <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center bg-slate-50 dark:bg-slate-800/50">
+                    <VideoIcon className="w-8 h-8 mx-auto text-slate-400 dark:text-slate-500 mb-2" />
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Upload Short Video Clip</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">MP4, WebM up to 50MB (max 60 seconds recommended)</p>
                     <label className="mt-3 inline-block">
                       <input
                         type="file"
@@ -1921,15 +1921,15 @@ export default function NewChallengePage() {
                   </div>
 
                   {videos.length > 0 && (
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
+                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <VideoIcon className="w-4 h-4 text-blue-600" />
-                        <span className="text-xs font-semibold text-slate-800">{videos[0].name}</span>
+                        <VideoIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{videos[0].name}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setVideos([])}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1941,10 +1941,10 @@ export default function NewChallengePage() {
               {/* Document Evidence Tab */}
               {activeEvidenceTab === 'document' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50">
-                    <FileText className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">Attach Official or Community Documents</p>
-                    <p className="text-xs text-slate-500 mt-0.5">PDF, TXT, DOCX up to 15MB (Max 4 documents)</p>
+                  <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center bg-slate-50 dark:bg-slate-800/50">
+                    <FileText className="w-8 h-8 mx-auto text-slate-400 dark:text-slate-500 mb-2" />
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Attach Official or Community Documents</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">PDF, TXT, DOCX up to 15MB (Max 4 documents)</p>
                     <label className="mt-3 inline-block">
                       <input
                         type="file"
@@ -1962,16 +1962,16 @@ export default function NewChallengePage() {
                   {documents.length > 0 && (
                     <div className="space-y-2">
                       {documents.map(doc => (
-                        <div key={doc.id} className="p-2.5 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                        <div key={doc.id} className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2 truncate">
-                            <FileText className="w-4 h-4 text-slate-600 shrink-0" />
-                            <span className="font-medium text-slate-800 truncate">{doc.name}</span>
-                            <span className="text-slate-400">({(doc.size / 1024).toFixed(1)} KB)</span>
+                            <FileText className="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" />
+                            <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{doc.name}</span>
+                            <span className="text-slate-400 dark:text-slate-500">({(doc.size / 1024).toFixed(1)} KB)</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}
-                            className="text-red-500 hover:text-red-700 p-1"
+                            className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1982,7 +1982,7 @@ export default function NewChallengePage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(2)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -2010,12 +2010,12 @@ export default function NewChallengePage() {
             STEP 04: AI UNDERSTANDS THE PROBLEM
            ========================================================================= */}
         {currentStep === 4 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 04 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">AI Analysis</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 04 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">AI Analysis</CardTitle>
                 </div>
                 <Badge
                   variant={
@@ -2033,20 +2033,20 @@ export default function NewChallengePage() {
                     : 'Analysis Pending'}
                 </Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 SICP understands and structures the problem using the submitted information.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Trigger Button if not yet run */}
               {aiState !== 'ANALYSIS_COMPLETE' && (
-                <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
+                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
                     <BrainCircuit className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-base font-semibold text-slate-900">Run AI Understanding Pipeline</h4>
-                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">Run AI Understanding Pipeline</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                       Analyzes description, photographs, and audio recordings using Gemini multimodal reasoning.
                     </p>
                   </div>
@@ -2061,7 +2061,7 @@ export default function NewChallengePage() {
                   </Button>
 
                   {aiError && (
-                    <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200 max-w-md mx-auto">
+                    <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-lg border border-red-200 dark:border-red-800 max-w-md mx-auto">
                       {aiError}
                     </p>
                   )}
@@ -2071,60 +2071,60 @@ export default function NewChallengePage() {
               {/* Comprehensive AI Understanding Card */}
               {aiState === 'ANALYSIS_COMPLETE' && aiResult && (
                 <div className="space-y-5 animate-in fade-in">
-                  <div className="p-5 bg-gradient-to-br from-blue-50/70 to-indigo-50/50 rounded-xl border border-blue-200 space-y-4">
+                  <div className="p-5 bg-gradient-to-br from-blue-50/70 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-bold text-slate-900">SICP AI Analysis</span>
+                        <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">SICP AI Analysis</span>
                       </div>
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                         Government validation pending
                       </span>
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Problem Formulation</p>
-                      <p className="text-sm font-medium text-slate-900 leading-relaxed">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Problem Formulation</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-relaxed">
                         {aiResult.problemFormulation || aiResult.normalizedStatement || aiResult.problemUnderstanding || aiResult.reasoningSummary || title}
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-blue-200/60">
-                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                        <p className="text-[10px] text-slate-500 font-semibold uppercase">Category</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5">{aiResult.category || category}</p>
-                        <p className="text-[10px] text-emerald-600 font-medium mt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-blue-200/60 dark:border-blue-800/60">
+                      <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Category</p>
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-0.5">{aiResult.category || category}</p>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
                           Confidence: {Math.round(((aiResult.fieldConfidences?.categoryConfidence ?? aiResult.fieldConfidences?.category) || 0.85) * 100)}%
                         </p>
                       </div>
 
-                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                        <p className="text-[10px] text-slate-500 font-semibold uppercase">Problem Type</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5">{aiResult.problemType || 'Infrastructure Deficit'}</p>
-                        <p className="text-[10px] text-emerald-600 font-medium mt-1">
+                      <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Problem Type</p>
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-0.5">{aiResult.problemType || 'Infrastructure Deficit'}</p>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
                           Confidence: {Math.round(((aiResult.fieldConfidences?.problemTypeConfidence ?? aiResult.fieldConfidences?.problemType) || 0.82) * 100)}%
                         </p>
                       </div>
 
-                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                        <p className="text-[10px] text-slate-500 font-semibold uppercase">AI Urgency</p>
-                        <p className="text-xs font-bold text-amber-700 mt-0.5">{aiResult.estimatedSeverity || severity}</p>
-                        <p className="text-[10px] text-slate-500 font-medium mt-1">Subject to review</p>
+                      <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">AI Urgency</p>
+                        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-0.5">{aiResult.estimatedSeverity || severity}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-1">Subject to review</p>
                       </div>
 
-                      <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100">
-                        <p className="text-[10px] text-slate-500 font-semibold uppercase">Root Cause Conf.</p>
-                        <p className="text-xs font-bold text-indigo-700 mt-0.5">
+                      <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Root Cause Conf.</p>
+                        <p className="text-xs font-bold text-indigo-700 dark:text-indigo-400 mt-0.5">
                           {Math.round(((aiResult.fieldConfidences?.rootCauseConfidence ?? aiResult.fieldConfidences?.rootCauseHypotheses) || 0.78) * 100)}%
                         </p>
-                        <p className="text-[10px] text-slate-500 font-medium mt-1">Multi-signal</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-1">Multi-signal</p>
                       </div>
                     </div>
 
                     {/* Contributing Factors */}
                     {Array.isArray(aiResult.contributingFactors) && aiResult.contributingFactors.length > 0 && (
                       <div className="space-y-1.5 pt-2">
-                        <p className="text-xs font-semibold text-slate-700">Possible Contributing Factors</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Possible Contributing Factors</p>
                         <div className="flex flex-wrap gap-2">
                           {aiResult.contributingFactors.map((cf: any, idx: number) => {
                             const factorText = typeof cf === 'string' ? cf : (cf?.factor || cf?.name || String(cf));
@@ -2132,9 +2132,9 @@ export default function NewChallengePage() {
                             return (
                               <span
                                 key={idx}
-                                className="text-xs px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium"
+                                className="text-xs px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium"
                               >
-                                {factorText} <span className="text-[10px] text-blue-600 ml-1 font-mono">[{factorStatus}]</span>
+                                {factorText} <span className="text-[10px] text-blue-600 dark:text-blue-400 ml-1 font-mono">[{factorStatus}]</span>
                               </span>
                             );
                           })}
@@ -2145,16 +2145,16 @@ export default function NewChallengePage() {
                     {/* Root Cause Hypotheses */}
                     {Array.isArray(aiResult.rootCauseHypotheses) && aiResult.rootCauseHypotheses.length > 0 && (
                       <div className="space-y-1.5 pt-2">
-                        <p className="text-xs font-semibold text-slate-700">Root Cause Hypotheses (AI-Assisted)</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Root Cause Hypotheses (AI-Assisted)</p>
                         <div className="flex flex-wrap gap-2">
                           {aiResult.rootCauseHypotheses.map((rc: any, idx: number) => {
                             const rcText = typeof rc === 'string' ? rc : (rc?.cause || rc?.name || String(rc));
                             return (
                               <span
                                 key={idx}
-                                className="text-xs px-2.5 py-1 rounded-md bg-indigo-50/70 border border-indigo-200 text-indigo-800 font-medium"
+                                className="text-xs px-2.5 py-1 rounded-md bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-200 font-medium"
                               >
-                                {rcText} <span className="text-[10px] text-indigo-600 ml-1 font-mono">[HYPOTHESIS]</span>
+                                {rcText} <span className="text-[10px] text-indigo-600 dark:text-indigo-400 ml-1 font-mono">[HYPOTHESIS]</span>
                               </span>
                             );
                           })}
@@ -2163,8 +2163,8 @@ export default function NewChallengePage() {
                     )}
 
                     {/* Evidence Considered */}
-                    <div className="text-xs text-slate-500 border-t border-blue-200/60 pt-2 flex flex-wrap items-center gap-3">
-                      <span className="font-semibold text-slate-700">Evidence considered:</span>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 border-t border-blue-200/60 dark:border-blue-800/60 pt-2 flex flex-wrap items-center gap-3">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">Evidence considered:</span>
                       <span>Description ({description.split(/\s+/).filter(Boolean).length} words)</span>
                       {images.length > 0 && <span>• {images.length} photo(s)</span>}
                       {audioItem && <span>• Audio recording ({audioItem.duration || 10}s)</span>}
@@ -2173,7 +2173,7 @@ export default function NewChallengePage() {
                     </div>
 
                     {/* 🧠 SICP REMEMBERS — Signature Institutional Memory Experience */}
-                    <div className="pt-4 border-t border-blue-200/60 space-y-3" data-testid="sicp-remembers-section">
+                    <div className="pt-4 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3" data-testid="sicp-remembers-section">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
@@ -2181,21 +2181,21 @@ export default function NewChallengePage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-black text-slate-900 tracking-tight">
+                              <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
                                 SICP REMEMBERS
                               </h4>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                                 Institutional Memory Active
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                               Verified historical precedents, prior failure warnings, and recurrence intelligence
                             </p>
                           </div>
                         </div>
 
                         <Link href="/solutions" target="_blank">
-                          <span className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+                          <span className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold flex items-center gap-1">
                             <span>Open Explorer</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </span>
@@ -2215,33 +2215,33 @@ export default function NewChallengePage() {
 
                       {/* Precedents List or Graceful Empty State */}
                       {loadingPrecedents ? (
-                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-500 animate-pulse">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center text-xs text-slate-500 dark:text-slate-400 animate-pulse">
                           Scanning SICP institutional memory for similar societal problem precedents...
                         </div>
                       ) : historicalPrecedents.length === 0 ? (
-                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-600 space-y-1">
-                          <p className="font-bold text-slate-800">No sufficiently relevant institutional precedent found.</p>
-                          <p className="text-[11px] text-slate-500 max-w-lg mx-auto">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                          <p className="font-bold text-slate-800 dark:text-slate-200">No sufficiently relevant institutional precedent found.</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
                             This challenge represents a novel local configuration or domain without verified historical precedents. Research and municipal engineering teams will formulate an original intervention.
                           </p>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           {/* Summary pill counts */}
-                          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+                          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                             <span>Found {historicalPrecedents.length} historical case(s):</span>
                             {historicalPrecedents.some(p => p.outcomeStatus === 'SUCCESSFUL' || p.outcomeStatus === 'EFFECTIVE') && (
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px]">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px]">
                                 🟢 Worked Before ({historicalPrecedents.filter(p => p.outcomeStatus === 'SUCCESSFUL' || p.outcomeStatus === 'EFFECTIVE').length})
                               </span>
                             )}
                             {historicalPrecedents.some(p => p.outcomeStatus === 'FAILED' || p.outcomeStatus === 'INEFFECTIVE') && (
-                              <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-[10px]">
+                              <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-[10px]">
                                 🔴 Failed Before ({historicalPrecedents.filter(p => p.outcomeStatus === 'FAILED' || p.outcomeStatus === 'INEFFECTIVE').length})
                               </span>
                             )}
                             {historicalPrecedents.some(p => p.outcomeStatus === 'PARTIALLY_EFFECTIVE' || p.outcomeStatus === 'PARTIAL_SUCCESS') && (
-                              <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px]">
+                              <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[10px]">
                                 🟡 Mixed Results ({historicalPrecedents.filter(p => p.outcomeStatus === 'PARTIALLY_EFFECTIVE' || p.outcomeStatus === 'PARTIAL_SUCCESS').length})
                               </span>
                             )}
@@ -2272,12 +2272,12 @@ export default function NewChallengePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                     <span>Official priority and routing will be determined during government review.</span>
                     <button
                       type="button"
                       onClick={handleTriggerAiAnalysis}
-                      className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1 cursor-pointer"
                     >
                       <RefreshCw className="w-3 h-3" />
                       Re-run AI Analysis
@@ -2286,7 +2286,7 @@ export default function NewChallengePage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+            <CardFooter className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(3)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -2303,51 +2303,51 @@ export default function NewChallengePage() {
             STEP 05: LOCAL INTELLIGENCE (STRICTLY LOCATION GATED)
            ========================================================================= */}
         {currentStep === 5 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 05 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">Local Intelligence</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 05 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">Local Intelligence</CardTitle>
                 </div>
                 <Badge variant={latitude !== null && longitude !== null ? 'success' : 'warning'}>
                   {latitude !== null && longitude !== null ? 'Location Intelligence Active' : 'Location Gate Locked'}
                 </Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 SICP checks whether this problem relates to existing problems in the same or similar area.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* HARD GATE: Location Missing Warning */}
               {(latitude === null || longitude === null) ? (
-                <div className="p-6 bg-amber-50 rounded-xl border border-amber-200 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+                <div className="p-6 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-base font-semibold text-amber-900">Add a location to check for nearby reports</h4>
-                    <p className="text-xs text-amber-700 max-w-md mx-auto">
+                    <h4 className="text-base font-semibold text-amber-900 dark:text-amber-200">Add a location to check for nearby reports</h4>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 max-w-md mx-auto">
                       Proximity duplicate detection and neighborhood cluster intelligence require geographic coordinates to prevent false cross-state matching.
                     </p>
                   </div>
-                  <Button variant="outline" onClick={() => setCurrentStep(2)} className="border-amber-300 text-amber-800">
+                  <Button variant="outline" onClick={() => setCurrentStep(2)} className="border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40">
                     <MapPin className="w-4 h-4 mr-1.5" />
                     Go to Step 02: Pin Location
                   </Button>
                 </div>
               ) : isCheckingDuplicates ? (
                 <div className="p-8 text-center space-y-3">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
-                  <p className="text-xs text-slate-600 font-medium">Scanning nearby challenges and systemic infrastructure...</p>
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mx-auto" />
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">Scanning nearby challenges and systemic infrastructure...</p>
                 </div>
               ) : duplicateCheckResult && duplicateCheckResult.candidates && duplicateCheckResult.candidates.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-800 border border-blue-200 flex items-center justify-between">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-lg text-xs text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 flex items-center justify-between">
                     <span>
                       Found <strong>{duplicateCheckResult.candidates.length}</strong> potentially related report(s) in this vicinity.
                     </span>
-                    <span className="font-semibold text-blue-900">Zero destructive merge policy</span>
+                    <span className="font-semibold text-blue-900 dark:text-blue-100">Zero destructive merge policy</span>
                   </div>
 
                   <div className="space-y-3">
@@ -2356,7 +2356,7 @@ export default function NewChallengePage() {
                       return (
                         <div
                           key={candidate.challengeId}
-                          className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-slate-300 transition-colors"
+                          className="p-4 bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-3 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -2364,7 +2364,7 @@ export default function NewChallengePage() {
                                 <Badge variant="outline" className="text-[10px]">
                                   {candidate.category}
                                 </Badge>
-                                <span className="text-xs text-slate-500">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
                                   {candidate.distanceMeters !== null && candidate.distanceMeters !== undefined
                                     ? candidate.distanceMeters < 1000
                                       ? `${candidate.distanceMeters}m away`
@@ -2372,26 +2372,26 @@ export default function NewChallengePage() {
                                     : 'Nearby'}
                                 </span>
                               </div>
-                              <h4 className="text-sm font-semibold text-slate-900 mt-1">{candidate.title}</h4>
+                              <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-1">{candidate.title}</h4>
                             </div>
                             <span
                               className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                                 candidate.semanticSimilarity > 0.8
-                                  ? 'bg-amber-100 text-amber-800'
-                                  : 'bg-slate-100 text-slate-700'
+                                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                               }`}
                             >
                               {Math.round(candidate.semanticSimilarity * 100)}% Similarity
                             </span>
                           </div>
 
-                          <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                             <strong>Why related:</strong> {candidate.reasoning}
                           </p>
 
                           {/* Citizen Feedback Controls */}
-                          <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                            <span className="text-[11px] text-slate-500">Is this the same issue?</span>
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-700">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">Is this the same issue?</span>
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
@@ -2401,10 +2401,10 @@ export default function NewChallengePage() {
                                     [candidate.challengeId]: 'SAME',
                                   }))
                                 }
-                                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
                                   feedback === 'SAME'
                                     ? 'bg-blue-600 text-white border-blue-600'
-                                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                               >
                                 Yes, same issue
@@ -2417,10 +2417,10 @@ export default function NewChallengePage() {
                                     [candidate.challengeId]: 'DIFFERENT',
                                   }))
                                 }
-                                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
                                   feedback === 'DIFFERENT'
-                                    ? 'bg-slate-800 text-white border-slate-800'
-                                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                                    ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 border-slate-800 dark:border-slate-200'
+                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                               >
                                 Different issue
@@ -2432,21 +2432,21 @@ export default function NewChallengePage() {
                     })}
                   </div>
 
-                  <p className="text-xs text-slate-500 italic">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                     Original citizen submissions remain individually preserved. Official consolidation or duplicate linking is finalized by authorized municipal reviewers.
                   </p>
                 </div>
               ) : (
-                <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-200 text-center space-y-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <h4 className="text-sm font-semibold text-emerald-900">No Similar Reports Found Nearby</h4>
-                  <p className="text-xs text-emerald-700 max-w-md mx-auto">
+                <div className="p-6 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                  <h4 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">No Similar Reports Found Nearby</h4>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 max-w-md mx-auto">
                     Your civic issue appears to be unique in this location. It will be registered as a primary challenge upon submission.
                   </p>
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+            <CardFooter className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(4)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -2463,25 +2463,25 @@ export default function NewChallengePage() {
             STEP 06: UNDERSTAND THE IMPACT
            ========================================================================= */}
         {currentStep === 6 && (
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 06 of 07</span>
-                  <CardTitle className="text-xl text-slate-900 mt-1">Who is affected?</CardTitle>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 06 of 07</span>
+                  <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">Who is affected?</CardTitle>
                 </div>
                 <Badge variant="secondary">Citizen Feedback</Badge>
               </div>
-              <CardDescription className="text-slate-600">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Help us understand community impact. Valid selections include approximate bands and &quot;I don&apos;t know&quot; — we never fabricate precise numbers.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Question 1: Who is affected? */}
               <div className="space-y-2.5">
-                <label className="text-xs font-semibold text-slate-800 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>Who is affected by this challenge?</span>
-                  <span className="text-[11px] text-slate-400">Select all that apply</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Select all that apply</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {AFFECTED_GROUP_OPTIONS.map(grp => {
@@ -2495,14 +2495,14 @@ export default function NewChallengePage() {
                             isSelected ? prev.filter(id => id !== grp.id) : [...prev, grp.id]
                           );
                         }}
-                        className={`p-2.5 rounded-lg border text-left text-xs font-medium transition-colors flex items-center justify-between ${
+                        className={`p-2.5 rounded-lg border text-left text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
                           isSelected
-                            ? 'bg-blue-50 border-blue-500 text-blue-900'
-                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                            ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-900 dark:text-blue-200'
+                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}
                       >
                         <span>{grp.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />}
                       </button>
                     );
                   })}
@@ -2511,7 +2511,7 @@ export default function NewChallengePage() {
 
               {/* Question 2: Approximate Number of People */}
               <div className="space-y-2.5">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   How many people are approximately affected?
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -2520,10 +2520,10 @@ export default function NewChallengePage() {
                       key={band.id}
                       type="button"
                       onClick={() => setPopulationBand(band.id)}
-                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors ${
+                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors cursor-pointer ${
                         populationBand === band.id
                           ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {band.label}
@@ -2534,7 +2534,7 @@ export default function NewChallengePage() {
 
               {/* Question 3: Duration */}
               <div className="space-y-2.5">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   How long has this been happening?
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -2543,10 +2543,10 @@ export default function NewChallengePage() {
                       key={band.id}
                       type="button"
                       onClick={() => setDurationBand(band.id)}
-                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors ${
+                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors cursor-pointer ${
                         durationBand === band.id
                           ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {band.label}
@@ -2557,7 +2557,7 @@ export default function NewChallengePage() {
 
               {/* Question 4: Frequency */}
               <div className="space-y-2.5">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   How often does it happen?
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -2566,10 +2566,10 @@ export default function NewChallengePage() {
                       key={band.id}
                       type="button"
                       onClick={() => setFrequencyBand(band.id)}
-                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors ${
+                      className={`p-2.5 rounded-lg border text-center text-xs font-medium transition-colors cursor-pointer ${
                         frequencyBand === band.id
                           ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {band.label}
@@ -2580,7 +2580,7 @@ export default function NewChallengePage() {
 
               {/* Optional Impact Notes */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   Additional Community Observations (Optional)
                 </label>
                 <Input
@@ -2591,11 +2591,11 @@ export default function NewChallengePage() {
               </div>
 
               {/* Truthful Data Alert */}
-              <div className="p-3 bg-slate-50 rounded-lg text-xs text-slate-600 border border-slate-200 leading-relaxed">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg text-xs text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 leading-relaxed">
                 <strong>Honest Data Guarantee:</strong> If impact is unknown, it will be labeled as &quot;Impact not provided&quot; rather than displaying fabricated precision or &quot;0 residents exposed&quot;.
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+            <CardFooter className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep(5)}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -2613,52 +2613,52 @@ export default function NewChallengePage() {
            ========================================================================= */}
         {currentStep === 7 && (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 07 of 07</span>
-                    <CardTitle className="text-xl text-slate-900 mt-1">Review & Submit</CardTitle>
+                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Step 07 of 07</span>
+                    <CardTitle className="text-xl text-slate-900 dark:text-slate-100 mt-1">Review & Submit</CardTitle>
                   </div>
                   <Badge variant="success">Final Verification</Badge>
                 </div>
-                <CardDescription className="text-slate-600">
+                <CardDescription className="text-slate-600 dark:text-slate-300">
                   Please review all 6 intake sections before submitting. Once submitted, the problem will be routed to municipal authorities for review.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
                 {/* Section 1: Problem Summary */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">What You Reported</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">What You Reported</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className="text-xs text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
                     >
                       Edit
                     </button>
                   </div>
-                  <h4 className="text-base font-bold text-slate-900">{title || 'Headline not provided'}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">{description || 'Description not provided'}</p>
-                  <p className="text-xs text-slate-500">
-                    Category Guidance: <span className="font-semibold text-slate-700">{category}</span>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">{title || 'Headline not provided'}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{description || 'Description not provided'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Category Guidance: <span className="font-semibold text-slate-700 dark:text-slate-200">{category}</span>
                   </p>
                 </div>
 
                 {/* Section 2: Location Summary */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Where</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Where</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(2)}
-                      className="text-xs text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
                     >
                       Edit
                     </button>
                   </div>
-                  <div className="text-xs text-slate-700 space-y-1">
+                  <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
                     <p>
                       <strong>District & State:</strong> {district || 'Not provided'}, {state || 'Not provided'}
                     </p>
@@ -2666,11 +2666,11 @@ export default function NewChallengePage() {
                     <p className="flex items-center gap-2">
                       <strong>GPS Coordinates:</strong>
                       {latitude !== null && longitude !== null ? (
-                        <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200">
+                        <span className="font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                           {latitude.toFixed(5)}, {longitude.toFixed(5)}
                         </span>
                       ) : (
-                        <span className="text-slate-500 italic">Coordinates not pinned</span>
+                        <span className="text-slate-500 dark:text-slate-400 italic">Coordinates not pinned</span>
                       )}
                       <Badge variant={locationQuality === 'PRECISE_COORDINATES' || locationQuality === 'COORDINATES' ? 'success' : 'secondary'}>
                         {locationQuality}
@@ -2680,72 +2680,72 @@ export default function NewChallengePage() {
                 </div>
 
                 {/* Section 3: Evidence Summary */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Evidence Attached</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Evidence Attached</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(3)}
-                      className="text-xs text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
                     >
                       Edit
                     </button>
                   </div>
-                  <div className="flex flex-wrap gap-3 text-xs text-slate-700">
-                    <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-700 dark:text-slate-200">
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700">
                       📷 {images.length} Photo(s)
                     </span>
-                    <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700">
                       🎙 {audioItem ? `Audio attached (${audioItem.duration || 0}s)` : 'No audio'}
                     </span>
-                    <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700">
                       🎥 {videos.length} Video(s)
                     </span>
-                    <span className="bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                    <span className="bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700">
                       📄 {documents.length} Document(s)
                     </span>
                   </div>
                 </div>
 
                 {/* Section 4: AI Understanding Summary */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">AI Understanding</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">AI Understanding</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(4)}
-                      className="text-xs text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
                     >
                       Edit
                     </button>
                   </div>
                   {aiState === 'ANALYSIS_COMPLETE' && aiResult ? (
-                    <div className="text-xs text-slate-700 space-y-1">
+                    <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
                       <p><strong>Primary Category:</strong> {aiResult.category || category}</p>
                       <p><strong>Problem Formulation:</strong> {aiResult.problemFormulation || aiResult.normalizedStatement || aiResult.problemUnderstanding || title}</p>
                       <p><strong>AI-Recommended Urgency:</strong> {aiResult.estimatedSeverity || severity}</p>
-                      <p className="text-blue-700 font-medium">Government validation pending</p>
+                      <p className="text-blue-700 dark:text-blue-300 font-medium">Government validation pending</p>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 italic">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                       AI analysis not run pre-submission. Full multimodal AI analysis will run asynchronously upon submission.
                     </p>
                   )}
                 </div>
 
                 {/* Section 5: Impact Summary */}
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Impact & Reach</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Impact & Reach</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(6)}
-                      className="text-xs text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
                     >
                       Edit
                     </button>
                   </div>
-                  <div className="text-xs text-slate-700 space-y-1">
+                  <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
                     <p>
                       <strong>Affected Groups:</strong>{' '}
                       {affectedGroups.length > 0
@@ -2774,9 +2774,9 @@ export default function NewChallengePage() {
                 </div>
 
                 {/* Official Review Notice */}
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 space-y-1 text-xs text-blue-900">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-1 text-xs text-blue-900 dark:text-blue-200">
                   <p className="font-bold flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-blue-700" />
+                    <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                     Official Review Required
                   </p>
                   <p className="leading-relaxed">
@@ -2784,7 +2784,7 @@ export default function NewChallengePage() {
                   </p>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between border-t border-slate-100 pt-4">
+              <CardFooter className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
                 <Button type="button" variant="outline" onClick={() => setCurrentStep(6)}>
                   <ArrowLeft className="w-4 h-4 mr-1" />
                   Back

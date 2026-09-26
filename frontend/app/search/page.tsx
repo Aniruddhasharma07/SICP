@@ -253,7 +253,7 @@ function SearchContent() {
               placeholder="Search by keywords, problems, technologies, institutions, districts..."
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
-              className="w-full pl-11 pr-10 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-xs"
+              className="w-full pl-11 pr-10 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-xs"
             />
             {inputQuery && (
               <button
@@ -262,7 +262,7 @@ function SearchContent() {
                   setInputQuery('');
                   updateParams({ q: null });
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -276,58 +276,58 @@ function SearchContent() {
         {/* Active Filter Pills */}
         {(queryParam || activeFilterCount > 0 || typeParam !== 'all') && (
           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-            <span className="text-slate-400 font-medium">Active filters:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Active filters:</span>
             {queryParam && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-medium">
                 Query: &ldquo;{queryParam}&rdquo;
                 <button onClick={() => updateParams({ q: null })}>
-                  <X className="w-3 h-3 hover:text-slate-900" />
+                  <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-white" />
                 </button>
               </span>
             )}
             {typeParam !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-medium border border-blue-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-800">
                 Type: {typeParam}
                 <button onClick={() => updateParams({ type: null })}>
-                  <X className="w-3 h-3 hover:text-blue-900" />
+                  <X className="w-3 h-3 hover:text-blue-900 dark:hover:text-blue-100" />
                 </button>
               </span>
             )}
             {categoryParam && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800">
                 {categoryParam}
                 <button onClick={() => updateParams({ category: null })}>
-                  <X className="w-3 h-3 hover:text-emerald-900" />
+                  <X className="w-3 h-3 hover:text-emerald-900 dark:hover:text-emerald-100" />
                 </button>
               </span>
             )}
             {severityParam && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-medium border border-amber-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800">
                 Severity: {severityParam}
                 <button onClick={() => updateParams({ severity: null })}>
-                  <X className="w-3 h-3 hover:text-amber-900" />
+                  <X className="w-3 h-3 hover:text-amber-900 dark:hover:text-amber-100" />
                 </button>
               </span>
             )}
             {priorityParam && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-medium border border-purple-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-medium border border-purple-200 dark:border-purple-800">
                 Priority: {priorityParam}
                 <button onClick={() => updateParams({ priority: null })}>
-                  <X className="w-3 h-3 hover:text-purple-900" />
+                  <X className="w-3 h-3 hover:text-purple-900 dark:hover:text-purple-100" />
                 </button>
               </span>
             )}
             {districtParam && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-medium">
                 District: {districtParam}
                 <button onClick={() => updateParams({ district: null })}>
-                  <X className="w-3 h-3 hover:text-slate-900" />
+                  <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-white" />
                 </button>
               </span>
             )}
             <button
               onClick={clearAllFilters}
-              className="inline-flex items-center gap-1 px-2 py-1 text-slate-500 hover:text-red-600 font-medium"
+              className="inline-flex items-center gap-1 px-2 py-1 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 font-medium"
             >
               <RotateCcw className="w-3 h-3" />
               Reset all
@@ -342,17 +342,17 @@ function SearchContent() {
         <div
           className={`${
             mobileFilterOpen ? 'block' : 'hidden lg:block'
-          } lg:col-span-1 space-y-6 bg-slate-50/70 p-4 sm:p-5 rounded-xl border border-slate-200 h-fit`}
+          } lg:col-span-1 space-y-6 bg-slate-50/70 dark:bg-slate-900/60 p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 h-fit`}
         >
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               Faceted Filters
             </span>
             {activeFilterCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="text-[11px] text-blue-600 hover:underline font-medium"
+                className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-medium"
               >
                 Clear all
               </button>
@@ -361,7 +361,7 @@ function SearchContent() {
 
           {/* Entity Type Selector */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800">Entity Type</label>
+            <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Entity Type</label>
             <div className="space-y-1">
               {[
                 { id: 'all', label: 'All Entities', count: data?.total ?? 0 },
@@ -377,7 +377,7 @@ function SearchContent() {
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     typeParam === item.id || (item.id === 'all' && typeParam === 'all')
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-200/60'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   <span>{item.label}</span>
@@ -385,7 +385,7 @@ function SearchContent() {
                     className={`text-[10px] px-1.5 py-0.5 rounded-md ${
                       typeParam === item.id || (item.id === 'all' && typeParam === 'all')
                         ? 'bg-blue-700 text-blue-100'
-                        : 'bg-slate-200 text-slate-600'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {item.count}
@@ -397,11 +397,11 @@ function SearchContent() {
 
           {/* Category Facet */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800">Category</label>
+            <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Category</label>
             <select
               value={categoryParam}
               onChange={(e) => updateParams({ category: e.target.value || null })}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Categories</option>
               {CATEGORIES.map((cat) => (
@@ -414,11 +414,11 @@ function SearchContent() {
 
           {/* Severity Facet */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800">Severity</label>
+            <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Severity</label>
             <select
               value={severityParam}
               onChange={(e) => updateParams({ severity: e.target.value || null })}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Severities</option>
               {SEVERITIES.map((sev) => (
@@ -431,11 +431,11 @@ function SearchContent() {
 
           {/* Priority Facet */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800">Priority Level</label>
+            <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Priority Level</label>
             <select
               value={priorityParam}
               onChange={(e) => updateParams({ priority: e.target.value || null })}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Priorities</option>
               {PRIORITIES.map((pri) => (
@@ -448,28 +448,28 @@ function SearchContent() {
 
           {/* District Input */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800">District / Region</label>
+            <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">District / Region</label>
             <input
               type="text"
               placeholder="e.g. Pune, Nagaur..."
               value={districtParam}
               onChange={(e) => updateParams({ district: e.target.value || null })}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
         {/* Results List Area */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {loading ? (
                 'Searching records...'
               ) : (
                 `Found ${data?.total ?? 0} results ${queryParam ? `for "${queryParam}"` : ''}`
               )}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-400 dark:text-slate-500">
               Page 1 of {Math.ceil((data?.total ?? 1) / 20) || 1}
             </span>
           </div>
@@ -477,41 +477,41 @@ function SearchContent() {
           {loading ? (
             <div className="py-24 text-center space-y-3">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-              <p className="text-sm font-medium text-slate-600">Executing faceted database search...</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Executing faceted database search...</p>
             </div>
           ) : data && data.results.length > 0 ? (
             <div className="space-y-3">
               {data.results.map((item) => (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:shadow-xs transition-all space-y-2"
+                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xs transition-all space-y-2"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={item.url}
-                          className="font-bold text-base text-slate-900 hover:text-blue-600 transition-colors"
+                          className="font-bold text-base text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                           {item.title}
                         </Link>
                         <span
                           className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                             item.type === 'challenge'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
                               : item.type === 'project'
-                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                              ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
                               : item.type === 'solution'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                               : item.type === 'organization'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-purple-50 text-purple-700 border-purple-200'
+                              ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                              : 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
                           }`}
                         >
                           {item.type}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium">{item.subtitle}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{item.subtitle}</p>
                     </div>
 
                     <Link href={item.url}>
@@ -522,11 +522,11 @@ function SearchContent() {
                     </Link>
                   </div>
 
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                     {item.snippet}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500">
                     <span>
                       {new Date(item.createdAt).toLocaleDateString(undefined, {
                         year: 'numeric',
@@ -535,7 +535,7 @@ function SearchContent() {
                       })}
                     </span>
                     {item.metadata?.category ? (
-                      <span className="font-medium text-slate-600">{String(item.metadata.category)}</span>
+                      <span className="font-medium text-slate-600 dark:text-slate-300">{String(item.metadata.category)}</span>
                     ) : null}
                   </div>
                 </div>
@@ -543,15 +543,15 @@ function SearchContent() {
             </div>
           ) : (
             /* Zero Dead-End Empty State */
-            <div className="py-16 px-6 text-center space-y-4 bg-slate-50 rounded-xl border border-slate-200">
-              <div className="w-12 h-12 rounded-full bg-slate-200/80 text-slate-500 mx-auto flex items-center justify-center">
+            <div className="py-16 px-6 text-center space-y-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+              <div className="w-12 h-12 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 mx-auto flex items-center justify-center">
                 <Search className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-semibold text-slate-800">
+                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
                   No matching records found
                 </h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                   {queryParam || activeFilterCount > 0
                     ? 'No items matched your current filter criteria. You can clear your filters or submit a new problem.'
                     : 'The platform directory currently has no active records matching this view.'}
