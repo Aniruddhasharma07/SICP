@@ -3,11 +3,65 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+
+  /* Semantic Design Tokens */
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;       /* Deep navy/charcoal - 15.6:1 contrast on #f8fafc */
+  --text-secondary: #334155;     /* Medium-dark slate - 8.3:1 contrast on #ffffff */
+  --text-tertiary: #475569;      /* Readable muted slate - 5.8:1 contrast on #ffffff (WCAG AA) */
+  --text-disabled: #94a3b8;      /* Distinguishable disabled state */
+  --text-link: #1d4ed8;          /* Strong SICP civic blue - 6.2:1 contrast */
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --success: #047857;            /* Emerald 700 - 5.4:1 contrast */
+  --success-soft: rgba(4, 120, 87, 0.08);
+  --warning: #b45309;            /* Amber 700 - 4.8:1 contrast */
+  --warning-soft: rgba(180, 83, 9, 0.08);
+  --critical: #be123c;           /* Rose 700 - 5.6:1 contrast */
+  --critical-soft: rgba(190, 18, 60, 0.08);
+  --info: #0369a1;               /* Sky 700 - 5.2:1 contrast */
+  --info-soft: rgba(3, 105, 161, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1120;
+    --foreground: #f8fafc;
+    --surface: #0f172a;
+    --surface-elevated: #1e293b;
+    --surface-muted: #070d19;
+    --border: #1e293b;
+    --border-strong: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-disabled: #64748b;
+    --text-link: #60a5fa;
+    --accent: #3b82f6;
+    --accent-soft: rgba(59, 130, 246, 0.15);
+    --success: #10b981;
+    --success-soft: rgba(16, 185, 129, 0.15);
+    --warning: #f59e0b;
+    --warning-soft: rgba(245, 158, 11, 0.15);
+    --critical: #f43f5e;
+    --critical-soft: rgba(244, 63, 94, 0.15);
+    --info: #38bdf8;
+    --info-soft: rgba(56, 189, 248, 0.15);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-border-sicp: var(--border);
+  --color-border-sicp-strong: var(--border-strong);
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -184,10 +238,10 @@ body {
 
 /* Surface: High-Contrast Elevated Card */
 .sicp-surface-elevated {
-  background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -199,8 +253,15 @@ body {
 }
 
 .sicp-surface-elevated:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sicp-surface-elevated:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Vivid Semantic Status Surfaces */

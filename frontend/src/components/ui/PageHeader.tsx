@@ -69,20 +69,20 @@ export function PageHeader({
   }
 
   return (
-    <div className={cn('space-y-3 pb-6 border-b border-slate-200', className)}>
+    <div className={cn('space-y-3 pb-6 border-b border-slate-200 dark:border-slate-800', className)}>
       {/* Breadcrumbs or Back Link */}
-      <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+      <div className="flex items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
         {breadcrumbs && breadcrumbs.length > 0 ? (
           <nav className="flex items-center gap-1.5 flex-wrap" aria-label="Breadcrumb">
             {breadcrumbs.map((item, idx) => (
               <React.Fragment key={idx}>
-                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />}
                 {item.href ? (
-                  <Link href={item.href} className="hover:text-blue-600 transition-colors font-medium">
+                  <Link href={item.href} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">
                     {item.label}
                   </Link>
                 ) : (
-                  <span className="font-semibold text-slate-800">{item.label}</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">{item.label}</span>
                 )}
               </React.Fragment>
             ))}
@@ -90,7 +90,7 @@ export function PageHeader({
         ) : backHref ? (
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 font-medium hover:text-slate-900 transition-colors"
+            className="inline-flex items-center gap-1.5 font-medium hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back</span>
@@ -99,7 +99,7 @@ export function PageHeader({
 
         <div className="flex items-center gap-2">
           {badge && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
               {badge}
             </span>
           )}
@@ -120,19 +120,19 @@ export function PageHeader({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
               {title}
             </h1>
             {statusBadge}
             {status && typeof status === 'string' && (
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
                 {status}
               </span>
             )}
             {status && typeof status !== 'string' && status}
           </div>
           {effectiveSubtitle && (
-            <p className="text-xs md:text-sm text-slate-500 max-w-3xl leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
               {effectiveSubtitle}
             </p>
           )}

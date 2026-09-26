@@ -30,8 +30,8 @@ export function ProblemRelationshipSummary({
   className = '',
   initialSummary,
 }: ProblemRelationshipSummaryProps) {
-  const [summary, setSummary] = useState<RelationshipSummaryData | null>(initialSummary || null);
-  const [loading, setLoading] = useState(!initialSummary);
+  const initial = initialSummary || relationshipIntelligenceService.deriveInitialSummary(challenge);
+  const [summary, setSummary] = useState<RelationshipSummaryData>(initial);
   const [isHovered, setIsHovered] = useState(false);
   const [isTouchOpen, setIsTouchOpen] = useState(false);
   const [isWhyConnectedOpen, setIsWhyConnectedOpen] = useState(false);
@@ -42,25 +42,22 @@ export function ProblemRelationshipSummary({
 
   useEffect(() => {
     let isMounted = true;
-    if (!initialSummary) {
-      relationshipIntelligenceService.getRelationshipSummary(challenge).then(res => {
-        if (isMounted) {
-          setSummary(res);
-          setLoading(false);
-        }
-      });
-    }
+    relationshipIntelligenceService.getRelationshipSummary(challenge).then(res => {
+      if (isMounted && res) {
+        setSummary(res);
+      }
+    });
     return () => {
       isMounted = false;
     };
-  }, [challenge.id, initialSummary]);
+  }, [challenge.id]);
 
-  // 250–350ms dwell timer to prevent accidental flicker during fast scrolling
+  // ~260ms dwell timer to prevent accidental flicker during fast scrolling
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(true);
-    }, 280); // 280ms optimal dwell
+    }, 260); // 260ms optimal dwell
   };
 
   const handleMouseLeave = () => {
@@ -85,15 +82,6 @@ export function ProblemRelationshipSummary({
 
   const isPopoverVisible = isHovered || isTouchOpen;
 
-  if (loading) {
-    return (
-      <div className="flex items-center gap-1.5 py-1 text-[11px] text-slate-400 animate-pulse">
-        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-        <span>Evaluating relationship lineage...</span>
-      </div>
-    );
-  }
-
   if (!summary) return null;
 
   return (
@@ -103,7 +91,7 @@ export function ProblemRelationshipSummary({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Badge Row Strip */}
+      {/* Badge Row Strip: Restrained, Dignified Civic Infrastructure Badges */}
       <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10.5px]">
         {/* Related Incidents Badge */}
         {summary.relatedCount > 0 ? (
@@ -114,38 +102,38 @@ export function ProblemRelationshipSummary({
               e.stopPropagation();
               setIsTouchOpen(!isTouchOpen);
             }}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition cursor-pointer"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 transition cursor-pointer"
             title={`${summary.relatedCount} connected civic incident reports detected`}
             aria-label={`${summary.relatedCount} connected civic incident reports`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 dark:bg-slate-400" />
             <span>{summary.relatedCount} Related</span>
           </button>
         ) : (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <span>Isolated Report</span>
           </span>
         )}
 
         {/* Active Investigations Badge */}
         {summary.investigationsCount > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-cyan-50 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-            <Cpu className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            <Cpu className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             <span>{summary.investigationsCount} Active AMCH</span>
           </span>
         )}
 
         {/* Solution Precedents Badge */}
         {summary.precedentsCount > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-            <History className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            <History className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             <span>{summary.precedentsCount} Precedents</span>
           </span>
         )}
 
-        {/* Failure Warning Badge */}
+        {/* Failure Warning Badge - High Semantic Importance */}
         {summary.failureWarningsCount > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700/80">
             <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
             <span>{summary.failureWarningsCount} Warning</span>
           </span>
@@ -153,8 +141,8 @@ export function ProblemRelationshipSummary({
 
         {/* Shared Feeder Tag */}
         {summary.sharedInfrastructure && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/70 border border-purple-200 dark:border-purple-800">
-            <GitBranch className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium font-mono text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            <GitBranch className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             <span>Shared Feeder</span>
           </span>
         )}
@@ -167,7 +155,7 @@ export function ProblemRelationshipSummary({
             e.stopPropagation();
             setIsTouchOpen(!isTouchOpen);
           }}
-          className="ml-auto p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+          className="ml-auto p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition"
           aria-label="Toggle relationship preview"
           aria-haspopup="dialog"
           aria-expanded={isPopoverVisible}
@@ -220,3 +208,6 @@ export function ProblemRelationshipSummary({
     </div>
   );
 }
+
+// Officially exported alias for ProblemRelationshipCardBadge requirement
+export const ProblemRelationshipCardBadge = ProblemRelationshipSummary;

@@ -128,11 +128,11 @@ export default function ChallengesExplorerPage() {
         />
 
         {/* Search & Filter Command Strip */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3 md:p-4 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 md:p-4 shadow-xs space-y-3">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 placeholder="Search problems by keywords, locality, or district..."
                 value={searchQuery}
@@ -143,11 +143,11 @@ export default function ChallengesExplorerPage() {
 
             {/* Category Dropdown */}
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-slate-500 font-medium">Domain:</span>
+              <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">Domain:</span>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-blue-500 font-medium text-slate-700"
+                className="text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-blue-500 font-medium text-slate-800 dark:text-slate-200"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -159,11 +159,11 @@ export default function ChallengesExplorerPage() {
 
             {/* Severity Dropdown */}
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-slate-500 font-medium">Severity:</span>
+              <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">Severity:</span>
               <select
                 value={selectedSeverity}
                 onChange={(e) => setSelectedSeverity(e.target.value)}
-                className="text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-blue-500 font-medium text-slate-700"
+                className="text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-blue-500 font-medium text-slate-800 dark:text-slate-200"
               >
                 <option value="ALL">All Severities</option>
                 <option value={SeverityLevel.CATASTROPHIC}>Catastrophic</option>
@@ -175,7 +175,7 @@ export default function ChallengesExplorerPage() {
           </div>
 
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-slate-100 dark:border-slate-800">
             {statuses.map((st) => (
               <button
                 key={st.id}
@@ -183,13 +183,13 @@ export default function ChallengesExplorerPage() {
                 className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedStatus === st.id
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                 }`}
               >
                 {st.label}
               </button>
             ))}
-            <span className="text-xs text-slate-400 font-medium ml-auto pl-2 shrink-0">
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium ml-auto pl-2 shrink-0">
               {filteredChallenges.length} problems shown
             </span>
           </div>
@@ -199,16 +199,16 @@ export default function ChallengesExplorerPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-52 rounded-xl bg-slate-100 animate-pulse border border-slate-200" />
+              <div key={i} className="h-52 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
             ))}
           </div>
         ) : filteredChallenges.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-xl border border-dashed border-slate-300 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+          <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 space-y-3">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
               <Search className="w-6 h-6" />
             </div>
-            <h3 className="font-bold text-slate-800 text-sm">No Matching Problems Found</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">No Matching Problems Found</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
               Try adjusting your search keywords, clearing domain filters, or report this community problem to initiate evaluation.
             </p>
             <div className="flex justify-center gap-2 pt-1">
@@ -233,89 +233,80 @@ export default function ChallengesExplorerPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
             {filteredChallenges.map((c) => {
               const sev = c.severity || SeverityLevel.MODERATE;
               return (
                 <div
                   key={c.id}
-                  className="group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all h-full flex flex-col justify-between overflow-visible"
+                  className="group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all duration-150 h-full flex flex-col justify-between overflow-visible p-4.5 space-y-3"
                 >
-                  <div className="p-4 pb-2 space-y-2">
+                  <div className="space-y-2.5">
+                    {/* Header Row: Status on left, Category & Systemic on right */}
                     <div className="flex items-center justify-between gap-2">
-                      <StatusBadge status={c.status} className="text-[10px]" />
+                      <StatusBadge status={c.status} size="sm" />
                       <div className="flex items-center gap-1.5">
                         {c.isSystemic && (
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800 text-[10px]">
-                            <Layers className="w-3 h-3 mr-1" />
-                            Systemic
-                          </Badge>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <Layers className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                            <span>Systemic</span>
+                          </span>
                         )}
-                        <Badge
-                          variant={
-                            sev === SeverityLevel.CATASTROPHIC
-                              ? 'destructive'
-                              : sev === SeverityLevel.SEVERE
-                              ? 'warning'
-                              : 'secondary'
-                          }
-                          className="text-[10px]"
-                        >
-                          {sev}
-                        </Badge>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {c.category?.replace(/_/g, ' ') || 'Civic'}
+                        </span>
                       </div>
                     </div>
 
+                    {/* LEVEL 1: Problem Title (Dominant Visual Element) */}
                     <Link href={`/challenges/${c.id}`} className="block focus:outline-hidden">
-                      <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
                         {c.title}
                       </h3>
                     </Link>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {/* LEVEL 2: Problem Description (Clearly Secondary) */}
+                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                       {c.description}
                     </p>
-                  </div>
 
-                  <div className="p-4 pt-2 space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-xs py-2 border-t border-b border-slate-100 dark:border-slate-800/80">
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block">
-                          Priority Score
+                    {/* LEVEL 3: Location + Priority Score */}
+                    <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                      <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 min-w-0 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                        <span className="truncate font-medium">
+                          {c.district ? `${c.district}, ${c.state || ''}` : 'Location pending'}
                         </span>
-                        <span className="font-bold text-blue-600 dark:text-blue-400 font-mono text-sm flex items-center gap-1">
-                          <Flame className="w-3.5 h-3.5 text-amber-500" />
-                          {c.priorityScore !== undefined ? `${c.priorityScore}/100` : 'Evaluating'}
-                        </span>
+                        {c.affectedPopulation ? (
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0 hidden sm:inline">
+                            • {c.affectedPopulation.toLocaleString()} affected
+                          </span>
+                        ) : null}
                       </div>
 
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block">
-                          Reach Footprint
-                        </span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
-                          {c.affectedPopulation
-                            ? `${c.affectedPopulation.toLocaleString()} citizens`
-                            : 'Calculating'}
+                      <div className="flex items-center gap-1 shrink-0 font-mono font-bold text-blue-700 dark:text-blue-400 text-xs">
+                        <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>{c.priorityScore !== undefined ? `${c.priorityScore} / 100` : 'Evaluating'}</span>
+                        <span className="text-[10px] uppercase font-sans font-semibold text-slate-500 dark:text-slate-400 ml-0.5">
+                          Priority
                         </span>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Problem Relationship Intelligence Badge Row & Popover */}
+                  <div className="pt-2 space-y-2.5">
+                    {/* LEVEL 4: Relationship Intelligence Badges */}
                     <ProblemRelationshipSummary challenge={c} />
 
-                    <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                      <div className="flex items-center gap-1 truncate max-w-[180px]">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate">
-                          {c.district ? `${c.district}, ${c.state || ''}` : 'Location pending'}
-                        </span>
-                      </div>
+                    {/* LEVEL 5: Citizen Endorsements + Workspace CTA */}
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">
+                        {c.supportVotesCount || 0} citizen {c.supportVotesCount === 1 ? 'endorsement' : 'endorsements'}
+                      </span>
 
                       <Link
                         href={`/challenges/${c.id}`}
-                        className="text-blue-600 dark:text-blue-400 font-semibold text-xs group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5 hover:underline"
+                        className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors group-hover:translate-x-0.5"
                       >
                         <span>Workspace</span>
                         <ArrowRight className="w-3.5 h-3.5" />

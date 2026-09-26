@@ -266,36 +266,38 @@ export default function CivicPortalHomePage() {
         {/* Live Ecosystem Metrics Ticker */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-2">
               <Activity className="w-4 h-4 text-blue-600" />
               <span>Transparent Civic Telemetry</span>
             </h2>
-            <span className="text-xs text-slate-500 font-medium">Verified Database Aggregations</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold">Verified Database Aggregations</span>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-            <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-slate-400 font-bold uppercase block">Reported Civic Issues</span>
-              <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">{totalReported}</div>
-              <span className="text-[11px] text-blue-600 font-semibold">100% Authenticated Intake</span>
+            <div className="p-4 md:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1 text-center">
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-bold uppercase block">Reported Civic Issues</span>
+              <div className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono tracking-tight">{totalReported}</div>
+              <span className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold">100% Authenticated Intake</span>
             </div>
 
-            <div className="p-4 md:p-5 rounded-2xl bg-blue-50/50 border border-blue-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-blue-700 font-bold uppercase block">Systemic Patterns</span>
-              <div className="text-3xl font-black text-blue-900 font-mono tracking-tight">{systemicCount}</div>
-              <span className="text-[11px] text-blue-700 font-semibold">Correlated Asset Lineages</span>
+            <div className="p-4 md:p-5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 shadow-xs space-y-1 text-center">
+              <span className="text-xs text-blue-800 dark:text-blue-300 font-bold uppercase block">Systemic Patterns</span>
+              <div className="text-3xl font-black text-blue-950 dark:text-blue-200 font-mono tracking-tight">{systemicCount}</div>
+              <span className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold">Correlated Asset Lineages</span>
             </div>
 
-            <div className="p-4 md:p-5 rounded-2xl bg-indigo-50/50 border border-indigo-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-indigo-700 font-bold uppercase block">R&amp;D &amp; Field Projects</span>
-              <div className="text-3xl font-black text-indigo-900 font-mono tracking-tight">{totalProjects}</div>
-              <span className="text-[11px] text-indigo-700 font-semibold">University &amp; CSR Interventions</span>
+            <div className="p-4 md:p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 shadow-xs space-y-1 text-center">
+              <span className="text-xs text-indigo-800 dark:text-indigo-300 font-bold uppercase block">R&amp;D &amp; Field Projects</span>
+              <div className="text-3xl font-black text-indigo-950 dark:text-indigo-200 font-mono tracking-tight">{totalProjects}</div>
+              <span className="text-[11px] text-indigo-700 dark:text-indigo-400 font-semibold">University &amp; CSR Interventions</span>
             </div>
 
-            <div className="p-4 md:p-5 rounded-2xl bg-emerald-50/50 border border-emerald-200 shadow-xs space-y-1 text-center">
-              <span className="text-xs text-emerald-700 font-bold uppercase block">Solution Memories</span>
-              <div className="text-3xl font-black text-emerald-900 font-mono tracking-tight">{memoryCount}</div>
-              <span className="text-[11px] text-emerald-700 font-semibold">Indexed Precedents (Sec 22)</span>
+            <div className="p-4 md:p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 shadow-xs space-y-1 text-center">
+              <span className="text-xs text-emerald-800 dark:text-emerald-300 font-bold uppercase block">Solution Memories</span>
+              <div className="text-3xl font-black text-emerald-950 dark:text-emerald-200 font-mono tracking-tight">{memoryCount}</div>
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
+                {memoryCount > 0 ? 'Indexed Precedents (Sec 22)' : 'Awaiting Field Indexing'}
+              </span>
             </div>
           </div>
         </section>
@@ -463,69 +465,97 @@ export default function CivicPortalHomePage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
               {filteredChallenges.map((item) => (
-                <Card key={item.id} className="hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between overflow-hidden">
-                  <CardHeader className="p-4 pb-2 space-y-2">
+                <div
+                  key={item.id}
+                  className="group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all duration-150 h-full flex flex-col justify-between overflow-visible p-4.5 space-y-3"
+                >
+                  <div className="space-y-2.5">
+                    {/* Header Row: Status on left, Category on right */}
                     <div className="flex items-center justify-between gap-2">
-                      <StatusBadge status={item.status} className="text-[10px]" />
-                      <div className="flex items-center gap-1">
+                      <StatusBadge status={item.status} size="sm" />
+                      <div className="flex items-center gap-1.5">
                         {item.isSystemic && (
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-[10px]">
-                            <Layers className="w-3 h-3 mr-1" />
-                            Systemic
-                          </Badge>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <Layers className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                            <span>Systemic</span>
+                          </span>
                         )}
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                          {item.category}
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {item.category?.replace(/_/g, ' ') || 'Civic'}
                         </span>
                       </div>
                     </div>
-                    <Link href={`/challenges/${item.id}`} className="group">
-                      <CardTitle className="text-sm md:text-base font-bold line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
-                        {item.title}
-                      </CardTitle>
-                    </Link>
-                    <CardDescription className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                      {item.description}
-                    </CardDescription>
-                  </CardHeader>
 
-                  <CardContent className="p-4 pt-2 space-y-3">
-                    <div className="flex items-center justify-between text-xs py-2 border-t border-b border-slate-100">
-                      <div className="flex items-center gap-1 text-slate-500">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate max-w-[140px]">
+                    {/* LEVEL 1: Problem Title (Dominant Visual Element) */}
+                    <Link href={`/challenges/${item.id}`} className="block focus:outline-hidden">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                        {item.title}
+                      </h3>
+                    </Link>
+
+                    {/* LEVEL 2: Problem Description (Clearly Secondary) */}
+                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+
+                    {/* LEVEL 3: Location + Priority Score */}
+                    <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                      <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 min-w-0 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                        <span className="truncate font-medium">
                           {item.district ? `${item.district}, ${item.state || ''}` : 'Location pending'}
                         </span>
+                        {item.affectedPopulation ? (
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0 hidden sm:inline">
+                            • {item.affectedPopulation.toLocaleString()} affected
+                          </span>
+                        ) : null}
                       </div>
-                      <span className="text-blue-600 font-mono font-bold text-xs flex items-center gap-1">
-                        <Flame className="w-3.5 h-3.5 text-amber-500" />
-                        {item.priorityScore !== undefined ? `${item.priorityScore}/100` : 'Score evaluating'}
-                      </span>
+
+                      <div className="flex items-center gap-1 shrink-0 font-mono font-bold text-blue-700 dark:text-blue-400 text-xs">
+                        <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>{item.priorityScore !== undefined ? `${item.priorityScore} / 100` : 'Evaluating'}</span>
+                        <span className="text-[10px] uppercase font-sans font-semibold text-slate-500 dark:text-slate-400 ml-0.5">
+                          Priority
+                        </span>
+                      </div>
                     </div>
-                    
-                    {/* Problem Relationship Intelligence Badge Row */}
+                  </div>
+
+                  <div className="pt-2 space-y-2.5">
+                    {/* LEVEL 4: Relationship Intelligence Badges */}
                     <ProblemRelationshipSummary challenge={item as any} />
 
-                    <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                      <span>{item.supportVotesCount || 0} citizen endorsements</span>
-                      <Link href={`/challenges/${item.id}`} className="text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                    {/* LEVEL 5: Citizen Endorsements + Workspace CTA */}
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">
+                        {item.supportVotesCount || 0} citizen {item.supportVotesCount === 1 ? 'endorsement' : 'endorsements'}
+                      </span>
+
+                      <Link
+                        href={`/challenges/${item.id}`}
+                        className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors group-hover:translate-x-0.5"
+                      >
                         <span>Workspace</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}
 
-          <div className="text-center pt-2">
+          <div className="text-center pt-3">
             <Link href="/challenges">
-              <Button variant="outline" className="text-xs gap-1.5 px-5">
+              <Button
+                variant="outline"
+                className="text-xs font-semibold text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-xs hover:border-slate-400 gap-2 px-6 py-2.5 transition-all"
+              >
                 <span>View Full Societal Problem Registry</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               </Button>
             </Link>
           </div>

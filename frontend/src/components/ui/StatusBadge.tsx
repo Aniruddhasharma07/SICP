@@ -32,22 +32,32 @@ interface StatusConfig {
 
 const STATUS_MAP: Record<string, StatusConfig> = {
   // Challenge statuses
+  DRAFT: { label: 'Draft', variant: 'neutral', icon: Clock },
   SUBMITTED: { label: 'Submitted', variant: 'info', icon: Clock },
+  UNDER_GOV_REVIEW: { label: 'Government Review', variant: 'warning', icon: Clock },
+  GOVERNMENT_REVIEW: { label: 'Government Review', variant: 'warning', icon: Clock },
+  NEEDS_MORE_INFO: { label: 'Needs More Info', variant: 'warning', icon: AlertTriangle },
+  APPROVED: { label: 'Approved', variant: 'success', icon: CheckCircle2 },
+  GOVERNMENT_APPROVED: { label: 'Government Approved', variant: 'success', icon: CheckCircle2 },
   VALIDATED: { label: 'Validated', variant: 'success', icon: CheckCircle2 },
   CLUSTER_ROOT: { label: 'Systemic Root', variant: 'purple', icon: Layers },
   MERGED_INTO_CLUSTER: { label: 'Merged', variant: 'neutral', icon: GitMerge },
+  MERGED_INTO_SYSTEMIC: { label: 'Merged into Systemic', variant: 'neutral', icon: GitMerge },
+  ASSIGNED_TO_UNIVERSITY: { label: 'Assigned to University', variant: 'purple', icon: Sparkles },
   IN_RESEARCH: { label: 'In Research', variant: 'purple', icon: Sparkles },
   SOLUTION_PROPOSED: { label: 'Solution Proposed', variant: 'info', icon: Activity },
+  IN_PILOT: { label: 'In Pilot', variant: 'warning', icon: Activity },
   PILOT_STAGE: { label: 'Pilot Stage', variant: 'warning', icon: Activity },
+  DEPLOYED: { label: 'Deployed', variant: 'success', icon: CheckCircle2 },
   RESOLVED: { label: 'Resolved', variant: 'success', icon: CheckCircle2 },
   REJECTED: { label: 'Rejected', variant: 'error', icon: XCircle },
+  CLOSED: { label: 'Closed', variant: 'neutral', icon: Ban },
 
   // Project stages
   PROPOSAL: { label: 'Proposal', variant: 'info', icon: Clock },
   PROTOTYPE: { label: 'Prototype', variant: 'purple', icon: Sparkles },
   TESTING: { label: 'Testing', variant: 'warning', icon: Activity },
   PILOT: { label: 'Pilot Active', variant: 'purple', icon: Activity },
-  DEPLOYED: { label: 'Deployed', variant: 'success', icon: CheckCircle2 },
   ARCHIVED: { label: 'Archived', variant: 'neutral', icon: Ban },
 
   // Intent statuses
@@ -73,32 +83,32 @@ const STATUS_MAP: Record<string, StatusConfig> = {
 
 const VARIANT_STYLES: Record<StatusVariant, { badge: string; dot: string }> = {
   default: {
-    badge: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    badge: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700',
     dot: 'bg-slate-500',
   },
   success: {
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
-    dot: 'bg-emerald-500',
+    badge: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+    dot: 'bg-emerald-600 dark:bg-emerald-400',
   },
   warning: {
-    badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
-    dot: 'bg-amber-500',
+    badge: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+    dot: 'bg-amber-600 dark:bg-amber-400',
   },
   error: {
-    badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800',
-    dot: 'bg-rose-500',
+    badge: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+    dot: 'bg-rose-600 dark:bg-rose-400',
   },
   info: {
-    badge: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800',
-    dot: 'bg-blue-500',
+    badge: 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dot: 'bg-blue-600 dark:bg-blue-400',
   },
   purple: {
-    badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800',
-    dot: 'bg-purple-500',
+    badge: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+    dot: 'bg-purple-600 dark:bg-purple-400',
   },
   neutral: {
-    badge: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
-    dot: 'bg-gray-400',
+    badge: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    dot: 'bg-slate-500',
   },
 };
 
@@ -120,8 +130,13 @@ export function StatusBadge({
   className,
 }: StatusBadgeProps) {
   const norm = (status || '').toUpperCase().replace(/\s+/g, '_');
+  const humanized = (status || 'Unknown')
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
   const config = STATUS_MAP[norm] || {
-    label: label || status || 'Unknown',
+    label: label || humanized,
     variant: 'neutral' as StatusVariant,
     icon: HelpCircle,
   };
