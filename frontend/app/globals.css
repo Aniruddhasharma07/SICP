@@ -46,9 +46,24 @@ body {
 }
 
 /* =========================================================================
-   SICP ELITE MOTION SYSTEM
-   Micro-interactions: 150-300ms, cause -> effect -> state transitions.
+   SICP ELITE DESIGN SYSTEM & MOTION SYSTEM
+   Timings:
+   - Micro-interactions: 100–150ms
+   - Interaction/State: 150–250ms
+   - Panel/Drawer: 250–350ms
+   - Complex Transitions: 350–600ms
+   - Graph Traversal: up to ~1400ms
+   Easing: cubic-bezier(0.16, 1, 0.3, 1)
    ========================================================================= */
+
+:root {
+  --timing-micro: 120ms;
+  --timing-interaction: 180ms;
+  --timing-panel: 280ms;
+  --timing-complex: 450ms;
+  --timing-traversal: 1200ms;
+  --ease-elite: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 @keyframes sicpFadeIn {
   from {
@@ -62,7 +77,7 @@ body {
 @keyframes sicpSlideUp {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -88,7 +103,7 @@ body {
 @keyframes sicpScaleIn {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -105,20 +120,29 @@ body {
   }
 }
 
+@keyframes sicpGlowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+  }
+}
+
 .animate-sicp-slide-left {
   animation: sicpSlideLeft 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-sicp-fade {
-  animation: sicpFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: sicpFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-sicp-slide-up {
-  animation: sicpSlideUp 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: sicpSlideUp 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-sicp-scale-in {
-  animation: sicpScaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: sicpScaleIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-sicp-pulse-subtle {
@@ -130,8 +154,61 @@ body {
   animation: sicpDashFlow 1.2s linear infinite;
 }
 
+.animate-sicp-glow {
+  animation: sicpGlowPulse 2.5s ease-in-out infinite;
+}
+
 .sicp-transition-smooth {
-  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================================
+   SURFACE SYSTEM & MICRO-INTERACTIONS
+   ========================================================================= */
+
+/* Surface: Elevated Workspace Section */
+.sicp-surface-raised {
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  transition: border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sicp-surface-raised:hover {
+  border-color: rgba(71, 85, 105, 0.9);
+}
+
+/* Surface: Evidence & Empirical Facts */
+.sicp-surface-evidence {
+  background-color: rgba(12, 74, 110, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+/* Surface: Human Validated */
+.sicp-surface-verified {
+  background-color: rgba(6, 78, 59, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Surface: Cautionary / Warning */
+.sicp-surface-warning {
+  background-color: rgba(120, 53, 15, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Micro-Interaction: Button Press & Focus */
+.sicp-btn-interactive {
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sicp-btn-interactive:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.sicp-btn-interactive:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px #3b82f6;
 }
 
 /* Strict Accessibility: prefers-reduced-motion */
@@ -144,10 +221,9 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .animate-sicp-dash {
-    animation: none !important;
-  }
-  .animate-sicp-pulse-subtle {
+  .animate-sicp-dash,
+  .animate-sicp-pulse-subtle,
+  .animate-sicp-glow {
     animation: none !important;
   }
 }

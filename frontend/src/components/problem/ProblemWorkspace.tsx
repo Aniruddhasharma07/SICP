@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -168,6 +168,19 @@ export function ProblemWorkspace({
   const [mergeReason, setMergeReason] = useState('');
   const [mergeSecondId, setMergeSecondId] = useState('');
   const [isMerging, setIsMerging] = useState(false);
+
+  // Escape key listener for modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showUniModal) setShowUniModal(false);
+        if (showIndModal) setShowIndModal(false);
+        if (showMergeModal) setShowMergeModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showUniModal, showIndModal, showMergeModal]);
 
   // Heuer AMCH Hypotheses generation fallback
   const getConstructedHypotheses = (): RootCauseHypothesisDto[] => {
@@ -560,8 +573,16 @@ export function ProblemWorkspace({
 
       {/* IN-PLACE Academic Research Lab Engagement Modal */}
       {showUniModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100">
+        <div
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Engage Academic Research Lab"
+          onClick={e => {
+            if (e.target === e.currentTarget) setShowUniModal(false);
+          }}
+        >
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100 animate-sicp-scale-in">
             <div className="space-y-1 border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-blue-400" />
@@ -632,8 +653,16 @@ export function ProblemWorkspace({
 
       {/* IN-PLACE Industry CSR Co-Funding Modal */}
       {showIndModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100">
+        <div
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Request Corporate CSR Co-Funding"
+          onClick={e => {
+            if (e.target === e.currentTarget) setShowIndModal(false);
+          }}
+        >
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100 animate-sicp-scale-in">
             <div className="space-y-1 border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-emerald-400" />
@@ -704,8 +733,16 @@ export function ProblemWorkspace({
 
       {/* Systemic Issue Grouping / Merge Modal */}
       {showMergeModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100">
+        <div
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Elevate to Systemic Civic Cluster"
+          onClick={e => {
+            if (e.target === e.currentTarget) setShowMergeModal(false);
+          }}
+        >
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100 animate-sicp-scale-in">
             <div className="space-y-1 border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-purple-400" />

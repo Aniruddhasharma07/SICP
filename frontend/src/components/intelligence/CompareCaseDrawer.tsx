@@ -70,14 +70,17 @@ export function CompareCaseDrawer({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex justify-end animate-sicp-fade"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
       data-testid="compare-case-drawer"
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
-        className="w-full max-w-5xl bg-white min-h-screen shadow-2xl flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-250"
+        className="w-full max-w-5xl bg-white min-h-screen shadow-2xl flex flex-col border-l border-slate-200 animate-sicp-slide-left motion-reduce:animate-none"
       >
         {/* Header Bar */}
         <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between sticky top-0 z-10">

@@ -109,19 +109,27 @@ export function ProblemHeader({
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Navigation Breadcrumb & Badges */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => router.push('/challenges')}
-              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1.5 text-xs font-medium"
-              title="Return to Problem Explorer"
+          <div className="flex items-center gap-2 text-xs">
+            <Link
+              href="/"
+              className="text-slate-400 hover:text-slate-200 transition font-medium"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Problem Explorer</span>
-            </button>
+              SICP
+            </Link>
             <span className="text-slate-600">/</span>
-            <span className="font-mono text-xs text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/60">
-              {challenge.id}
+            <Link
+              href="/challenges"
+              className="text-slate-400 hover:text-slate-200 transition font-medium flex items-center gap-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Problems</span>
+            </Link>
+            <span className="text-slate-600">/</span>
+            <span
+              className="font-mono text-xs text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/60"
+              title={challenge.id}
+            >
+              #{challenge.id.slice(0, 8)}...
             </span>
             <span className="text-xs text-slate-500 font-mono">v{challenge.version || 1}</span>
           </div>

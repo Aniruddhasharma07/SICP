@@ -336,6 +336,26 @@ export function InfrastructureGraphVisualizer({ graph, onSelectNode }: Infrastru
             const tgtPos = nodePositions.get(edge.targetNodeId);
             if (!srcPos || !tgtPos) return null;
 
+            const isEdgeConnected =
+              selectedNode &&
+              (edge.sourceNodeId === selectedNode.id || edge.targetNodeId === selectedNode.id);
+
+            const isEdgeActiveInTraversal =
+              isTraversing &&
+              ((traversalStep >= 1 &&
+                (edge.sourceNodeId.includes('zone') ||
+                  edge.targetNodeId.includes('zone') ||
+                  edge.sourceNodeId.includes('ward') ||
+                  edge.targetNodeId.includes('ward'))) ||
+                (traversalStep >= 2 &&
+                  (edge.sourceNodeId.includes('feeder') ||
+                    edge.targetNodeId.includes('feeder') ||
+                    edge.sourceNodeId.includes('valv'))) ||
+                (traversalStep >= 3 &&
+                  (edge.sourceNodeId.includes('trunk') || edge.targetNodeId.includes('trunk'))) ||
+                (traversalStep >= 4 &&
+                  (edge.sourceNodeId.includes('mbr') || edge.targetNodeId.includes('mbr'))));
+
             return (
               <g key={edge.id} className="group">
                 <line
@@ -343,10 +363,20 @@ export function InfrastructureGraphVisualizer({ graph, onSelectNode }: Infrastru
                   y1={srcPos.y}
                   x2={tgtPos.x}
                   y2={tgtPos.y}
-                  className="stroke-slate-300 dark:stroke-slate-700 hover:stroke-blue-500 transition-colors"
-                  strokeWidth="2.5"
+                  className={
+                    isEdgeActiveInTraversal
+                      ? 'stroke-blue-400 stroke-[3] animate-sicp-dash transition-colors duration-200'
+                      : isEdgeConnected
+                      ? 'stroke-blue-400 stroke-[3] transition-colors duration-200'
+                      : 'stroke-slate-400/60 dark:stroke-slate-700/80 hover:stroke-blue-400 transition-colors duration-200'
+                  }
+                  strokeWidth={isEdgeConnected || isEdgeActiveInTraversal ? '3' : '2.5'}
                   strokeDasharray={edge.edgeType === 'BYPASS' ? '4 4' : undefined}
-                  markerEnd="url(#flow-arrow)"
+                  markerEnd={
+                    isEdgeConnected || isEdgeActiveInTraversal
+                      ? 'url(#flow-arrow-active)'
+                      : 'url(#flow-arrow)'
+                  }
                 />
                 {/* Edge tooltip text */}
                 {edge.capacityFlow && (
