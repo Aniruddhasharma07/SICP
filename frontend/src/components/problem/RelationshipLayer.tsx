@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Network,
@@ -12,6 +12,9 @@ import {
   GitBranch,
   ArrowRight,
   ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
 } from 'lucide-react';
 import {
   ChallengeDto,
@@ -23,6 +26,7 @@ import { EvidenceChip } from '../ui/EvidenceChip';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { InfrastructureGraphVisualizer } from '../intelligence/InfrastructureGraphVisualizer';
+import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface RelationshipLayerProps {
   challenge: ChallengeDto & {
@@ -33,6 +37,7 @@ interface RelationshipLayerProps {
   linkedGraph?: InfrastructureGraphDto | null;
   onOpenSystemicMerge?: () => void;
   isGovOrAdmin?: boolean;
+  onContinueToInvestigation?: () => void;
 }
 
 export function RelationshipLayer({
@@ -40,7 +45,9 @@ export function RelationshipLayer({
   linkedGraph,
   onOpenSystemicMerge,
   isGovOrAdmin,
+  onContinueToInvestigation,
 }: RelationshipLayerProps) {
+  const [showExpertDetails, setShowExpertDetails] = useState(false);
   const relationships = challenge.relationships || [];
   const hasRelationships = relationships.length > 0;
 
@@ -86,9 +93,44 @@ export function RelationshipLayer({
         </p>
       </div>
 
-      {/* Interactive Infrastructure Topology Graph if available */}
-      {linkedGraph && (
-        <div className="space-y-2">
+      {/* Progressive Disclosure Controls: Beginner Surface vs Expert Depth */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs">
+        <div className="flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-indigo-400" />
+          <span className="text-slate-300 font-medium">
+            {showExpertDetails ? 'Expert Technical Depth Active' : 'Beginner Friendly View Active'}
+          </span>
+          <span className="text-[10px] text-slate-500">•</span>
+          <span className="text-[11px] text-slate-400">
+            {showExpertDetails
+              ? 'Displaying 880×480 physical DAG, SCADA lineage, and 7-factor heuristic weights.'
+              : 'Displaying narrative connections and shared municipal assets.'}
+          </span>
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowExpertDetails(!showExpertDetails)}
+          className="border-indigo-700/60 text-indigo-300 hover:bg-indigo-950/40 text-xs h-7 px-3 flex items-center gap-1.5"
+        >
+          {showExpertDetails ? (
+            <>
+              <ChevronUp className="w-3.5 h-3.5" />
+              <span>Hide Technical Details &amp; Topology DAG</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-3.5 h-3.5" />
+              <span>Show Technical Analysis &amp; 880×480 Topology DAG</span>
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Interactive Infrastructure Topology Graph (Progressively Disclosed) */}
+      {showExpertDetails && linkedGraph && (
+        <div className="space-y-2 animate-sicp-fade-in">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-200 flex items-center gap-1.5">
               <GitBranch className="w-3.5 h-3.5 text-blue-400" />
@@ -179,8 +221,9 @@ export function RelationshipLayer({
                   <strong className="text-slate-200">Explainable Deduction:</strong> {rel.reasoning}
                 </div>
 
-                {rel.factorBreakdown && (
-                  <div className="flex flex-wrap gap-1.5 pt-1 text-[10.5px] font-mono">
+                {/* Progressive Disclosure of 7-factor Pills */}
+                {showExpertDetails && rel.factorBreakdown && (
+                  <div className="flex flex-wrap gap-1.5 pt-1 text-[10.5px] font-mono animate-sicp-fade-in">
                     <span className="px-2 py-0.5 rounded bg-slate-900 text-blue-300 border border-blue-900/60">
                       Problem: {rel.factorBreakdown.problemSimilarity}%
                     </span>
@@ -210,6 +253,20 @@ export function RelationshipLayer({
           </div>
         )}
       </div>
+
+      {/* Next Question Bridge to Investigation Layer */}
+      {onContinueToInvestigation && (
+        <NextQuestionBridge
+          currentStage="Stage 02 • Connected Signals & Topology"
+          questionAnswered="What is connected?"
+          answeredSummary="Topological graph traversal isolated a shared feeder branch across 3 municipal reports without presuming asset failure."
+          nextStage="Stage 03 • Competing Hypotheses & Sentinel"
+          nextQuestion="Given this shared infrastructure topology, why might the failure be occurring?"
+          ctaLabel="Investigate Competing Hypotheses & Sentinel"
+          onContinue={onContinueToInvestigation}
+          accentColor="indigo"
+        />
+      )}
     </section>
   );
 }

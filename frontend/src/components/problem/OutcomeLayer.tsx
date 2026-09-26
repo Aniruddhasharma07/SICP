@@ -49,6 +49,7 @@ interface OutcomeLayerProps {
   feedbackSubmitting: boolean;
   feedbackSuccess: boolean;
   currentUser: any;
+  onJumpToMemory?: () => void;
 }
 
 export function OutcomeLayer({
@@ -60,6 +61,7 @@ export function OutcomeLayer({
   feedbackSubmitting,
   feedbackSuccess,
   currentUser,
+  onJumpToMemory,
 }: OutcomeLayerProps) {
   const isPostIntervention =
     ['IN_PILOT', 'DEPLOYED', 'RESOLVED'].includes(challenge.status) ||
@@ -505,6 +507,39 @@ export function OutcomeLayer({
           <p className="text-xs text-slate-500 italic py-2">
             No previous state transitions recorded for this problem record.
           </p>
+        )}
+      </div>
+
+      {/* Closed-Loop Completion Card */}
+      <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/60 via-slate-900 to-slate-950 border border-emerald-500/40 text-xs shadow-xl space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-800/40">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <span className="font-bold text-emerald-200 text-sm">
+              Closed-Loop Completed: Empirical Telemetry Indexes Into Institutional Memory
+            </span>
+          </div>
+          <Badge className="bg-emerald-900 text-emerald-200 border border-emerald-500 text-[10px] font-mono">
+            SICP Invariant #10 Verified
+          </Badge>
+        </div>
+
+        <p className="text-slate-300 text-[11.5px] leading-relaxed">
+          The problem lifecycle does not terminate in bureaucratic filing. When field observations verify real-world resolution, this case is permanently committed into the Institutional Solution Memory registry, enabling rapid precedent retrieval and preventative warnings for over 700 municipal districts across India.
+        </p>
+
+        {onJumpToMemory && (
+          <div className="pt-2 flex justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onJumpToMemory}
+              className="border-emerald-600/60 text-emerald-300 hover:bg-emerald-950/40 text-xs h-8 px-3.5"
+            >
+              <span>Inspect Institutional Solution Precedent Registry ↑</span>
+              <History className="w-3.5 h-3.5 ml-1.5" />
+            </Button>
+          </div>
         )}
       </div>
     </section>

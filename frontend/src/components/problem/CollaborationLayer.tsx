@@ -22,6 +22,7 @@ import { ChallengeDto, UserRole, EvidenceEpistemicClass } from '@sicp/shared';
 import { EvidenceChip } from '../ui/EvidenceChip';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface CollaborationLayerProps {
   challenge: ChallengeDto & {
@@ -283,19 +284,18 @@ export function CollaborationLayer({
         </div>
       </div>
 
-      {/* Next Stage Navigation Hook */}
+      {/* Next Question Bridge to Field Outcome Layer */}
       {onContinueToIntervention && (
-        <div className="pt-3 border-t border-slate-800 flex justify-end">
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={onContinueToIntervention}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-8 px-4"
-          >
-            <span>Proceed to Field Intervention &amp; Ground Truth Verification</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </Button>
-        </div>
+        <NextQuestionBridge
+          currentStage="Stage 06 • Multi-Sector Partnership & R&D Routing"
+          questionAnswered="Who can engineer the intervention, and who can fund/scale it?"
+          answeredSummary="Matched multidisciplinary academic laboratory (TRL 5) with Schedule VII CSR co-funding for pilot deployment."
+          nextStage="Stage 07 • Field Intervention & Ground Truth Verification"
+          nextQuestion="Intervention is underway. Did the engineering intervention actually resolve the problem on the ground?"
+          ctaLabel="Verify Field Ground Truth & Outcome"
+          onContinue={onContinueToIntervention}
+          accentColor="emerald"
+        />
       )}
     </section>
   );

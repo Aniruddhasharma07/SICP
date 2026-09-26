@@ -14,6 +14,7 @@ import {
 import { ChallengeDto, ChallengeStatus, UserRole, EvidenceEpistemicClass } from '@sicp/shared';
 import { EvidenceChip } from '../ui/EvidenceChip';
 import { Button } from '../ui/Button';
+import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface ValidationLayerProps {
   challenge: ChallengeDto & {
@@ -221,6 +222,20 @@ export function ValidationLayer({
           </div>
         )}
       </div>
+
+      {/* Next Question Bridge to Solution Memory Layer */}
+      {onContinueToMemory && (
+        <NextQuestionBridge
+          currentStage="Stage 04 • Human Governance & Validation"
+          questionAnswered="Is the evidence sufficient for an accountable decision?"
+          answeredSummary="Section 25 Statutory Sign-Off sealed on tamper-evident audit ledger by authorized Municipal Executive Engineer."
+          nextStage="Stage 05 • Institutional Solution Memory"
+          nextQuestion="With official validation secured, has SICP solved similar hydraulic failures before in 700+ districts?"
+          ctaLabel="Review Institutional Solution Precedents"
+          onContinue={onContinueToMemory}
+          accentColor="emerald"
+        />
+      )}
     </section>
   );
 }

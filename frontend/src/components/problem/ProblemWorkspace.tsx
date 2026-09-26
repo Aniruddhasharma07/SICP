@@ -28,6 +28,7 @@ import {
   SentinelChoice,
 } from '@sicp/shared';
 import { ProblemHeader } from './ProblemHeader';
+import { FourCoreQuestionsBanner } from './FourCoreQuestionsBanner';
 import { SignalLayer } from './SignalLayer';
 import { RelationshipLayer } from './RelationshipLayer';
 import { InvestigationLayer } from './InvestigationLayer';
@@ -297,6 +298,13 @@ export function ProblemWorkspace({
           activeStageLabel={challenge.status.replace(/_/g, ' ')}
         />
 
+        {/* 4 Core Questions Living Header Banner */}
+        <FourCoreQuestionsBanner
+          challenge={challenge}
+          onJumpToLayer={handleJumpToLayer}
+          branchDifferentialDeduction="Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown."
+        />
+
         {/* Master 2-Column Responsive Workspace Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: 7 Analytical Layers (8 Cols on Desktop) */}
@@ -307,6 +315,7 @@ export function ProblemWorkspace({
               isTriggeringAi={isTriggeringAi}
               onTriggerAi={onTriggerAi}
               aiNotice={aiNotice}
+              onContinueToRelationship={() => handleJumpToLayer('relationship-layer')}
             />
 
             {/* Layer 2: Connected Signals, 7-Factor Heuristic & Infrastructure Topology */}
@@ -314,12 +323,14 @@ export function ProblemWorkspace({
               challenge={challenge}
               onOpenSystemicMerge={() => setShowMergeModal(true)}
               isGovOrAdmin={isGovOrAdmin}
+              onContinueToInvestigation={() => handleJumpToLayer('investigation-layer')}
             />
 
             {/* Layer 3: Competing Hypotheses (AMCH) & Sentinel Probing */}
             <InvestigationLayer
               hypotheses={hypotheses}
               branchDifferentialDeduction="Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown."
+              onContinueToValidation={() => handleJumpToLayer('validation-layer')}
             />
 
             {/* Layer 4: Human Governance & Section 25 Statutory Sign-Off */}
@@ -362,6 +373,7 @@ export function ProblemWorkspace({
               feedbackSubmitting={feedbackSubmitting}
               feedbackSuccess={feedbackSuccess}
               currentUser={currentUser}
+              onJumpToMemory={() => handleJumpToLayer('memory-layer')}
             />
           </div>
 

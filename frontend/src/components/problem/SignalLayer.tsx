@@ -18,6 +18,7 @@ import {
 import { ChallengeDto, EvidenceEpistemicClass } from '@sicp/shared';
 import { EvidenceChip } from '../ui/EvidenceChip';
 import { Button } from '../ui/Button';
+import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface SignalLayerProps {
   challenge: ChallengeDto & {
@@ -27,6 +28,7 @@ interface SignalLayerProps {
   isTriggeringAi: boolean;
   onTriggerAi: () => void;
   aiNotice: { type: 'success' | 'warning' | 'error'; message: string } | null;
+  onContinueToRelationship?: () => void;
 }
 
 export function SignalLayer({
@@ -34,6 +36,7 @@ export function SignalLayer({
   isTriggeringAi,
   onTriggerAi,
   aiNotice,
+  onContinueToRelationship,
 }: SignalLayerProps) {
   const aiAnalysis = challenge.aiAnalysis;
 
@@ -243,6 +246,20 @@ export function SignalLayer({
           </div>
         </div>
       </div>
+
+      {/* Next Question Bridge to Relationship Layer */}
+      {onContinueToRelationship && (
+        <NextQuestionBridge
+          currentStage="Stage 01 • Citizen Signal"
+          questionAnswered="What happened on the ground?"
+          answeredSummary="Empirical citizen observations and Gemini technical normalization established ground facts without administrative distortion."
+          nextStage="Stage 02 • Connected Signals & Topology"
+          nextQuestion="Could these geographically clustered incidents share an underlying municipal infrastructure dependency?"
+          ctaLabel="Examine Connected Signals & Topology"
+          onContinue={onContinueToRelationship}
+          accentColor="blue"
+        />
+      )}
     </section>
   );
 }

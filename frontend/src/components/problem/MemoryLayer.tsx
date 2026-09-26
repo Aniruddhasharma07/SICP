@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   BrainCircuit,
@@ -12,6 +12,9 @@ import {
   AlertTriangle,
   History,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
 } from 'lucide-react';
 import { ChallengeDto, HistoricalRecommendationDto, EvidenceEpistemicClass } from '@sicp/shared';
 import { EvidenceChip } from '../ui/EvidenceChip';
@@ -19,6 +22,7 @@ import { SolutionMemoryCard } from '../intelligence/SolutionMemoryCard';
 import { MemoryEvolutionTimeline } from '../intelligence/MemoryEvolutionTimeline';
 import { RecurrenceSignalCard } from '../intelligence/RecurrenceSignalCard';
 import { Button } from '../ui/Button';
+import { NextQuestionBridge } from './NextQuestionBridge';
 
 interface MemoryLayerProps {
   challenge: ChallengeDto;
@@ -39,6 +43,7 @@ export function MemoryLayer({
   onCompareCase,
   onExploreCollaboration,
 }: MemoryLayerProps) {
+  const [showExpertMemory, setShowExpertMemory] = useState(false);
   return (
     <section id="memory-layer" className="space-y-4">
       {/* Section Header */}
@@ -151,6 +156,41 @@ export function MemoryLayer({
               </div>
             )}
 
+            {/* Progressive Disclosure Controls: Beginner Surface vs Expert Precedents */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-purple-400" />
+                <span className="text-slate-300 font-medium">
+                  {showExpertMemory ? 'Expert Precedent Depth Active' : 'Beginner Friendly Precedent View Active'}
+                </span>
+                <span className="text-[10px] text-slate-500">•</span>
+                <span className="text-[11px] text-slate-400">
+                  {showExpertMemory
+                    ? 'Displaying full failure warning matrices, comparison drawers, and evolution timeline.'
+                    : 'Displaying high-level lesson learned and precedent warnings.'}
+                </span>
+              </div>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowExpertMemory(!showExpertMemory)}
+                className="border-purple-700/60 text-purple-300 hover:bg-purple-950/40 text-xs h-7 px-3 flex items-center gap-1.5"
+              >
+                {showExpertMemory ? (
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    <span>Hide Technical Details</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    <span>Show Technical Failure Warnings &amp; Evolution Timeline</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* List of Solution Memory Cards */}
             <div className="space-y-3">
               {historicalSolutions.map(rec => (
@@ -168,31 +208,32 @@ export function MemoryLayer({
               ))}
             </div>
 
-            {/* Closed-Loop Learning Evolution Timeline */}
-            <div className="pt-4 border-t border-slate-800">
-              <MemoryEvolutionTimeline
-                initialOutcome={historicalSolutions[0]?.outcomeStatus || 'SUCCESSFUL'}
-                currentOutcome={challenge.status === 'RESOLVED' ? 'VERIFIED_RESOLVED' : 'IN_PROGRESS'}
-              />
-            </div>
-
-            {/* Next Action Hook */}
-            {onExploreCollaboration && (
-              <div className="pt-3 border-t border-slate-800 flex justify-end">
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={onExploreCollaboration}
-                  className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs h-8 px-4"
-                >
-                  <span>Explore Institutional Research &amp; CSR Matches</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-                </Button>
+            {/* Closed-Loop Learning Evolution Timeline (Progressively Disclosed) */}
+            {showExpertMemory && (
+              <div className="pt-4 border-t border-slate-800 animate-sicp-fade-in">
+                <MemoryEvolutionTimeline
+                  initialOutcome={historicalSolutions[0]?.outcomeStatus || 'SUCCESSFUL'}
+                  currentOutcome={challenge.status === 'RESOLVED' ? 'VERIFIED_RESOLVED' : 'IN_PROGRESS'}
+                />
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Next Question Bridge to Collaboration Layer */}
+      {onExploreCollaboration && (
+        <NextQuestionBridge
+          currentStage="Stage 05 • Institutional Solution Memory"
+          questionAnswered="Has SICP seen something like this before?"
+          answeredSummary="Retrieved 2 verified municipal precedents; evaluated risk factors and failure warnings against surface-only filtration."
+          nextStage="Stage 06 • Multi-Sector Partnership & R&D Routing"
+          nextQuestion="Who has the engineering expertise to build the solution, and who can co-fund the pilot?"
+          ctaLabel="Identify Academic R&D & CSR Partners"
+          onContinue={onExploreCollaboration}
+          accentColor="purple"
+        />
+      )}
     </section>
   );
 }
