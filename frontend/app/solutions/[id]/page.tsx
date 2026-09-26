@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
@@ -31,6 +31,16 @@ export default function SolutionMemoryDetailPage({ params }: { params: Promise<{
   const [memory, setMemory] = useState<SolutionMemoryDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeProblemId, setActiveProblemId] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const pId = params.get('problemId') || '';
+    if (pId) {
+      setActiveProblemId(pId);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchMemory = async () => {
@@ -121,6 +131,43 @@ export default function SolutionMemoryDetailPage({ params }: { params: Promise<{
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
+        {/* Active Problem Context Banner */}
+        {activeProblemId && (
+          <div
+            data-testid="problem-context-banner"
+            className="p-4 rounded-xl bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 border border-indigo-500/50 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-sicp-fade-in text-slate-100"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <BrainCircuit className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-indigo-900/80 text-indigo-200 border border-indigo-700 font-mono text-[10px]">
+                    Active Problem Context
+                  </Badge>
+                  <span className="font-mono text-slate-300 font-semibold">#{activeProblemId.slice(0, 8)}...</span>
+                </div>
+                <p className="text-slate-300 text-[11.5px]">
+                  Inspecting precedent details for active problem investigation. Return to Problem Intelligence at any time.
+                </p>
+              </div>
+            </div>
+
+            <Link href={`/challenges/${activeProblemId}`}>
+              <Button
+                size="sm"
+                variant="primary"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs h-8 shrink-0 flex items-center gap-1.5"
+                data-testid="return-to-problem-btn"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Problem Intelligence</span>
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Navigation & Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link

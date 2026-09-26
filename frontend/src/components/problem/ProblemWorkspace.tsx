@@ -11,6 +11,9 @@ import {
   ShieldCheck,
   AlertTriangle,
   Info,
+  GraduationCap,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   ChallengeDto,
@@ -38,6 +41,12 @@ import { CollaborationLayer } from './CollaborationLayer';
 import { OutcomeLayer } from './OutcomeLayer';
 import { ContextualActionRail } from './ContextualActionRail';
 import { CompareCaseDrawer } from '../intelligence/CompareCaseDrawer';
+import { PrecedentDetailDrawer } from '../intelligence/PrecedentDetailDrawer';
+import {
+  UniversityMatchDto,
+  IndustryMatchDto,
+  collaborationService,
+} from '../../services/collaborationService';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
@@ -52,7 +61,7 @@ export interface ExtendedChallenge extends ChallengeDto {
   validationReason?: string;
 }
 
-interface ProblemWorkspaceProps {
+export interface ProblemWorkspaceProps {
   challenge: ExtendedChallenge;
   currentUser: any;
   hasVoted: boolean;
@@ -77,6 +86,19 @@ interface ProblemWorkspaceProps {
   onTriggerAi: () => void;
   aiNotice: { type: 'success' | 'warning' | 'error'; message: string } | null;
   onExecuteMerge: (secondId: string, title: string, reason: string) => Promise<void>;
+  // Systemic & AMCH & Topology
+  linkedGraph?: InfrastructureGraphDto | null;
+  hypotheses?: RootCauseHypothesisDto[];
+  selectedHypothesisId?: string;
+  onSelectHypothesis?: (h: RootCauseHypothesisDto) => void;
+  sentinelProbes?: SentinelProbeRequestDto[];
+  onSendSentinelResponse?: (data: { choice: SentinelChoice; feedbackText?: string }) => Promise<void>;
+  isLoadingSentinel?: boolean;
+  branchDifferentialDeduction?: string | null;
+  // Multi-Sector Collaboration Matching
+  universityMatches?: UniversityMatchDto[];
+  industryMatches?: IndustryMatchDto[];
+  loadingCollaboration?: boolean;
 }
 
 export function ProblemWorkspace({
@@ -104,19 +126,50 @@ export function ProblemWorkspace({
   onTriggerAi,
   aiNotice,
   onExecuteMerge,
+  linkedGraph,
+  hypotheses: propHypotheses,
+  selectedHypothesisId,
+  onSelectHypothesis,
+  sentinelProbes = [],
+  onSendSentinelResponse,
+  isLoadingSentinel = false,
+  branchDifferentialDeduction,
+  universityMatches = [],
+  industryMatches = [],
+  loadingCollaboration = false,
 }: ProblemWorkspaceProps) {
   const router = useRouter();
 
-  // Drawers and Modals
+  // Drawers and Modals State
   const [compareDrawerOpen, setCompareDrawerOpen] = useState(false);
   const [comparingMemory, setComparingMemory] = useState<any | null>(null);
+
+  // In-place Precedent Detail Drawer
+  const [selectedMemoryDetail, setSelectedMemoryDetail] = useState<any | null>(null);
+  const [precedentDrawerOpen, setPrecedentDrawerOpen] = useState(false);
+
+  // In-place University Engagement Modal
+  const [showUniModal, setShowUniModal] = useState(false);
+  const [selectedUniMatch, setSelectedUniMatch] = useState<UniversityMatchDto | null>(null);
+  const [uniInquiry, setUniInquiry] = useState('');
+  const [uniSubmitting, setUniSubmitting] = useState(false);
+  const [uniSuccess, setUniSuccess] = useState(false);
+
+  // In-place Industry CSR Modal
+  const [showIndModal, setShowIndModal] = useState(false);
+  const [selectedIndMatch, setSelectedIndMatch] = useState<IndustryMatchDto | null>(null);
+  const [indInquiry, setIndInquiry] = useState('');
+  const [indSubmitting, setIndSubmitting] = useState(false);
+  const [indSuccess, setIndSuccess] = useState(false);
+
+  // Merge Modal State
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [mergeTitle, setMergeTitle] = useState('');
   const [mergeReason, setMergeReason] = useState('');
   const [mergeSecondId, setMergeSecondId] = useState('');
   const [isMerging, setIsMerging] = useState(false);
 
-  // Heuer AMCH Hypotheses generation from AI Analysis
+  // Heuer AMCH Hypotheses generation fallback
   const getConstructedHypotheses = (): RootCauseHypothesisDto[] => {
     const rawHypotheses: string[] = challenge.aiAnalysis?.rawResponse?.rootCauseHypotheses || [];
 
@@ -153,7 +206,6 @@ export function ProblemWorkspace({
       });
     }
 
-    // Default AMCH competing hypotheses based on problem domain
     return [
       {
         id: `hyp-default-1`,
@@ -227,7 +279,7 @@ export function ProblemWorkspace({
     ];
   };
 
-  const hypotheses = getConstructedHypotheses();
+  const hypotheses = propHypotheses && propHypotheses.length > 0 ? propHypotheses : getConstructedHypotheses();
 
   // Smooth scroll handler to jump between layers
   const handleJumpToLayer = (layerId: string) => {
@@ -246,10 +298,60 @@ export function ProblemWorkspace({
     }
   };
 
+  // In-place Precedent Detail Inspector handler
+  const handleInspectPrecedent = (memory: any) => {
+    setSelectedMemoryDetail(memory);
+    setPrecedentDrawerOpen(true);
+  };
+
+  // In-place University Engagement opener
+  const handleOpenUniversityModal = (match: UniversityMatchDto) => {
+    setSelectedUniMatch(match);
+    setUniInquiry(`Request for Research Proposal (RFP) regarding ${challenge.title}. Faculty expertise in ${match.matchedDepartments?.[0] || 'applied engineering'} requested for validation testing.`);
+    setUniSuccess(false);
+    setShowUniModal(true);
+  };
+
+  // In-place Industry CSR Modal opener
+  const handleOpenIndustryModal = (match: IndustryMatchDto) => {
+    setSelectedIndMatch(match);
+    setIndInquiry(`Schedule VII Co-Funding Inquiry for ${challenge.title}. Target allocation under ${match.eligibleCsrPrograms?.[0] || 'municipal infrastructure'}.`);
+    setIndSuccess(false);
+    setShowIndModal(true);
+  };
+
+  const handleConfirmAssignUniversity = async () => {
+    if (!selectedUniMatch) return;
+    setUniSubmitting(true);
+    const orgId = selectedUniMatch.universityOrgId || 'demo-uni-org';
+    const res = await collaborationService.assignUniversity(challenge.id, orgId, uniInquiry);
+    setUniSubmitting(false);
+    if (res.success) {
+      setUniSuccess(true);
+      setTimeout(() => setShowUniModal(false), 1500);
+    }
+  };
+
+  const handleConfirmPledgeIndustry = async () => {
+    if (!selectedIndMatch) return;
+    setIndSubmitting(true);
+    const indId = selectedIndMatch.industryOrgId || 'demo-ind-org';
+    const res = await collaborationService.assignIndustry(challenge.id, indId, indInquiry);
+    setIndSubmitting(false);
+    if (res.success) {
+      setIndSuccess(true);
+      setTimeout(() => setShowIndModal(false), 1500);
+    }
+  };
+
   const isGovOrAdmin =
     currentUser?.role === UserRole.GOVERNMENT_OFFICER ||
     currentUser?.role === UserRole.GOVERNMENT_DEPARTMENT ||
     currentUser?.role === UserRole.SYSTEM_ADMIN;
+
+  const effectiveDeduction =
+    branchDifferentialDeduction ||
+    'Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown.';
 
   return (
     <div className="min-h-screen -m-4 md:-m-8 p-4 md:p-8 bg-slate-950 text-slate-100 selection:bg-blue-900 selection:text-white pb-28">
@@ -302,7 +404,7 @@ export function ProblemWorkspace({
         <FourCoreQuestionsBanner
           challenge={challenge}
           onJumpToLayer={handleJumpToLayer}
-          branchDifferentialDeduction="Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown."
+          branchDifferentialDeduction={effectiveDeduction}
         />
 
         {/* Master 2-Column Responsive Workspace Grid */}
@@ -321,6 +423,7 @@ export function ProblemWorkspace({
             {/* Layer 2: Connected Signals, 7-Factor Heuristic & Infrastructure Topology */}
             <RelationshipLayer
               challenge={challenge}
+              linkedGraph={linkedGraph}
               onOpenSystemicMerge={() => setShowMergeModal(true)}
               isGovOrAdmin={isGovOrAdmin}
               onContinueToInvestigation={() => handleJumpToLayer('investigation-layer')}
@@ -329,7 +432,12 @@ export function ProblemWorkspace({
             {/* Layer 3: Competing Hypotheses (AMCH) & Sentinel Probing */}
             <InvestigationLayer
               hypotheses={hypotheses}
-              branchDifferentialDeduction="Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown."
+              selectedHypothesisId={selectedHypothesisId}
+              onSelectHypothesis={onSelectHypothesis}
+              sentinelProbes={sentinelProbes}
+              onSendSentinelResponse={onSendSentinelResponse}
+              isLoadingSentinel={isLoadingSentinel}
+              branchDifferentialDeduction={effectiveDeduction}
               onContinueToValidation={() => handleJumpToLayer('validation-layer')}
             />
 
@@ -353,6 +461,7 @@ export function ProblemWorkspace({
               loadingHistorical={loadingHistorical}
               activeRecurrenceSignal={activeRecurrenceSignal}
               onCompareCase={handleCompareCase}
+              onInspectMemory={handleInspectPrecedent}
               onExploreCollaboration={() => handleJumpToLayer('collaboration-layer')}
             />
 
@@ -360,6 +469,11 @@ export function ProblemWorkspace({
             <CollaborationLayer
               challenge={challenge}
               currentUserRole={currentUser?.role}
+              universityMatches={universityMatches}
+              industryMatches={industryMatches}
+              loadingCollaboration={loadingCollaboration}
+              onEngageUniversity={handleOpenUniversityModal}
+              onEngageIndustry={handleOpenIndustryModal}
               onContinueToIntervention={() => handleJumpToLayer('outcome-layer')}
             />
 
@@ -410,8 +524,183 @@ export function ProblemWorkspace({
           rootCause: challenge.impact?.problemType || 'Under investigation',
           severity: challenge.severity,
         }}
-        historicalCases={comparingMemory ? [comparingMemory] : []}
+        historicalCases={
+          comparingMemory
+            ? [
+                {
+                  id: comparingMemory.memoryId || comparingMemory.id || 'mem-1',
+                  title: comparingMemory.title || 'Verified Precedent',
+                  category: comparingMemory.challengeCategory || comparingMemory.category || 'Civic Infrastructure',
+                  problemSummary: comparingMemory.problemSummary || comparingMemory.summary || '',
+                  rootCause: comparingMemory.rootCause || 'Hydraulic surge damage',
+                  technicalApproach: comparingMemory.technicalApproach || 'Acoustic survey & relief valve installation',
+                  outcomeStatus: comparingMemory.outcomeStatus || 'SUCCESSFUL',
+                  evidenceLevel: comparingMemory.evidenceLevel || 'FIELD_VERIFIED',
+                  reusabilityClass: comparingMemory.reusabilityClass || 'HIGHLY_REUSABLE',
+                  reusabilityScore: comparingMemory.reusabilityScore ?? 84,
+                  whatWorked: comparingMemory.whatWorked || 'Mitigated transient pressure spikes by 78%.',
+                  whatFailed: comparingMemory.whatFailed || null,
+                  limitations: comparingMemory.historicalWarning || comparingMemory.limitations || null,
+                  lessonsLearned: comparingMemory.lessonsLearned || null,
+                  district: comparingMemory.district || null,
+                },
+              ]
+            : []
+        }
       />
+
+      {/* IN-PLACE Precedent Detail Drawer (Zero-Navigation Solution Memory Inspection) */}
+      <PrecedentDetailDrawer
+        isOpen={precedentDrawerOpen}
+        onClose={() => setPrecedentDrawerOpen(false)}
+        memory={selectedMemoryDetail}
+        currentProblemId={challenge.id}
+        onCompareWithCurrent={handleCompareCase}
+      />
+
+      {/* IN-PLACE Academic Research Lab Engagement Modal */}
+      {showUniModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100">
+            <div className="space-y-1 border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-blue-400" />
+                <span>Engage Academic Research Lab</span>
+              </h3>
+              <p className="text-xs text-slate-400">
+                Dispatch an engineering inquiry or pilot development directive directly to matched university faculty.
+              </p>
+            </div>
+
+            {uniSuccess ? (
+              <div className="p-4 bg-emerald-950/60 border border-emerald-700/60 rounded-xl text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                <h4 className="text-sm font-bold text-emerald-200">Assignment Dispatched</h4>
+                <p className="text-xs text-emerald-300">
+                  Engineering inquiry successfully transmitted to {selectedUniMatch?.universityName || 'Academic Research Lab'}.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-blue-300 text-sm">
+                      {selectedUniMatch?.universityName || 'IIT Bombay Civil Systems & Environmental Lab'}
+                    </span>
+                    <Badge className="bg-blue-950 text-blue-300 border border-blue-800 text-[10px] font-mono">
+                      {selectedUniMatch?.matchScore || 94}% Match
+                    </Badge>
+                  </div>
+                  <span className="text-slate-400 block text-[11px]">
+                    Department: {selectedUniMatch?.matchedDepartments?.[0] || 'Department of Civil & Environmental Engineering'}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-300 block">Engineering Scope &amp; Directive</label>
+                  <textarea
+                    rows={4}
+                    value={uniInquiry}
+                    onChange={e => setUniInquiry(e.target.value)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-xs text-slate-100 focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowUniModal(false)}
+                    className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-8"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleConfirmAssignUniversity}
+                    isLoading={uniSubmitting}
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-8"
+                  >
+                    Confirm &amp; Dispatch RFP
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* IN-PLACE Industry CSR Co-Funding Modal */}
+      {showIndModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-sicp-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-100">
+            <div className="space-y-1 border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-emerald-400" />
+                <span>Request Corporate CSR Co-Funding</span>
+              </h3>
+              <p className="text-xs text-slate-400">
+                Submit a Schedule VII compliant co-funding grant application for this civic infrastructure pilot.
+              </p>
+            </div>
+
+            {indSuccess ? (
+              <div className="p-4 bg-emerald-950/60 border border-emerald-700/60 rounded-xl text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                <h4 className="text-sm font-bold text-emerald-200">Proposal Dispatched</h4>
+                <p className="text-xs text-emerald-300">
+                  CSR Co-funding request registered with {selectedIndMatch?.companyName || 'Corporate Partner'}.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-emerald-300 text-sm">
+                      {selectedIndMatch?.companyName || 'Tata Sustainability & Water Infrastructure Foundation'}
+                    </span>
+                    <Badge className="bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono">
+                      Schedule VII
+                    </Badge>
+                  </div>
+                  <span className="text-slate-400 block text-[11px]">
+                    Eligibility: {selectedIndMatch?.eligibleCsrPrograms?.[0] || 'Item (i): Drinking water & sanitation'}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-300 block">Grant Application Justification</label>
+                  <textarea
+                    rows={4}
+                    value={indInquiry}
+                    onChange={e => setIndInquiry(e.target.value)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-xs text-slate-100 focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowIndModal(false)}
+                    className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-8"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleConfirmPledgeIndustry}
+                    isLoading={indSubmitting}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-8"
+                  >
+                    Submit CSR Proposal
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Systemic Issue Grouping / Merge Modal */}
       {showMergeModal && (

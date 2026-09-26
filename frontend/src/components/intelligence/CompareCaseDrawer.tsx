@@ -74,6 +74,7 @@ export function CompareCaseDrawer({
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
+      data-testid="compare-case-drawer"
     >
       <div
         className="w-full max-w-5xl bg-white min-h-screen shadow-2xl flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-250"
@@ -150,7 +151,7 @@ export function CompareCaseDrawer({
                             : 'warning'
                         }
                       >
-                        {hist.outcomeStatus.replace(/_/g, ' ')}
+                        {(hist.outcomeStatus || 'EVALUATED').replace(/_/g, ' ')}
                       </Badge>
                     </div>
                     <h3 className="text-sm font-bold text-slate-900">{hist.title}</h3>

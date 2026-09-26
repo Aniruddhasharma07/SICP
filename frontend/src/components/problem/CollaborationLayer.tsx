@@ -23,18 +23,29 @@ import { EvidenceChip } from '../ui/EvidenceChip';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { NextQuestionBridge } from './NextQuestionBridge';
+import { UniversityMatchDto, IndustryMatchDto } from '../../services/collaborationService';
 
 interface CollaborationLayerProps {
   challenge: ChallengeDto & {
     projects?: { id: string; title: string; status: any }[];
   };
   currentUserRole?: UserRole;
+  universityMatches?: UniversityMatchDto[];
+  industryMatches?: IndustryMatchDto[];
+  loadingCollaboration?: boolean;
+  onEngageUniversity?: (match: UniversityMatchDto) => void;
+  onEngageIndustry?: (match: IndustryMatchDto) => void;
   onContinueToIntervention?: () => void;
 }
 
 export function CollaborationLayer({
   challenge,
   currentUserRole,
+  universityMatches = [],
+  industryMatches = [],
+  loadingCollaboration = false,
+  onEngageUniversity,
+  onEngageIndustry,
   onContinueToIntervention,
 }: CollaborationLayerProps) {
   const isAssigned =
@@ -94,6 +105,18 @@ export function CollaborationLayer({
   };
 
   const domain = getDomainCapabilities(challenge.category || '');
+
+  const topUni = universityMatches.length > 0 ? universityMatches[0] : null;
+  const topInd = industryMatches.length > 0 ? industryMatches[0] : null;
+
+  const uniName = topUni?.universityName || 'IIT Bombay Civil Systems & Environmental Lab';
+  const uniDept = topUni?.matchedDepartments?.[0] || domain.dept;
+  const uniScore = topUni?.matchScore || topUni?.score || domain.matchScore;
+
+  const indName = topInd?.companyName || 'Tata Sustainability & Water Infrastructure Foundation';
+  const indProgram = topInd?.eligibleCsrPrograms?.[0] || domain.scheduleVii;
+  const indScore = topInd?.matchScore || 92;
+  const indCoFunding = topInd?.maxCoFundingPercentage ? `${topInd.maxCoFundingPercentage}% CSR Co-Funding` : domain.coFundingPotential;
 
   return (
     <section id="collaboration-layer" className="space-y-4">
@@ -190,18 +213,18 @@ export function CollaborationLayer({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-100">Academic R&amp;D Lab Routing</h3>
-                <span className="text-[10px] text-slate-400">Multidisciplinary Engineering Matching</span>
+                <span className="text-[10px] text-slate-400 font-medium text-blue-400">{uniName}</span>
               </div>
             </div>
             <Badge className="bg-blue-950/80 text-blue-300 border border-blue-800 text-[10px] font-mono">
-              {domain.matchScore}% Match
+              {uniScore}% Match
             </Badge>
           </div>
 
           <div className="space-y-2 text-xs">
             <div>
               <span className="text-[10px] text-slate-500 uppercase font-bold block">Matched Faculty Department</span>
-              <span className="font-semibold text-slate-200">{domain.dept}</span>
+              <span className="font-semibold text-slate-200">{uniDept}</span>
             </div>
 
             <div>
@@ -221,14 +244,25 @@ export function CollaborationLayer({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
             <span className="text-[10px] text-slate-400">Context preserved in portal</span>
-            <Link href={`/university?problemId=${challenge.id}`}>
-              <Button size="sm" variant="outline" className="border-blue-700/60 text-blue-300 hover:bg-blue-950/40 text-xs h-8">
-                <span>Engage University Lab</span>
-                <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => onEngageUniversity?.(topUni || { universityName: uniName, matchScore: uniScore })}
+                className="bg-blue-600 hover:bg-blue-500 text-white text-xs h-8"
+                data-testid="engage-university-btn"
+              >
+                <span>Engage Lab (In-Place)</span>
               </Button>
-            </Link>
+              <Link href={`/university?problemId=${challenge.id}`}>
+                <Button size="sm" variant="outline" className="border-blue-700/60 text-blue-300 hover:bg-blue-950/40 text-xs h-8">
+                  <span>Portal</span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -241,23 +275,23 @@ export function CollaborationLayer({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-100">Corporate &amp; CSR Co-Funding</h3>
-                <span className="text-[10px] text-slate-400">Schedule VII Statutory Alignment</span>
+                <span className="text-[10px] text-emerald-400 font-medium">{indName}</span>
               </div>
             </div>
             <Badge className="bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-[10px] font-mono">
-              Schedule VII
+              {indScore}% Match
             </Badge>
           </div>
 
           <div className="space-y-2 text-xs">
             <div>
               <span className="text-[10px] text-slate-500 uppercase font-bold block">CSR Mandate Alignment</span>
-              <p className="text-slate-300 text-[11px] leading-relaxed">{domain.scheduleVii}</p>
+              <p className="text-slate-300 text-[11px] leading-relaxed">{indProgram}</p>
             </div>
 
             <div>
               <span className="text-[10px] text-slate-500 uppercase font-bold block">Corporate Co-Funding Potential</span>
-              <span className="font-semibold text-emerald-400">{domain.coFundingPotential}</span>
+              <span className="font-semibold text-emerald-400">{indCoFunding}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
@@ -272,14 +306,25 @@ export function CollaborationLayer({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
             <span className="text-[10px] text-slate-400">Context preserved in portal</span>
-            <Link href={`/industry?problemId=${challenge.id}`}>
-              <Button size="sm" variant="outline" className="border-emerald-700/60 text-emerald-300 hover:bg-emerald-950/40 text-xs h-8">
-                <span>Access CSR Rail</span>
-                <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => onEngageIndustry?.(topInd || { companyName: indName, matchScore: indScore })}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8"
+                data-testid="request-csr-btn"
+              >
+                <span>Request Co-Funding</span>
               </Button>
-            </Link>
+              <Link href={`/industry?problemId=${challenge.id}`}>
+                <Button size="sm" variant="outline" className="border-emerald-700/60 text-emerald-300 hover:bg-emerald-950/40 text-xs h-8">
+                  <span>Portal</span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

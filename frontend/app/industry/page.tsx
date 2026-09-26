@@ -20,6 +20,7 @@ import {
   Clock,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Send,
   PlusCircle,
   Coins,
@@ -214,11 +215,16 @@ export default function IndustryPortalPage() {
   };
 
   const [notificationBanner, setNotificationBanner] = useState<string | null>(null);
+  const [activeProblemId, setActiveProblemId] = useState<string>('');
 
   // Sync tab with URL search parameter if present
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
+    const pId = params.get('problemId') || '';
+    if (pId) {
+      setActiveProblemId(pId);
+    }
     const tabParam = (params.get('tab') || '').toUpperCase();
     if (tabParam === 'COLLABORATION' || tabParam === 'COLLABORATIONS') {
       setActiveTab('COLLABORATIONS');
@@ -397,6 +403,43 @@ export default function IndustryPortalPage() {
   return (
     <AppLayout portal="industry">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Active Problem Context Banner */}
+        {activeProblemId && (
+          <div
+            data-testid="problem-context-banner"
+            className="p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 border border-emerald-500/50 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-sicp-fade-in text-slate-100"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <Building2 className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-900/80 text-emerald-200 border border-emerald-700 font-mono text-[10px]">
+                    Active Problem Context
+                  </Badge>
+                  <span className="font-mono text-slate-300 font-semibold">#{activeProblemId.slice(0, 8)}...</span>
+                </div>
+                <p className="text-slate-300 text-[11.5px]">
+                  Viewing Corporate CSR Co-Funding and Pilot Partnerships for problem inquiry. Return to Problem Intelligence at any time.
+                </p>
+              </div>
+            </div>
+
+            <Link href={`/challenges/${activeProblemId}`}>
+              <Button
+                size="sm"
+                variant="primary"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-8 shrink-0 flex items-center gap-1.5"
+                data-testid="return-to-problem-btn"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Problem Intelligence</span>
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Notification Banner */}
         {notificationBanner && (
           <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-lg flex items-center justify-between">

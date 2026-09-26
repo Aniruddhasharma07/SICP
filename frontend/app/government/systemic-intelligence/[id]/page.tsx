@@ -68,6 +68,16 @@ export default function RootCauseDossierPage() {
   const [loading, setLoading] = useState(false);
   const [demoStep, setDemoStep] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
+  const [activeProblemId, setActiveProblemId] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const pId = searchParams.get('problemId') || '';
+    if (pId) {
+      setActiveProblemId(pId);
+    }
+  }, []);
 
   // Validation Form State
   const [validationHypothesisId, setValidationHypothesisId] = useState<string>(
@@ -392,7 +402,7 @@ export default function RootCauseDossierPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !incident) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
         <div className="text-center space-y-3">
@@ -460,6 +470,45 @@ export default function RootCauseDossierPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-900 selection:text-white pb-28">
+      {/* Active Problem Context Banner */}
+      {activeProblemId && (
+        <div className="bg-slate-950 px-4 pt-4 sm:px-6 lg:px-8">
+          <div
+            data-testid="problem-context-banner"
+            className="max-w-7xl mx-auto p-4 rounded-xl bg-gradient-to-r from-purple-950 via-slate-900 to-slate-950 border border-purple-500/50 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-sicp-fade-in text-slate-100"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <Layers className="w-5 h-5 text-purple-400" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-purple-900/80 text-purple-200 border border-purple-700 font-mono text-[10px]">
+                    Active Problem Context
+                  </Badge>
+                  <span className="font-mono text-slate-300 font-semibold">#{activeProblemId.slice(0, 8)}...</span>
+                </div>
+                <p className="text-slate-300 text-[11.5px]">
+                  Viewing dedicated cross-problem Systemic Incident Dossier. Return to Problem Intelligence at any time.
+                </p>
+              </div>
+            </div>
+
+            <Link href={`/challenges/${activeProblemId}`}>
+              <Button
+                size="sm"
+                variant="primary"
+                className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs h-8 shrink-0 flex items-center gap-1.5"
+                data-testid="return-to-problem-btn"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Problem Intelligence</span>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Top Breadcrumb & Controls */}
       <div className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">

@@ -31,6 +31,7 @@ interface MemoryLayerProps {
   loadingHistorical: boolean;
   activeRecurrenceSignal?: any | null;
   onCompareCase: (memoryId: string) => void;
+  onInspectMemory?: (memory: any) => void;
   onExploreCollaboration?: () => void;
 }
 
@@ -41,6 +42,7 @@ export function MemoryLayer({
   loadingHistorical,
   activeRecurrenceSignal,
   onCompareCase,
+  onInspectMemory,
   onExploreCollaboration,
 }: MemoryLayerProps) {
   const [showExpertMemory, setShowExpertMemory] = useState(false);
@@ -113,11 +115,12 @@ export function MemoryLayer({
             </p>
           </div>
 
-          <Link href="/solutions">
+          <Link href={`/solutions?problemId=${challenge.id}`}>
             <Button
               variant="outline"
               size="sm"
               className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-8"
+              title="Explore all cross-institutional solution precedents with active problem context"
             >
               <span>Explore Memory Explorer</span>
               <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
@@ -204,6 +207,7 @@ export function MemoryLayer({
                     district: challenge.district || undefined,
                   }}
                   onCompare={onCompareCase}
+                  onInspect={onInspectMemory}
                 />
               ))}
             </div>

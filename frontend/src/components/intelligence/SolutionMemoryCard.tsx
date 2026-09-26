@@ -41,6 +41,7 @@ export interface SolutionMemoryCardProps {
   };
   onCompare?: (memoryId: string) => void;
   onReviewEvidence?: (memoryId: string) => void;
+  onInspect?: (memory: any) => void;
   showCompareAction?: boolean;
   compact?: boolean;
   className?: string;
@@ -51,6 +52,7 @@ export function SolutionMemoryCard({
   currentProblemContext,
   onCompare,
   onReviewEvidence,
+  onInspect,
   showCompareAction = true,
   compact = false,
   className = '',
@@ -338,17 +340,31 @@ export function SolutionMemoryCard({
               </Button>
             )}
 
-            <Link href={`/solutions/${memory.memoryId || memory.id}`}>
+            {onInspect ? (
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
+                onClick={() => onInspect(memory)}
                 className="h-7 text-xs flex items-center gap-1"
+                data-testid={`inspect-memory-btn-${memory.memoryId || memory.id}`}
               >
                 <span>Review Applicability</span>
                 <ArrowRight className="w-3 h-3" />
               </Button>
-            </Link>
+            ) : (
+              <Link href={`/solutions/${memory.memoryId || memory.id}`}>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  className="h-7 text-xs flex items-center gap-1"
+                >
+                  <span>Review Applicability</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

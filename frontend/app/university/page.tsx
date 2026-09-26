@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   Clock,
   ArrowRight,
+  ArrowLeft,
   Plus,
   RefreshCw,
   Search,
@@ -154,6 +155,8 @@ export default function UniversityPortalPage() {
     loadRegisteredUnis();
   }, [loadRegisteredUnis]);
 
+  const [activeProblemId, setActiveProblemId] = useState<string>('');
+
   // Sync active tab with URL search params and hash
   useEffect(() => {
     const handleUrlSync = () => {
@@ -161,6 +164,10 @@ export default function UniversityPortalPage() {
       const params = new URLSearchParams(window.location.search);
       const tabParam = (params.get('tab') || '').toLowerCase();
       const hash = window.location.hash.toLowerCase();
+      const pId = params.get('problemId') || '';
+      if (pId) {
+        setActiveProblemId(pId);
+      }
 
       if (tabParam === 'teams' || hash === '#teams') {
         setActiveTab('teams');
@@ -1090,6 +1097,43 @@ export default function UniversityPortalPage() {
   return (
     <AppLayout portal="university">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Active Problem Context Banner */}
+        {activeProblemId && (
+          <div
+            data-testid="problem-context-banner"
+            className="p-4 rounded-xl bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 border border-blue-500/50 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-sicp-fade-in"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <GraduationCap className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-blue-900/80 text-blue-200 border-blue-700 font-mono text-[10px]">
+                    Active Problem Context
+                  </Badge>
+                  <span className="font-mono text-slate-300 font-semibold">#{activeProblemId.slice(0, 8)}...</span>
+                </div>
+                <p className="text-slate-300 text-[11.5px]">
+                  Viewing University R&amp;D Matching for problem inquiry. Return to Problem Intelligence at any time.
+                </p>
+              </div>
+            </div>
+
+            <Link href={`/challenges/${activeProblemId}`}>
+              <Button
+                size="sm"
+                variant="primary"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-8 shrink-0 flex items-center gap-1.5"
+                data-testid="return-to-problem-btn"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Problem Intelligence</span>
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-blue-700/30">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
