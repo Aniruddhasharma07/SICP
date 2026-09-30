@@ -8,6 +8,7 @@ import { prisma } from '../../database/prisma';
 import { NotFoundError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { DomainIntelligenceProviderFactory } from './providers/domain-intelligence.factory';
+import { DomainIntelligenceResolver } from './providers/domain-intelligence-resolver';
 import { SystemicIncidentService } from './systemic-incident.service';
 import { SolutionRetrievalEngine } from './solution-retrieval.engine';
 import { AuditService } from '../../modules/audit/audit.service';
@@ -42,7 +43,10 @@ export class ChallengeIntelligenceService {
     }
 
     // 2. Resolve Domain-Aware Intelligence Provider
-    const domainProvider = DomainIntelligenceProviderFactory.getProvider(
+    const canonicalDomain = DomainIntelligenceResolver.resolveDomain(
+      `${challenge.category} ${challenge.title}`
+    );
+    const domainProvider = DomainIntelligenceResolver.resolveProvider(
       `${challenge.category} ${challenge.title}`
     );
     const domainAnalysis = await domainProvider.analyze(challenge);
@@ -100,18 +104,20 @@ export class ChallengeIntelligenceService {
       });
 
       // Strict domain protection: ensure memories align with the challenge domain
-      const providerDomain = domainAnalysis.domain;
       precedents = retrieved.filter((p) => {
         if (!p.challengeCategory) return false;
         const normCat = p.challengeCategory.toUpperCase();
-        if (providerDomain === 'ROADS_TRANSPORT') {
+        if (canonicalDomain === 'ROAD_TRANSPORT') {
           return normCat.includes('ROAD') || normCat.includes('TRANSPORT');
         }
-        if (providerDomain === 'WATER_SUPPLY') {
-          return normCat.includes('WATER') || normCat.includes('SANITATION') || normCat.includes('DRAINAGE');
+        if (canonicalDomain === 'WATER_SUPPLY') {
+          return normCat.includes('WATER') || normCat.includes('JAL') || normCat.includes('HYDRO');
         }
-        if (providerDomain === 'PUBLIC_LIGHTING_ENERGY') {
-          return normCat.includes('LIGHT') || normCat.includes('ELECTRIC') || normCat.includes('ENERGY');
+        if (canonicalDomain === 'ELECTRICITY') {
+          return normCat.includes('LIGHT') || normCat.includes('ELECTRIC') || normCat.includes('ENERGY') || normCat.includes('POWER');
+        }
+        if (canonicalDomain === 'SANITATION') {
+          return normCat.includes('DRAIN') || normCat.includes('SEWER') || normCat.includes('SANITATION');
         }
         return true;
       });
@@ -202,6 +208,7 @@ export class ChallengeIntelligenceService {
     }
 
     return {
+      domain: canonicalDomain,
       challenge: {
         id: challenge.id,
         title: challenge.title,
@@ -263,6 +270,7 @@ export class ChallengeIntelligenceService {
         missing: missingEvidence,
       },
       hypotheses,
+      possibleCauses: hypotheses,
       topology: domainAnalysis.topology,
       memory: {
         precedentCount: precedents.length,
@@ -328,6 +336,7 @@ export class ChallengeIntelligenceService {
     }));
 
     return {
+      domain: 'WATER_SUPPLY',
       challenge: {
         id: demo.id,
         title: demo.title,
@@ -405,6 +414,16 @@ export class ChallengeIntelligenceService {
         description: h.description,
         failureMode: h.failureMode,
         score: h.diagnosticSupportScore,
+        status: h.status,
+        provenance: 'CONTROLLED_AMCH_EVALUATION',
+        falsificationCriteria: h.falsificationCriteria,
+      })),
+      possibleCauses: demo.hypotheses.map((h) => ({
+        id: h.id,
+        title: h.title,
+        description: h.description,
+        failureMode: h.failureMode,
+        category: h.failureMode,
         status: h.status,
         provenance: 'CONTROLLED_AMCH_EVALUATION',
         falsificationCriteria: h.falsificationCriteria,

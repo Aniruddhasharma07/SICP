@@ -7,7 +7,7 @@ import {
 import { ElectricityTopologyProvider } from '../topology/electricity-topology.provider';
 
 export class ElectricityIntelligenceProvider implements IDomainIntelligenceProvider {
-  public readonly domain = 'PUBLIC_LIGHTING_ENERGY';
+  public readonly domain = 'ELECTRICITY';
   private topologyProvider = new ElectricityTopologyProvider();
 
   public async analyze(challenge: any): Promise<DomainIntelligenceAnalysis> {

@@ -59,6 +59,11 @@ describe('Unified Progressive Intelligence & Decoupled Topology', () => {
     it('delivers 5-level structured intelligence for controlled demo scenario', async () => {
       const intel = await ChallengeIntelligenceService.getChallengeIntelligence('demo');
 
+      // Canonical Domain & Structure
+      expect(intel.domain).toBe('WATER_SUPPLY');
+      expect(intel.possibleCauses).toBeDefined();
+      expect(intel.possibleCauses?.length).toBeGreaterThan(0);
+
       // Level 1: Human Statement
       expect(intel.summary.statement).toContain('Possible shared infrastructure relationship detected');
       expect(intel.summary.isSystemic).toBe(true);

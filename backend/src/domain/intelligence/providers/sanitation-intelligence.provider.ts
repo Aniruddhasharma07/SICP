@@ -4,11 +4,11 @@ import {
   PossibleCauseDto,
   DomainEvidenceRequirement,
 } from './domain-intelligence.interface';
-import { RoadTopologyProvider } from '../topology/road-topology.provider';
+import { DrainageTopologyProvider } from '../topology/drainage-topology.provider';
 
-export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
-  public readonly domain = 'ROAD_TRANSPORT';
-  private topologyProvider = new RoadTopologyProvider();
+export class SanitationIntelligenceProvider implements IDomainIntelligenceProvider {
+  public readonly domain = 'SANITATION';
+  private topologyProvider = new DrainageTopologyProvider();
 
   public async analyze(challenge: any): Promise<DomainIntelligenceAnalysis> {
     const possibleCauses = await this.getPossibleCauses(challenge);
@@ -16,9 +16,9 @@ export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
     const techData = await this.getTechnicalData(challenge);
 
     return {
-      category: 'Road & Transport',
+      category: 'Drainage & Sanitation',
       domain: this.domain,
-      civicSummary: 'A citizen-reported road infrastructure issue.',
+      civicSummary: 'A citizen-reported drainage and sanitation issue.',
       severity: challenge.severity || 'MODERATE',
       possibleCauses,
       evidence,
@@ -34,34 +34,34 @@ export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
   public async getPossibleCauses(challenge: any): Promise<PossibleCauseDto[]> {
     return [
       {
-        id: `cause-road-1-${challenge.id}`,
-        title: 'Surface asphalt wear and weathering from traffic load',
-        description: 'Repeated axle weight stress and bituminous binder oxidation leading to surface cracking or potholes.',
-        category: 'Road & Transport',
+        id: `cause-san-1-${challenge.id}`,
+        title: 'Culvert or roadside drain siltation and solid waste accumulation',
+        description: 'Silt and domestic solid waste obstructing gravitational runoff along roadside conduit.',
+        category: 'Drainage & Sanitation',
         status: 'Requires field verification',
         score: 72,
-        falsificationCriteria: 'Core drill sample demonstrates intact sub-base and nominal binder thickness.',
-        provenance: 'PAVEMENT_ENGINEERING_TAXONOMY',
+        falsificationCriteria: 'Cross-sectional flow inspection confirms drain conduit capacity at >90% unobstructed.',
+        provenance: 'MUNICIPAL_DRAINAGE_AUDIT',
       },
       {
-        id: `cause-road-2-${challenge.id}`,
-        title: 'Sub-base waterlogging and inadequate stormwater runoff',
-        description: 'Poor roadside drainage gradient causing moisture entrapment and subgrade bearing capacity loss.',
-        category: 'Road & Transport',
+        id: `cause-san-2-${challenge.id}`,
+        title: 'Manhole blockage or sewer line surcharge backflow',
+        description: 'Underground sewerage line surcharge pushing wastewater back into street catchpits.',
+        category: 'Drainage & Sanitation',
         status: 'Requires field verification',
-        score: 65,
-        falsificationCriteria: 'Continuous rainfall drainage velocity test indicates zero standing water in road bed.',
-        provenance: 'DRAINAGE_CORRELATION',
+        score: 60,
+        falsificationCriteria: 'Downstream trunk sewer inspection indicates normal gravity flow velocity.',
+        provenance: 'SANITATION_SYSTEM_TAXONOMY',
       },
       {
-        id: `cause-road-3-${challenge.id}`,
-        title: 'Subsurface utility trench settlement or construction cut subsidence',
-        description: 'Uncompacted utility backfill settling under cyclic vehicle passage along corridor.',
-        category: 'Road & Transport',
+        id: `cause-san-3-${challenge.id}`,
+        title: 'Structural collapse of roadside drain masonry or cover slab',
+        description: 'Broken culvert cover slab or wall fracture impeding storm water exit.',
+        category: 'Drainage & Sanitation',
         status: 'Requires field verification',
-        score: 54,
-        falsificationCriteria: 'Municipal utility right-of-way registry confirms no utility cuts in this segment within 24 months.',
-        provenance: 'MUNICIPAL_UTILITY_AUDIT',
+        score: 48,
+        falsificationCriteria: 'Civil structure inspection verifies intact masonry along municipal segment.',
+        provenance: 'CIVIC_INFRASTRUCTURE_AUDIT',
       },
     ];
   }
@@ -98,24 +98,17 @@ export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
     } else {
       missing.push({
         id: `ev-miss-photo-${challenge.id}`,
-        title: 'Geo-tagged Site Photograph',
-        description: 'Visual confirmation of surface condition, pothole depth, and surrounding drainage.',
-        requiredFor: 'Prioritization and field crew material estimation',
+        title: 'Drain / Overflow Site Photograph',
+        description: 'Visual evidence of stagnant water, silt level, or collapsed cover slab.',
+        requiredFor: 'De-silting machine dispatch triage',
       });
     }
 
     missing.push({
-      id: `ev-miss-inspect-${challenge.id}`,
-      title: 'Pavement Condition Index (PCI) Field Inspection',
-      description: 'Physical inspection by municipal road maintenance engineer.',
-      requiredFor: 'Statutory work order generation',
-    });
-
-    missing.push({
-      id: `ev-miss-gis-${challenge.id}`,
-      title: 'Road Asset Registry Cross-Reference',
-      description: 'Verification of municipal road ownership (PWD vs NHAI vs Municipal Corporation).',
-      requiredFor: 'Jurisdictional department dispatch',
+      id: `ev-miss-inspection-${challenge.id}`,
+      title: 'Municipal Sanitation Field Inspection',
+      description: 'Physical inspection and verification by ULB sanitation inspector.',
+      requiredFor: 'De-silting or sewer jetting dispatch',
     });
 
     return { available, missing };
@@ -129,7 +122,7 @@ export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
   }> {
     const topology = await this.topologyProvider.getTopology({
       challengeId: challenge.id,
-      category: 'ROADS_TRANSPORT',
+      category: 'DRAINAGE',
       district: challenge.district,
       state: challenge.state,
       isDemo: false,
@@ -137,9 +130,9 @@ export class RoadIntelligenceProvider implements IDomainIntelligenceProvider {
 
     return {
       topology,
-      lcaExplanation: 'Shared upstream corridor dependency analysis across connected municipal transit segments.',
-      amchExplanation: 'Comparison of competing structural versus environmental wear explanations.',
-      sentinelExplanation: 'Additional field observation used to update pavement degradation hypotheses.',
+      lcaExplanation: 'Catchment basin and gravitational outfall gradient analysis.',
+      amchExplanation: 'Comparison of localized blockage versus trunk sewer surcharge hypotheses.',
+      sentinelExplanation: 'Downstream outfall inspection used to update drainage capacity hypotheses.',
     };
   }
 }

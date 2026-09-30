@@ -69,45 +69,54 @@ export default function ChallengeDetailPage({
 
   return (
     <AppLayout>
-      <ProblemWorkspace
-        challenge={pi.challenge}
-        currentUser={user}
-        hasVoted={pi.hasVoted}
-        voteCount={pi.voteCount}
-        isVoting={pi.isVoting}
-        onToggleVote={pi.handleToggleVote}
-        actionReason={pi.actionReason}
-        onChangeActionReason={pi.setActionReason}
-        onExecuteTransition={pi.handleExecuteTransition}
-        isSubmittingAction={pi.isSubmittingAction}
-        feedbacks={pi.feedbacks}
-        feedbackForm={pi.feedbackForm}
-        onChangeFeedbackForm={pi.setFeedbackForm}
-        onSubmitCitizenFeedback={pi.handleSubmitCitizenFeedback}
-        feedbackSubmitting={pi.feedbackSubmitting}
-        feedbackSuccess={pi.feedbackSuccess}
-        historicalSolutions={pi.historicalSolutions}
-        historicalEvaluation={pi.historicalEvaluation}
-        loadingHistorical={pi.loadingHistorical}
-        activeRecurrenceSignal={pi.activeRecurrenceSignal}
-        isTriggeringAi={pi.isTriggeringAi}
-        onTriggerAi={pi.handleTriggerAi}
-        aiNotice={pi.aiNotice}
-        onExecuteMerge={pi.handleExecuteMerge}
-        // Enriched Systemic, AMCH, Topology & Collaboration
-        linkedGraph={pi.linkedGraph}
-        hypotheses={pi.hypotheses}
-        selectedHypothesisId={pi.selectedHypothesisId}
-        onSelectHypothesis={(hyp) => pi.setSelectedHypothesisId(hyp.id)}
-        sentinelProbes={pi.sentinelProbes}
-        onSendSentinelResponse={pi.handleSendSentinelResponse}
-        isLoadingSentinel={pi.isLoadingSentinel}
-        branchDifferentialDeduction={pi.branchDifferentialDeduction}
-        universityMatches={pi.universityMatches}
-        industryMatches={pi.industryMatches}
-        loadingCollaboration={pi.loadingCollaboration}
-        intelligence={intelligence}
-      />
+      <React.Suspense
+        fallback={
+          <div className="min-h-[80vh] bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+            <div className="h-10 w-64 bg-slate-200 dark:bg-slate-800/60 rounded-xl animate-pulse" />
+            <div className="h-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
+          </div>
+        }
+      >
+        <ProblemWorkspace
+          challenge={pi.challenge}
+          currentUser={user}
+          hasVoted={pi.hasVoted}
+          voteCount={pi.voteCount}
+          isVoting={pi.isVoting}
+          onToggleVote={pi.handleToggleVote}
+          actionReason={pi.actionReason}
+          onChangeActionReason={pi.setActionReason}
+          onExecuteTransition={pi.handleExecuteTransition}
+          isSubmittingAction={pi.isSubmittingAction}
+          feedbacks={pi.feedbacks}
+          feedbackForm={pi.feedbackForm}
+          onChangeFeedbackForm={pi.setFeedbackForm}
+          onSubmitCitizenFeedback={pi.handleSubmitCitizenFeedback}
+          feedbackSubmitting={pi.feedbackSubmitting}
+          feedbackSuccess={pi.feedbackSuccess}
+          historicalSolutions={pi.historicalSolutions}
+          historicalEvaluation={pi.historicalEvaluation}
+          loadingHistorical={pi.loadingHistorical}
+          activeRecurrenceSignal={pi.activeRecurrenceSignal}
+          isTriggeringAi={pi.isTriggeringAi}
+          onTriggerAi={pi.handleTriggerAi}
+          aiNotice={pi.aiNotice}
+          onExecuteMerge={pi.handleExecuteMerge}
+          // Enriched Systemic, AMCH, Topology & Collaboration
+          linkedGraph={pi.linkedGraph}
+          hypotheses={pi.hypotheses}
+          selectedHypothesisId={pi.selectedHypothesisId}
+          onSelectHypothesis={(hyp) => pi.setSelectedHypothesisId(hyp.id)}
+          sentinelProbes={pi.sentinelProbes}
+          onSendSentinelResponse={pi.handleSendSentinelResponse}
+          isLoadingSentinel={pi.isLoadingSentinel}
+          branchDifferentialDeduction={pi.branchDifferentialDeduction}
+          universityMatches={pi.universityMatches}
+          industryMatches={pi.industryMatches}
+          loadingCollaboration={pi.loadingCollaboration}
+          intelligence={intelligence}
+        />
+      </React.Suspense>
     </AppLayout>
   );
 }

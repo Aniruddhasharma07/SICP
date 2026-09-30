@@ -7,7 +7,7 @@ import {
 import { GenericTopologyProvider } from '../topology/generic-topology.provider';
 
 export class GenericIntelligenceProvider implements IDomainIntelligenceProvider {
-  public readonly domain = 'UNKNOWN';
+  public readonly domain = 'GENERIC';
   private topologyProvider = new GenericTopologyProvider();
 
   public async analyze(challenge: any): Promise<DomainIntelligenceAnalysis> {

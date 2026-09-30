@@ -46,7 +46,7 @@ describe('Domain-Aware Intelligence Routing & Protection', () => {
 
     const analysis = await roadProvider.analyze(challenge);
     expect(analysis.category).toBe('Road & Transport');
-    expect(analysis.domain).toBe('ROADS_TRANSPORT');
+    expect(analysis.domain).toBe('ROAD_TRANSPORT');
 
     // Verify possible causes are road-grounded, not water
     const allTitles = analysis.possibleCauses.map((c) => c.title.toLowerCase()).join(' ');
@@ -104,4 +104,42 @@ describe('Domain-Aware Intelligence Routing & Protection', () => {
       expect(cause.status).toBe('Requires field verification');
     }
   });
+
+  describe('Canonical Domain Resolution & Normalization', () => {
+    const { DomainIntelligenceResolver } = require('../src/domain/intelligence/providers/domain-intelligence-resolver');
+
+    it('resolves legacy and informal road strings to ROAD_TRANSPORT', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Roads & Transport')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('ROADS')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('NH Highway Pothole')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('Damaged asphalt pavement on Ring Road')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('Street traffic congestion and crater')).toBe('ROAD_TRANSPORT');
+    });
+
+    it('resolves water and pipeline strings to WATER_SUPPLY', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Water')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('Jal pipeline')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('Drinking water contamination odor')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('Hydraulic pressure drop')).toBe('WATER_SUPPLY');
+    });
+
+    it('resolves electrical and power strings to ELECTRICITY', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Electricity')).toBe('ELECTRICITY');
+      expect(DomainIntelligenceResolver.resolveDomain('Transformer spark and blackout')).toBe('ELECTRICITY');
+      expect(DomainIntelligenceResolver.resolveDomain('DISCOM power grid failure')).toBe('ELECTRICITY');
+    });
+
+    it('resolves drainage and sewer strings to SANITATION', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Sanitation')).toBe('SANITATION');
+      expect(DomainIntelligenceResolver.resolveDomain('Open sewer drainage overflow')).toBe('SANITATION');
+      expect(DomainIntelligenceResolver.resolveDomain('Blocked culvert sewage backflow')).toBe('SANITATION');
+    });
+
+    it('falls back to GENERIC for unmapped strings', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Civic issue')).toBe('GENERIC');
+      expect(DomainIntelligenceResolver.resolveDomain(null)).toBe('GENERIC');
+      expect(DomainIntelligenceResolver.resolveDomain('')).toBe('GENERIC');
+    });
+  });
 });
+

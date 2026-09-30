@@ -2,6 +2,7 @@ import { EvidenceEpistemicClass } from '../enums/status.enum';
 import { EvidenceItemDto } from './domain.types';
 
 export type TopologyStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'CONTROLLED_DEMO';
+export type CanonicalDomain = 'ROAD_TRANSPORT' | 'WATER_SUPPLY' | 'ELECTRICITY' | 'SANITATION' | 'GENERIC';
 
 export interface TopologyNodeDto {
   id: string;
@@ -47,6 +48,7 @@ export interface MissingEvidenceDto {
 }
 
 export interface ChallengeIntelligenceDto {
+  domain: CanonicalDomain | string;
   challenge: {
     id: string;
     title: string;
@@ -115,6 +117,16 @@ export interface ChallengeIntelligenceDto {
     score: number;
     status: string;
     provenance: string;
+    falsificationCriteria?: string;
+  }>;
+  possibleCauses?: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    failureMode?: string;
+    category?: string;
+    status: string;
+    provenance?: string;
     falsificationCriteria?: string;
   }>;
   topology: TopologyDto;
