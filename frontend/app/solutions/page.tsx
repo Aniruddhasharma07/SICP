@@ -101,15 +101,24 @@ export default function SolutionsRepositoryPage() {
     if (reusabilityFilter) queryParams.set('reusabilityClass', reusabilityFilter);
     if (outcomeFilter) queryParams.set('outcomeStatus', outcomeFilter);
 
-    const res = await apiClient.request<{ items: SolutionMemoryDto[]; total: number }>(
-      `/api/v1/solutions?${queryParams.toString()}`
-    );
+    try {
+      const res = await apiClient.request<{ items: SolutionMemoryDto[]; total: number }>(
+        `/api/v1/solutions?${queryParams.toString()}`
+      );
 
-    if (res.success && res.data) {
-      setSolutions(res.data.items || []);
-      setTotal(res.data.total || 0);
+      if (res.success && res.data) {
+        setSolutions(res.data.items || []);
+        setTotal(res.data.total || 0);
+      } else {
+        setSolutions([]);
+        setTotal(0);
+      }
+    } catch {
+      setSolutions([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchAnalytics = async () => {
@@ -505,6 +514,11 @@ export default function SolutionsRepositoryPage() {
                             <Badge variant="outline" className="text-[10px]">
                               {sol.evidenceLevel}
                             </Badge>
+                            {(sol.id.startsWith('mem-') || sol.id.includes('demo') || (sol as any).isControlledDemo) && (
+                              <Badge className="bg-amber-950 text-amber-300 border-amber-800 text-[10px] font-mono">
+                                CONTROLLED SIH DEMO
+                              </Badge>
+                            )}
                           </div>
                           <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                             <Link href={`/solutions/${sol.id}`}>{sol.title}</Link>

@@ -29,9 +29,11 @@ import {
   HypothesisStatus,
   SentinelProbeRequestDto,
   SentinelChoice,
+  ChallengeIntelligenceDto,
 } from '@sicp/shared';
 import { ProblemHeader } from './ProblemHeader';
 import { FourCoreQuestionsBanner } from './FourCoreQuestionsBanner';
+import { ProgressiveIntelligenceDossier } from '../intelligence/ProgressiveIntelligenceDossier';
 import { SignalLayer } from './SignalLayer';
 import { RelationshipLayer } from './RelationshipLayer';
 import { InvestigationLayer } from './InvestigationLayer';
@@ -99,6 +101,7 @@ export interface ProblemWorkspaceProps {
   universityMatches?: UniversityMatchDto[];
   industryMatches?: IndustryMatchDto[];
   loadingCollaboration?: boolean;
+  intelligence?: ChallengeIntelligenceDto | null;
 }
 
 export function ProblemWorkspace({
@@ -137,6 +140,7 @@ export function ProblemWorkspace({
   universityMatches = [],
   industryMatches = [],
   loadingCollaboration = false,
+  intelligence,
 }: ProblemWorkspaceProps) {
   const router = useRouter();
 
@@ -412,6 +416,15 @@ export function ProblemWorkspace({
           isGovOrAdmin={isGovOrAdmin}
           activeStageLabel={challenge.status.replace(/_/g, ' ')}
         />
+
+        {/* 5-Level Progressive Intelligence Dossier */}
+        {intelligence && (
+          <ProgressiveIntelligenceDossier
+            intelligence={intelligence}
+            currentUser={currentUser}
+            onRefresh={() => router.refresh()}
+          />
+        )}
 
         {/* 4 Core Questions Living Header Banner */}
         <FourCoreQuestionsBanner

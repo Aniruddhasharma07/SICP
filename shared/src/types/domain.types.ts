@@ -1571,6 +1571,11 @@ export interface EvidenceItemDto {
   observedAt?: string | null;
   verifiedBy?: string | null;
   isStale?: boolean;
+  confidence?: number;
+  timestamp?: string;
+  fileUrl?: string;
+  fileKey?: string;
+  originalName?: string;
 }
 
 export interface RootCauseHypothesisDto {

@@ -38,6 +38,16 @@ export class SystemicIncidentService {
   } | null = null;
 
   /**
+   * Returns current controlled demo scenario or initializes it if not present
+   */
+  public static getControlledDemoScenario(): SystemicIncidentDto {
+    if (!this.demoState) {
+      return this.initControlledDemoScenario();
+    }
+    return this.demoState.incident;
+  }
+
+  /**
    * Initializes or resets the official controlled demonstration scenario
    */
   public static initControlledDemoScenario(): SystemicIncidentDto {
@@ -583,13 +593,19 @@ export class SystemicIncidentService {
    * Get full 24-point Root Cause Dossier by Incident ID
    */
   public static async getIncidentById(id: string): Promise<SystemicIncidentDto> {
-    if (!this.demoState || this.demoState.incident.id === id) {
+    const isDemoId =
+      id === 'demo' ||
+      id === 'SYS-2026-BHP-001' ||
+      id === 'sys-incident-bhopal-001' ||
+      (this.demoState && this.demoState.incident.id === id);
+
+    if (isDemoId) {
       if (!this.demoState) this.initControlledDemoScenario();
       return this.demoState!.incident;
     }
 
     try {
-      const dbi = await prisma.systemicIncident.findUnique({
+      let dbi = await prisma.systemicIncident.findUnique({
         where: { id },
         include: {
           signals: true,
@@ -602,6 +618,22 @@ export class SystemicIncidentService {
           },
         },
       });
+
+      if (!dbi) {
+        dbi = await prisma.systemicIncident.findFirst({
+          where: { canonicalChallengeId: id },
+          include: {
+            signals: true,
+            hypotheses: true,
+            sentinelProbes: {
+              include: { responses: true },
+            },
+            nodeImpacts: {
+              include: { node: true },
+            },
+          },
+        });
+      }
 
       if (!dbi) {
         throw new NotFoundError('Systemic Incident', id);

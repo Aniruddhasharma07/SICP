@@ -14,6 +14,7 @@ import { ImpactService } from '../../domain/impact/impact.service';
 import { ImpactModelRegistry } from '../../domain/impact/impact-model.registry';
 import { prisma } from '../../database/prisma';
 import { NotFoundError } from '../../utils/errors';
+import { ChallengeIntelligenceService } from '../../domain/intelligence/challenge-intelligence.service';
 
 export class ChallengeController {
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -232,6 +233,59 @@ export class ChallengeController {
     try {
       const requestId = (res.locals.requestId as string) || 'req-evidence-ai';
       const result = await ChallengeService.analyzeEvidence(req.params.id, req.body, { requestId });
+      sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getIntelligence(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await ChallengeIntelligenceService.getChallengeIntelligence(req.params.id);
+      sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getRelationships(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const intel = await ChallengeIntelligenceService.getChallengeIntelligence(req.params.id);
+      sendSuccess(res, intel.relationships, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getEvidence(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const intel = await ChallengeIntelligenceService.getChallengeIntelligence(req.params.id);
+      sendSuccess(res, intel.evidence, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getMemory(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const intel = await ChallengeIntelligenceService.getChallengeIntelligence(req.params.id);
+      sendSuccess(res, intel.memory, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async validateInvestigation(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const officerId = req.user?.id || 'officer-gov-01';
+      const officerName = req.user?.email || 'Municipal Officer';
+      const notes = req.body?.notes;
+      const result = await ChallengeIntelligenceService.validateInvestigation(
+        req.params.id,
+        officerId,
+        officerName,
+        notes
+      );
       sendSuccess(res, result, 200);
     } catch (err) {
       next(err);

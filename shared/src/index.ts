@@ -8,3 +8,4 @@ export * from './types/domain.types';
 export * from './enums/intent.enum';
 export * from './types/intent.types';
 export * from './types/challenge.types';
+export * from './types/intelligence.types';

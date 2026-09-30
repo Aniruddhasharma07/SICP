@@ -1,12 +1,14 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '../../../src/components/layout/AppLayout';
 import { Button } from '../../../src/components/ui/Button';
 import { useAuth } from '../../../src/lib/auth-context';
 import { ProblemWorkspace } from '../../../src/components/problem/ProblemWorkspace';
 import { useProblemIntelligence } from '../../../src/hooks/useProblemIntelligence';
+import { ChallengeIntelligenceDto } from '@sicp/shared';
+import { ChallengeIntelligenceClient } from '../../../src/services/challengeIntelligenceService';
 
 export default function ChallengeDetailPage({
   params,
@@ -18,6 +20,13 @@ export default function ChallengeDetailPage({
   const { user } = useAuth();
 
   const pi = useProblemIntelligence(resolvedParams.id);
+  const [intelligence, setIntelligence] = useState<ChallengeIntelligenceDto | null>(null);
+
+  useEffect(() => {
+    ChallengeIntelligenceClient.getIntelligence(resolvedParams.id).then((intel) => {
+      if (intel) setIntelligence(intel);
+    });
+  }, [resolvedParams.id]);
 
   if (pi.loading) {
     return (
@@ -89,7 +98,7 @@ export default function ChallengeDetailPage({
         linkedGraph={pi.linkedGraph}
         hypotheses={pi.hypotheses}
         selectedHypothesisId={pi.selectedHypothesisId}
-        onSelectHypothesis={hyp => pi.setSelectedHypothesisId(hyp.id)}
+        onSelectHypothesis={(hyp) => pi.setSelectedHypothesisId(hyp.id)}
         sentinelProbes={pi.sentinelProbes}
         onSendSentinelResponse={pi.handleSendSentinelResponse}
         isLoadingSentinel={pi.isLoadingSentinel}
@@ -97,6 +106,7 @@ export default function ChallengeDetailPage({
         universityMatches={pi.universityMatches}
         industryMatches={pi.industryMatches}
         loadingCollaboration={pi.loadingCollaboration}
+        intelligence={intelligence}
       />
     </AppLayout>
   );

@@ -34,4 +34,17 @@ challengeRouter.patch('/:id/impact/verify', authMiddleware, requirePermission('c
 challengeRouter.get('/:id/adaptive-questions', ChallengeController.getAdaptiveQuestions);
 challengeRouter.post('/:id/adaptive-answers', authMiddleware, idempotencyMiddleware, ChallengeController.answerAdaptiveQuestions);
 
+// Unified 5-Level Progressive Disclosure Intelligence Endpoints
+challengeRouter.get('/:id/intelligence', optionalAuthMiddleware, ChallengeController.getIntelligence);
+challengeRouter.get('/:id/relationships', optionalAuthMiddleware, ChallengeController.getRelationships);
+challengeRouter.get('/:id/evidence', optionalAuthMiddleware, ChallengeController.getEvidence);
+challengeRouter.get('/:id/memory', optionalAuthMiddleware, ChallengeController.getMemory);
+challengeRouter.post(
+  '/:id/validate',
+  authMiddleware,
+  requirePermission('challenge:review'),
+  idempotencyMiddleware,
+  ChallengeController.validateInvestigation
+);
+
 

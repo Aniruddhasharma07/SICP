@@ -937,37 +937,56 @@ export default function GovernmentCommandCenterPage() {
     }
   };
 
-  // Permission Guard
-  if (!authLoading && !hasPermission('challenge:review')) {
+  // Permission Guard for authenticated non-officer accounts
+  if (!authLoading && user && !hasPermission('challenge:review')) {
     return (
-      <div className="max-w-4xl mx-auto py-12 px-4">
-        <ZeroDeadEndNotice
-          variant="error"
-          currentStatus="ACCESS_RESTRICTED"
-          whatHappened="You attempted to access the Government Command Center without an authorized Government Officer or System Administrator account."
-          whyStatus="The Government Command Center requires administrative review privileges (challenge:review permission) to protect civic problem workflows and review integrity."
-          whoIsResponsible="Government Department Admin or System Administrator"
-          whatHappensIfIdle="Your account cannot evaluate or assign incoming societal problems."
-          whatCanDoNext={[
-            'Explore Systemic Intelligence Command Center (Public Live Demo)',
-            'Switch to an authorized officer account',
-            'Return to Civic Problem Explorer',
-            'Submit a community problem',
-          ]}
-          onActionClick={action => {
-            if (action.includes('Systemic')) router.push('/government/systemic-intelligence');
-            else if (action.includes('Switch')) router.push('/login');
-            else if (action.includes('Submit')) router.push('/challenges/new');
-            else router.push('/challenges');
-          }}
-        />
-      </div>
+      <AppLayout portal="government">
+        <div className="max-w-4xl mx-auto py-12 px-4">
+          <ZeroDeadEndNotice
+            variant="warning"
+            currentStatus="GOVERNMENT_OFFICER_ROLE_REQUIRED"
+            whatHappened="You are currently signed in as a citizen or institutional solver."
+            whyStatus="Statutory problem review and university dispatch require an authorized Government Officer or Administrator account."
+            whoIsResponsible="Government Department Admin or System Administrator"
+            whatHappensIfIdle="Your current role cannot authorize municipal interventions or route problems."
+            whatCanDoNext={[
+              'Switch to an authorized Government Officer account',
+              'Explore Systemic Intelligence Command Center (Public Live Demo)',
+              'Return to Problem Explorer',
+            ]}
+            onActionClick={action => {
+              if (action.includes('Switch')) router.push('/login');
+              else if (action.includes('Systemic')) router.push('/government/systemic-intelligence');
+              else router.push('/challenges');
+            }}
+          />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
     <AppLayout portal="government">
       <div className="space-y-6">
+      {/* Guest Mode Banner */}
+      {!user && (
+        <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-800 text-blue-200 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-md">
+          <div className="flex items-center gap-2.5">
+            <Badge className="bg-blue-600 text-white font-mono text-[10px] tracking-wide">
+              VIEWING AS GUEST
+            </Badge>
+            <span>
+              You are exploring the Government Command Center in public preview mode. Statutory approvals, university dispatch, and field team orders require verified municipal credentials.
+            </span>
+          </div>
+          <Link href="/login">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shrink-0">
+              Sign In with Officer Account
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Toast alert */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 max-w-md animate-in fade-in slide-in-from-top duration-300">
