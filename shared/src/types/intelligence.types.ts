@@ -39,6 +39,13 @@ export interface TopologyDto {
   explanation?: string;
 }
 
+export interface MissingEvidenceDto {
+  id: string;
+  title: string;
+  description: string;
+  requiredFor: string;
+}
+
 export interface ChallengeIntelligenceDto {
   challenge: {
     id: string;
@@ -56,14 +63,23 @@ export interface ChallengeIntelligenceDto {
   };
   summary: {
     statement: string; // Level 1 Human Simple Statement
+    category?: string;
     status: string;
     confidence: number;
     epistemicBadge: string;
     isSystemic: boolean;
   };
+  understanding?: {
+    severity: string;
+    location: string;
+    evidenceAvailable: boolean;
+    hasPhoto: boolean;
+    categoryDisplay: string;
+  };
   relationships: {
     relatedCount: number;
-    duplicateCount: number;
+    duplicateCount?: number;
+    systemicPattern?: boolean;
     systemicPatternDetected: boolean;
     explanation: string; // Level 2 "Why" explanation
     spatialDistanceKm?: number | null;
@@ -76,20 +92,30 @@ export interface ChallengeIntelligenceDto {
       type: 'DUPLICATE' | 'RELATED' | 'SYSTEMIC_PARENT' | 'SYSTEMIC_LEAF' | 'CORRIDOR_SHARED';
       similarityScore: number;
       district?: string | null;
+      distanceKm?: number | null;
+      timeRelation?: string;
+      similarityReason?: string;
     }>;
   };
   evidence: {
     supporting: EvidenceItemDto[];
     contradicting: EvidenceItemDto[];
     unknown: EvidenceItemDto[];
+    observed?: EvidenceItemDto[];
+    computed?: EvidenceItemDto[];
+    interpreted?: EvidenceItemDto[];
+    validated?: EvidenceItemDto[];
+    missing?: MissingEvidenceDto[];
   };
   hypotheses: Array<{
     id: string;
     title: string;
+    description?: string;
     failureMode: string;
     score: number;
     status: string;
     provenance: string;
+    falsificationCriteria?: string;
   }>;
   topology: TopologyDto;
   memory: {
@@ -102,6 +128,7 @@ export interface ChallengeIntelligenceDto {
       outcome: string;
       reusableComponents: string[];
     }>;
+    explanation?: string;
   };
   governance: {
     validationRequired: boolean;
@@ -112,8 +139,13 @@ export interface ChallengeIntelligenceDto {
   };
   nextAction: {
     label: string;
-    action: 'REVIEW_EVIDENCE' | 'VALIDATE_INVESTIGATION' | 'ROUTE_TO_UNIVERSITY' | 'DISPATCH_INSPECTION' | 'LINK_CORRIDOR';
+    action: string;
     description: string;
     primary: boolean;
+  };
+  technicalAnalysis?: {
+    lcaExplanation: string;
+    amchExplanation: string;
+    sentinelExplanation: string;
   };
 }

@@ -1,0 +1,107 @@
+import { DomainIntelligenceProviderFactory } from '../src/domain/intelligence/providers/domain-intelligence.factory';
+import { RoadIntelligenceProvider } from '../src/domain/intelligence/providers/road-intelligence.provider';
+import { WaterIntelligenceProvider } from '../src/domain/intelligence/providers/water-intelligence.provider';
+import { ElectricityIntelligenceProvider } from '../src/domain/intelligence/providers/electricity-intelligence.provider';
+import { GenericIntelligenceProvider } from '../src/domain/intelligence/providers/generic-intelligence.provider';
+
+describe('Domain-Aware Intelligence Routing & Protection', () => {
+  it('correctly maps road and transport issues to RoadIntelligenceProvider', () => {
+    const provider1 = DomainIntelligenceProviderFactory.getProvider('ROADS_TRANSPORT');
+    const provider2 = DomainIntelligenceProviderFactory.getProvider('Severe Pothole on Bypass');
+    expect(provider1).toBeInstanceOf(RoadIntelligenceProvider);
+    expect(provider2).toBeInstanceOf(RoadIntelligenceProvider);
+  });
+
+  it('correctly maps water and contamination issues to WaterIntelligenceProvider', () => {
+    const provider1 = DomainIntelligenceProviderFactory.getProvider('WATER_SUPPLY');
+    const provider2 = DomainIntelligenceProviderFactory.getProvider('Pipeline leakage with contaminated odor');
+    expect(provider1).toBeInstanceOf(WaterIntelligenceProvider);
+    expect(provider2).toBeInstanceOf(WaterIntelligenceProvider);
+  });
+
+  it('correctly maps electrical issues to ElectricityIntelligenceProvider', () => {
+    const provider1 = DomainIntelligenceProviderFactory.getProvider('PUBLIC_LIGHTING_ENERGY');
+    const provider2 = DomainIntelligenceProviderFactory.getProvider('Transformer spark and street light outage');
+    expect(provider1).toBeInstanceOf(ElectricityIntelligenceProvider);
+    expect(provider2).toBeInstanceOf(ElectricityIntelligenceProvider);
+  });
+
+  it('falls back to GenericIntelligenceProvider for unknown or unclassified sectors', () => {
+    const provider = DomainIntelligenceProviderFactory.getProvider('NOISE_POLLUTION');
+    expect(provider).toBeInstanceOf(GenericIntelligenceProvider);
+  });
+
+  it('guarantees Road Intelligence never contains water or hydraulic failure causes', async () => {
+    const roadProvider = new RoadIntelligenceProvider();
+    const challenge = {
+      id: 'test-road-chal-1',
+      title: 'Pothole on Ring Road',
+      description: 'Major asphalt crater damaged during heavy monsoon rains.',
+      category: 'ROADS_TRANSPORT',
+      district: 'Mathura',
+      state: 'Uttar Pradesh',
+      severity: 'MODERATE',
+      createdAt: new Date(),
+    };
+
+    const analysis = await roadProvider.analyze(challenge);
+    expect(analysis.category).toBe('Road & Transport');
+    expect(analysis.domain).toBe('ROADS_TRANSPORT');
+
+    // Verify possible causes are road-grounded, not water
+    const allTitles = analysis.possibleCauses.map((c) => c.title.toLowerCase()).join(' ');
+    const allDescs = analysis.possibleCauses.map((c) => c.description.toLowerCase()).join(' ');
+    const combined = `${allTitles} ${allDescs}`;
+
+    expect(combined).not.toContain('hydraulic');
+    expect(combined).not.toContain('pipe');
+    expect(combined).not.toContain('pump');
+    expect(combined).not.toContain('valve');
+    expect(combined).not.toContain('feeder leakage');
+    expect(combined).toContain('asphalt');
+    expect(combined).toContain('sub-base');
+
+    // Status invariant: Requires field verification
+    for (const cause of analysis.possibleCauses) {
+      expect(cause.status).toBe('Requires field verification');
+    }
+  });
+
+  it('returns UNAVAILABLE topology honestly when municipal GIS records do not exist', async () => {
+    const roadProvider = new RoadIntelligenceProvider();
+    const techData = await roadProvider.getTechnicalData({
+      id: 'test-road-chal-2',
+      category: 'ROADS_TRANSPORT',
+      district: 'NonExistentDistrict',
+    });
+
+    expect(techData.topology.status).toBe('UNAVAILABLE');
+    expect(techData.topology.nodes).toHaveLength(0);
+    expect(techData.lcaExplanation).toContain('Shared upstream corridor dependency analysis');
+  });
+
+  it('guarantees Water Intelligence returns hydraulic hypotheses with proper verification status', async () => {
+    const waterProvider = new WaterIntelligenceProvider();
+    const challenge = {
+      id: 'test-water-real-1',
+      title: 'Low water pressure in Ward 5',
+      description: 'Water barely trickles from taps during morning supply cycle.',
+      category: 'WATER',
+      district: 'Jaipur',
+      state: 'Rajasthan',
+      severity: 'MODERATE',
+      createdAt: new Date(),
+    };
+
+    const analysis = await waterProvider.analyze(challenge);
+    expect(analysis.category).toBe('Water & Sanitation');
+    expect(analysis.domain).toBe('WATER_SUPPLY');
+
+    const titles = analysis.possibleCauses.map((c) => c.title);
+    expect(titles).toContain('Feeder line pressure loss or localized seal failure');
+
+    for (const cause of analysis.possibleCauses) {
+      expect(cause.status).toBe('Requires field verification');
+    }
+  });
+});

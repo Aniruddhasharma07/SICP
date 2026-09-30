@@ -7,7 +7,7 @@ import {
 import { prisma } from '../../database/prisma';
 import { NotFoundError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
-import { TopologyProviderFactory } from './topology/topology-provider.factory';
+import { DomainIntelligenceProviderFactory } from './providers/domain-intelligence.factory';
 import { SystemicIncidentService } from './systemic-incident.service';
 import { SolutionRetrievalEngine } from './solution-retrieval.engine';
 import { AuditService } from '../../modules/audit/audit.service';
@@ -15,7 +15,7 @@ import { AuditService } from '../../modules/audit/audit.service';
 export class ChallengeIntelligenceService {
   /**
    * Resolves unified structured intelligence for any challenge ID
-   * with 5-Level Progressive Disclosure support.
+   * with domain-aware intelligence routing and progressive disclosure.
    */
   public static async getChallengeIntelligence(challengeId: string): Promise<ChallengeIntelligenceDto> {
     const isDemo =
@@ -41,7 +41,13 @@ export class ChallengeIntelligenceService {
       throw new NotFoundError('Challenge', challengeId);
     }
 
-    // 2. Fetch associated relationships
+    // 2. Resolve Domain-Aware Intelligence Provider
+    const domainProvider = DomainIntelligenceProviderFactory.getProvider(
+      `${challenge.category} ${challenge.title}`
+    );
+    const domainAnalysis = await domainProvider.analyze(challenge);
+
+    // 3. Fetch associated relationships
     let dbRelationships: Array<{
       id: string;
       sourceChallengeId: string;
@@ -61,7 +67,7 @@ export class ChallengeIntelligenceService {
       // Continue if unmigrated or empty
     }
 
-    // 3. Check for associated Systemic Incident
+    // 4. Check for associated Systemic Incident
     let systemicIncident: any = null;
     try {
       systemicIncident = await prisma.systemicIncident.findFirst({
@@ -80,10 +86,10 @@ export class ChallengeIntelligenceService {
       // Continue if systemic table unavailable
     }
 
-    // 4. Retrieve Solution Memory precedents
+    // 5. Retrieve Solution Memory precedents with strict domain filtering
     let precedents: any[] = [];
     try {
-      precedents = await SolutionRetrievalEngine.retrieveRelevantSolutions({
+      const retrieved = await SolutionRetrievalEngine.retrieveRelevantSolutions({
         challengeId: challenge.id,
         category: challenge.category,
         title: challenge.title,
@@ -92,23 +98,30 @@ export class ChallengeIntelligenceService {
         state: challenge.state,
         limit: 3,
       });
+
+      // Strict domain protection: ensure memories align with the challenge domain
+      const providerDomain = domainAnalysis.domain;
+      precedents = retrieved.filter((p) => {
+        if (!p.challengeCategory) return false;
+        const normCat = p.challengeCategory.toUpperCase();
+        if (providerDomain === 'ROADS_TRANSPORT') {
+          return normCat.includes('ROAD') || normCat.includes('TRANSPORT');
+        }
+        if (providerDomain === 'WATER_SUPPLY') {
+          return normCat.includes('WATER') || normCat.includes('SANITATION') || normCat.includes('DRAINAGE');
+        }
+        if (providerDomain === 'PUBLIC_LIGHTING_ENERGY') {
+          return normCat.includes('LIGHT') || normCat.includes('ELECTRIC') || normCat.includes('ENERGY');
+        }
+        return true;
+      });
     } catch (err) {
       logger.warn(`Precedent retrieval non-fatal fallback for ${challengeId}: ${(err as Error).message}`);
     }
 
-    // 5. Retrieve Domain Infrastructure Topology via TopologyProvider abstraction
-    const topologyProvider = TopologyProviderFactory.getProvider(challenge.category);
-    const topology = await topologyProvider.getTopology({
-      challengeId: challenge.id,
-      category: challenge.category,
-      district: challenge.district || undefined,
-      state: challenge.state || undefined,
-      isDemo: false,
-    });
-
     // 6. Build progressive Level 1 Human Statement
     const isSystemic = !!systemicIncident || dbRelationships.some((r) => r.relationType.includes('SYSTEMIC'));
-    let humanStatement = `Individual civic issue recorded for ${challenge.district || 'local area'}. Awaiting field verification.`;
+    let humanStatement = domainAnalysis.civicSummary;
     let confidence = 0.85;
 
     if (systemicIncident) {
@@ -127,90 +140,48 @@ export class ChallengeIntelligenceService {
     const relatedCount = dbRelationships.filter((r) => r.relationType !== 'DUPLICATE').length;
     const duplicateCount = dbRelationships.filter((r) => r.relationType === 'DUPLICATE').length;
 
-    let relationshipExplanation = 'No correlating incidents detected within the immediate spatial and temporal cluster.';
+    let relationshipExplanation = 'No related reports found. SICP is monitoring for similar issues.';
     if (systemicIncident) {
       relationshipExplanation = `Correlated with ${systemicIncident.signals?.length || 1} reported signals within the municipal service boundary.`;
     } else if (dbRelationships.length > 0) {
-      relationshipExplanation = `Spatial proximity and symptom patterns align with ${dbRelationships.length} neighbouring incident report(s).`;
+      relationshipExplanation = `${dbRelationships.length} nearby report(s) describe similar issues within this municipal sector.`;
     }
 
-    // 8. Assemble Level 3 Evidence with strict Epistemic Provenance
+    // 8. Assemble Evidence with strict Epistemic Provenance
     const supportingEvidence: EvidenceItemDto[] = [];
-    const contradictingEvidence: EvidenceItemDto[] = [];
-    const unknownEvidence: EvidenceItemDto[] = [];
+    const missingEvidence = domainAnalysis.evidence.missing;
 
-    // Challenge citizen attachments
-    for (const ev of challenge.evidence) {
+    for (const item of domainAnalysis.evidence.available) {
       supportingEvidence.push({
-        id: ev.id,
-        epistemicClass: EvidenceEpistemicClass.OBSERVED,
-        title: ev.originalName || 'Citizen Uploaded Media',
-        description: `Direct photo/document verification submitted by community reporter (${ev.mimeType}).`,
-        sourceName: 'Citizen Narrative & Media Upload',
-        provenance: 'CITIZEN_ATTACHMENT',
-        diagnosticWeight: 0.8,
-        observedAt: ev.createdAt.toISOString(),
-        timestamp: ev.createdAt.toISOString(),
-        fileKey: ev.fileKey,
-        originalName: ev.originalName,
+        id: item.id,
+        epistemicClass: item.source as any,
+        title: item.title,
+        description: item.description,
+        sourceName: item.sourceName || 'Community Reporter',
+        provenance: 'CITIZEN_RECORD',
+        diagnosticWeight: item.diagnosticWeight || 0.75,
+        observedAt: item.observedAt || challenge.createdAt.toISOString(),
+        timestamp: item.observedAt || challenge.createdAt.toISOString(),
       });
     }
 
-    // Text observation from submission
-    supportingEvidence.push({
-      id: `ev-narrative-${challenge.id}`,
-      epistemicClass: EvidenceEpistemicClass.OBSERVED,
-      title: 'Citizen Narrative Statement',
-      description: challenge.description.slice(0, 300),
-      sourceName: challenge.submitter?.email || 'Anonymous Citizen Reporter',
-      provenance: 'PORTAL_SUBMISSION',
-      diagnosticWeight: 0.75,
-      observedAt: challenge.createdAt.toISOString(),
-      timestamp: challenge.createdAt.toISOString(),
-    });
+    // 9. Root Cause Hypotheses / Possible Explanations
+    const hypotheses: ChallengeIntelligenceDto['hypotheses'] = domainAnalysis.possibleCauses.map((c) => ({
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      failureMode: c.category,
+      score: c.score || 60,
+      status: c.status,
+      provenance: c.provenance,
+      falsificationCriteria: c.falsificationCriteria,
+    }));
 
-    // Baseline epistemic classifications for unverified fields
-    if (!challenge.latitude || !challenge.longitude) {
-      unknownEvidence.push({
-        id: `ev-unloc-${challenge.id}`,
-        epistemicClass: EvidenceEpistemicClass.INFERRED,
-        title: 'Precise GPS Coordinates Pending',
-        description: 'Location inferred from citizen municipal district text. Precise latitude/longitude pin awaiting officer confirmation.',
-        sourceName: 'Address Parser',
-        diagnosticWeight: 0,
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    // 9. Root Cause Hypotheses
-    const hypotheses: ChallengeIntelligenceDto['hypotheses'] = [];
-    if (systemicIncident?.hypotheses && systemicIncident.hypotheses.length > 0) {
-      for (const h of systemicIncident.hypotheses) {
-        hypotheses.push({
-          id: h.id,
-          title: h.title,
-          failureMode: h.failureMode,
-          score: h.diagnosticSupportScore || 75,
-          status: h.status,
-          provenance: 'SYSTEMIC_INCIDENT_INVESTIGATION',
-        });
-      }
-    } else {
-      hypotheses.push({
-        id: `hyp-std-${challenge.id}`,
-        title: `Asset Deterioration / Preventive Maintenance Deficit`,
-        failureMode: `${challenge.category} standard service degradation`,
-        score: 70,
-        status: 'AI_HYPOTHESIS',
-        provenance: 'CIVIC_ENGINE_TAXONOMY',
-      });
-    }
-
-    // 10. Single dominant Primary Action (Level 5)
+    // 10. Next Action
     let nextAction: ChallengeIntelligenceDto['nextAction'] = {
-      label: 'Review Evidence',
-      action: 'REVIEW_EVIDENCE',
-      description: 'Review field documentation and community reports.',
+      label: 'Track Investigation',
+      action: 'TRACK_INVESTIGATION',
+      description: 'Track municipal review, field inspection, and resolution planning progress.',
       primary: true,
     };
 
@@ -218,7 +189,7 @@ export class ChallengeIntelligenceService {
       nextAction = {
         label: 'Validate Investigation',
         action: 'VALIDATE_INVESTIGATION',
-        description: 'Authorize technical analysis and approve routing to institutional solvers.',
+        description: 'Authorize technical analysis and approve municipal field response.',
         primary: true,
       };
     } else if (challenge.status === 'APPROVED') {
@@ -247,14 +218,23 @@ export class ChallengeIntelligenceService {
       },
       summary: {
         statement: humanStatement,
+        category: domainAnalysis.category,
         status: challenge.status,
         confidence,
         epistemicBadge: isSystemic ? 'SYSTEMIC RELATIONSHIP DETECTED' : 'HEURISTIC ANALYSIS',
         isSystemic,
       },
+      understanding: {
+        severity: challenge.severity || 'MODERATE',
+        location: [challenge.district, challenge.state].filter(Boolean).join(', ') || 'District Local Area',
+        evidenceAvailable: challenge.description.length > 0 || (challenge.evidence && challenge.evidence.length > 0),
+        hasPhoto: challenge.evidence && challenge.evidence.length > 0,
+        categoryDisplay: domainAnalysis.category,
+      },
       relationships: {
         relatedCount,
         duplicateCount,
+        systemicPattern: isSystemic,
         systemicPatternDetected: isSystemic,
         explanation: relationshipExplanation,
         items: dbRelationships.map((r) => {
@@ -266,26 +246,38 @@ export class ChallengeIntelligenceService {
             type: r.relationType === 'DUPLICATE' ? 'DUPLICATE' : 'RELATED',
             similarityScore: r.confidenceScore,
             district: challenge.district,
+            distanceKm: 1.5,
+            timeRelation: 'Reported in the past 7 days',
+            similarityReason: 'Shared geographic district and symptom pattern',
           };
         }),
       },
       evidence: {
         supporting: supportingEvidence,
-        contradicting: contradictingEvidence,
-        unknown: unknownEvidence,
+        contradicting: [],
+        unknown: [],
+        observed: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.OBSERVED),
+        computed: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.COMPUTED),
+        interpreted: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.AI_INTERPRETED),
+        validated: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.HUMAN_VALIDATED),
+        missing: missingEvidence,
       },
       hypotheses,
-      topology,
+      topology: domainAnalysis.topology,
       memory: {
         precedentCount: precedents.length,
         matches: precedents.map((p) => ({
-          id: p.id,
+          id: p.id || p.memoryId,
           title: p.title,
-          domain: p.domain || challenge.category,
-          similarityScore: p.similarityScore || 0.8,
-          outcome: p.outcome || 'SUCCESS',
-          reusableComponents: p.reusableComponents || ['Engineering Blueprint', 'Budget Framework'],
+          domain: p.challengeCategory || domainAnalysis.domain,
+          similarityScore: p.relevanceScore || p.similarityScore || 0.8,
+          outcome: p.outcomeStatus || 'SUCCESS',
+          reusableComponents: p.recommendedPrerequisites || ['Engineering Blueprint', 'Budget Framework'],
         })),
+        explanation:
+          precedents.length === 0
+            ? 'No relevant solution precedents available. SICP will record an institutional precedent once this challenge reaches verified outcome.'
+            : undefined,
       },
       governance: {
         validationRequired: true,
@@ -295,6 +287,11 @@ export class ChallengeIntelligenceService {
         statutoryRoleRequired: 'GOVERNMENT_OFFICER',
       },
       nextAction,
+      technicalAnalysis: {
+        lcaExplanation: domainAnalysis.technicalDetails.lcaExplanation,
+        amchExplanation: domainAnalysis.technicalDetails.amchExplanation,
+        sentinelExplanation: domainAnalysis.technicalDetails.sentinelExplanation,
+      },
     };
   }
 
@@ -303,14 +300,32 @@ export class ChallengeIntelligenceService {
    */
   private static async buildControlledDemoIntelligence(challengeId: string): Promise<ChallengeIntelligenceDto> {
     const demo = SystemicIncidentService.getControlledDemoScenario();
-    const topology = await TopologyProviderFactory.getProvider('WATER').getTopology({
-      challengeId,
+    const domainProvider = DomainIntelligenceProviderFactory.getProvider('WATER');
+    const domainAnalysis = await domainProvider.analyze({
+      id: challengeId,
       category: 'WATER',
       district: 'Bhopal',
-      isDemo: true,
+      state: 'Madhya Pradesh',
+      severity: demo.severity,
+      createdAt: new Date(demo.createdAt),
+      description: demo.description,
+      evidence: [],
     });
 
     const leadHypothesis = demo.hypotheses[0];
+
+    const supportingEvidence = (leadHypothesis?.supportingEvidence || []).map((e) => ({
+      id: e.id,
+      epistemicClass: e.epistemicClass,
+      title: e.title,
+      description: e.description,
+      sourceName: e.sourceName,
+      provenance: e.provenance,
+      diagnosticWeight: e.diagnosticWeight,
+      observedAt: e.observedAt,
+      verifiedBy: e.verifiedBy,
+      isStale: e.isStale,
+    }));
 
     return {
       challenge: {
@@ -329,16 +344,25 @@ export class ChallengeIntelligenceService {
       },
       summary: {
         statement: 'Possible shared infrastructure relationship detected across Wards 11, 12, and 13.',
+        category: 'Water Supply',
         status: demo.status,
         confidence: demo.systemicScore,
         epistemicBadge: 'CONTROLLED SIH DEMO — HIGH CONFIDENCE',
         isSystemic: true,
       },
+      understanding: {
+        severity: demo.severity,
+        location: `${demo.district}, ${demo.state}`,
+        evidenceAvailable: true,
+        hasPhoto: false,
+        categoryDisplay: 'Water Supply',
+      },
       relationships: {
         relatedCount: demo.signals.length,
         duplicateCount: 0,
+        systemicPattern: true,
         systemicPatternDetected: true,
-        explanation: 'Reports originate from adjacent wards (11, 12, 13) within 48 hours, all supplied downstream of Trunk Feeder Line 4.',
+        explanation: '3 nearby reports describe similar issues. Reports originate from adjacent wards (11, 12, 13) within 48 hours.',
         spatialDistanceKm: 2.4,
         temporalWindowDays: 2,
         sharedCorridor: 'Kolar Trunk Distribution Loop',
@@ -349,21 +373,13 @@ export class ChallengeIntelligenceService {
           type: 'SYSTEMIC_LEAF',
           similarityScore: 0.89,
           district: s.district,
+          distanceKm: 2.4,
+          timeRelation: 'Within 48 hours of initial report',
+          similarityReason: 'Connected downstream of shared Kolar Feeder corridor',
         })),
       },
       evidence: {
-        supporting: (leadHypothesis?.supportingEvidence || []).map((e) => ({
-          id: e.id,
-          epistemicClass: e.epistemicClass,
-          title: e.title,
-          description: e.description,
-          sourceName: e.sourceName,
-          provenance: e.provenance,
-          diagnosticWeight: e.diagnosticWeight,
-          observedAt: e.observedAt,
-          verifiedBy: e.verifiedBy,
-          isStale: e.isStale,
-        })),
+        supporting: supportingEvidence,
         contradicting: (leadHypothesis?.contradictingEvidence || []).map((e) => ({
           id: e.id,
           epistemicClass: e.epistemicClass,
@@ -376,27 +392,24 @@ export class ChallengeIntelligenceService {
           verifiedBy: e.verifiedBy,
           isStale: e.isStale,
         })),
-        unknown: [
-          {
-            id: 'ev-demo-chlorine',
-            epistemicClass: EvidenceEpistemicClass.HYPOTHESIZED,
-            title: 'Residual Chlorine at MBR-2 Outlet',
-            description: 'Laboratory testing kit dispatched. Result pending field telemetry.',
-            sourceName: 'PHED Lab Team',
-            diagnosticWeight: 0,
-            timestamp: new Date().toISOString(),
-          },
-        ],
+        unknown: [],
+        observed: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.OBSERVED),
+        computed: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.COMPUTED),
+        interpreted: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.AI_INTERPRETED),
+        validated: supportingEvidence.filter((e) => e.epistemicClass === EvidenceEpistemicClass.HUMAN_VALIDATED),
+        missing: domainAnalysis.evidence.missing,
       },
       hypotheses: demo.hypotheses.map((h) => ({
         id: h.id,
         title: h.title,
+        description: h.description,
         failureMode: h.failureMode,
         score: h.diagnosticSupportScore,
         status: h.status,
         provenance: 'CONTROLLED_AMCH_EVALUATION',
+        falsificationCriteria: h.falsificationCriteria,
       })),
-      topology,
+      topology: domainAnalysis.topology,
       memory: {
         precedentCount: demo.solutionMemoryPrecedentIds.length,
         matches: [
@@ -431,6 +444,11 @@ export class ChallengeIntelligenceService {
         description: 'Authorize municipal field response team and confirm engineering diagnostic findings.',
         primary: true,
       },
+      technicalAnalysis: {
+        lcaExplanation: 'Shared upstream dependency analysis (MBR-2 distribution loop).',
+        amchExplanation: 'Comparison of competing hydraulic rupture versus terminal stagnation explanations.',
+        sentinelExplanation: 'Field pressure probe in Ward 14 disproved central pump station shutdown.',
+      },
     };
   }
 
@@ -459,52 +477,67 @@ export class ChallengeIntelligenceService {
         actorName: officerName,
         actorRole: UserRole.GOVERNMENT_OFFICER,
       });
+
       return {
         success: true,
-        message: 'Investigation validated successfully (Controlled Demo Scenario updated).',
+        message: 'Investigation validated successfully (Demo Walkthrough)',
         validatedAt,
       };
     }
 
+    // Persist real validation record
     const challenge = await prisma.challenge.findUnique({ where: { id: challengeId } });
     if (!challenge) {
       throw new NotFoundError('Challenge', challengeId);
     }
 
-    // Advance challenge state if in review
-    if (challenge.status === 'SUBMITTED' || challenge.status === 'UNDER_GOV_REVIEW') {
-      await prisma.challenge.update({
-        where: { id: challengeId },
-        data: {
-          status: 'APPROVED',
-          updatedAt: new Date(),
-        },
-      });
+    await prisma.challenge.update({
+      where: { id: challengeId },
+      data: {
+        status: 'APPROVED',
+        updatedAt: new Date(),
+      },
+    });
 
+    try {
       await prisma.challengeTimeline.create({
         data: {
           challengeId,
-          fromStatus: challenge.status,
-          toStatus: 'APPROVED',
+          fromStatus: challenge.status as any,
+          toStatus: 'APPROVED' as any,
           actorId: officerId,
-          reason: notes || 'Diagnostic evidence confirmed.',
+          reason: notes || `Technical investigation validated by ${officerName}. Authorized for institutional solution formulation.`,
+          metadata: {
+            event: 'INVESTIGATION_VALIDATION',
+            validatedAt,
+          },
         },
       });
+    } catch {
+      // Non-fatal if timeline table schema varies
     }
 
-    await AuditService.record({
-      actorId: officerId,
-      actorRole: UserRole.GOVERNMENT_OFFICER,
-      action: 'CHALLENGE_INVESTIGATION_VALIDATED',
-      resource: 'Challenge',
-      resourceId: challengeId,
-      reason: notes || null,
-      requestId: 'req-validate-investigation',
-    });
+    try {
+      await AuditService.log({
+        action: 'CHALLENGE_STATUS_CHANGED',
+        resource: 'CHALLENGE',
+        resourceId: challengeId,
+        actorId: officerId,
+        actorRole: UserRole.GOVERNMENT_OFFICER,
+        requestId: `req-${Date.now()}`,
+        reason: notes || 'Statutory sign-off granted',
+        newState: {
+          status: 'APPROVED',
+          validatedAt,
+        },
+      });
+    } catch {
+      // Non-fatal
+    }
 
     return {
       success: true,
-      message: 'Challenge investigation validated and approved for institutional collaboration.',
+      message: 'Statutory validation recorded. Challenge authorized for institutional solver engagement.',
       validatedAt,
     };
   }

@@ -75,9 +75,7 @@ export function useProblemIntelligence(challengeId: string) {
   const [hypotheses, setHypotheses] = useState<RootCauseHypothesisDto[]>([]);
   const [selectedHypothesisId, setSelectedHypothesisId] = useState<string | undefined>();
   const [sentinelProbes, setSentinelProbes] = useState<SentinelProbeRequestDto[]>([]);
-  const [branchDifferentialDeduction, setBranchDifferentialDeduction] = useState<string | null>(
-    'Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, mathematically ruling out feeder pump station shutdown.'
-  );
+  const [branchDifferentialDeduction, setBranchDifferentialDeduction] = useState<string | null>(null);
   const [isLoadingSentinel, setIsLoadingSentinel] = useState(false);
 
   // Collaboration Matching
@@ -150,100 +148,173 @@ export function useProblemIntelligence(challengeId: string) {
     }
   }, [challengeId]);
 
-  // 4. Fetch Systemic Infrastructure Topology & Hypotheses
+  // 4. Fetch Systemic Infrastructure Topology & Hypotheses (Domain-Aware)
   const fetchSystemicIntelligence = useCallback(async () => {
-    // If challenge has linked systemic scenario or infrastructure
-    const incidentId =
-      challenge?.isSystemic || challengeId === 'c27683b4-a8a4-47d4-bae3-6e308b5d79b2'
-        ? 'SYS-2026-BHP-001'
-        : challengeId;
+    const isDemo =
+      challengeId === 'demo' ||
+      challengeId.startsWith('SYS-2026-BHP') ||
+      challengeId === 'sys-incident-bhopal-001';
 
-    const graph = await systemicIntelligenceService.getGraph(incidentId);
-    if (graph) {
-      setLinkedGraph(graph);
+    if (isDemo) {
+      const graph = await systemicIntelligenceService.getGraph('SYS-2026-BHP-001');
+      if (graph) setLinkedGraph(graph);
+
+      const inc = await systemicIntelligenceService.getIncident('SYS-2026-BHP-001');
+      if (inc?.hypotheses && inc.hypotheses.length > 0) {
+        setHypotheses(inc.hypotheses);
+        if ((inc as any).activeProbe) {
+          setSentinelProbes([(inc as any).activeProbe]);
+        }
+      }
+      setBranchDifferentialDeduction(
+        'Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, disproving central water treatment plant failure.'
+      );
+      return;
     }
 
-    const inc = await systemicIntelligenceService.getIncident(incidentId);
-    if (inc && inc.hypotheses && inc.hypotheses.length > 0) {
+    // Real challenges: query dedicated endpoints without Bhopal cross-contamination
+    const graph = await systemicIntelligenceService.getGraph(challengeId);
+    if (graph) {
+      setLinkedGraph(graph);
+    } else {
+      setLinkedGraph(null);
+    }
+
+    const inc = await systemicIntelligenceService.getIncident(challengeId);
+    if (inc?.hypotheses && inc.hypotheses.length > 0) {
       setHypotheses(inc.hypotheses);
       if ((inc as any).activeProbe) {
         setSentinelProbes([(inc as any).activeProbe]);
       }
     } else {
-      // Build domain-grounded AMCH hypotheses
-      setHypotheses([
-        {
-          id: `hyp-${challengeId}-1`,
-          incidentId: challengeId,
-          title: 'H1: Upstream Distribution Pressure Drop & Structural Leakage',
-          description: 'Physical breach or localized seal failure in feeder pipeline causing pressure loss.',
-          failureMode: 'Hydraulic Rupture / Joint Failure',
-          diagnosticSupportScore: 78,
-          status: HypothesisStatus.LEADING_HYPOTHESIS,
-          supportingEvidence: [
-            {
-              id: 'ev-1',
-              title: 'Citizen Signal Clustering',
-              description: 'Repeated reports of drop in water pressure and localized turbidity.',
-              epistemicClass: EvidenceEpistemicClass.OBSERVED,
-              supportWeight: 0.85,
-            } as any,
-          ],
-          contradictingEvidence: [],
-          missingEvidence: ['Subsurface acoustic correlator telemetry'],
-          falsificationCriteria: 'Feeder main acoustic test shows nominal baseline acoustic response.',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: `hyp-${challengeId}-2`,
-          incidentId: challengeId,
-          title: 'H2: Central Feeder Pump Station Shutdown',
-          description: 'Backpressure differential across downstream branch cross-connect during unpressurized hours.',
-          failureMode: 'Cross-Contamination & Backsiphonage',
-          diagnosticSupportScore: 52,
-          status: HypothesisStatus.UNDER_EVALUATION,
-          supportingEvidence: [
-            {
-              id: 'ev-2',
-              title: 'Intermittent Supply Schedule',
-              description: 'Unpressurized pipeline intervals facilitate negative pressure vacuum ingestion.',
-              epistemicClass: EvidenceEpistemicClass.COMPUTED,
-              supportWeight: 0.6,
-            } as any,
-          ],
-          contradictingEvidence: [],
-          missingEvidence: ['Non-return valve physical inspection log'],
-          falsificationCriteria: 'Static pressure remains positive throughout 24-hour supply cycle.',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: `hyp-${challengeId}-3`,
-          incidentId: challengeId,
-          title: 'H3: Localized Cistern Sedimentation Resuspension',
-          description: 'Turbidity caused by reservoir bottom scour during high pump draw-down rather than pipeline rupture.',
-          failureMode: 'Reservoir Sediment Scour',
-          diagnosticSupportScore: 28,
-          status: HypothesisStatus.REFUTED,
-          supportingEvidence: [],
-          contradictingEvidence: [
-            {
-              id: 'ev-3',
-              title: 'Widespread Multi-Point Telemetry',
-              description: 'Incident observed across multiple independent neighborhood distribution taps.',
-              epistemicClass: EvidenceEpistemicClass.OBSERVED,
-              supportWeight: 0.9,
-            } as any,
-          ],
-          missingEvidence: ['Reservoir turbidity sensor reading'],
-          falsificationCriteria: 'Reservoir outlet water purity test returns within ISO 10500 standards.',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]);
+      // Domain-grounded possible explanations
+      const category = (challenge?.category || '').toUpperCase();
+      if (category.includes('ROAD') || category.includes('TRANSPORT') || category.includes('POTHOLE')) {
+        setHypotheses([
+          {
+            id: `hyp-${challengeId}-1`,
+            incidentId: challengeId,
+            title: 'Surface asphalt wear and weathering from traffic load',
+            description: 'Repeated axle weight stress and bituminous oxidation leading to pothole cratering.',
+            failureMode: 'Pavement Surface Deterioration',
+            diagnosticSupportScore: 72,
+            status: HypothesisStatus.UNDER_EVALUATION,
+            supportingEvidence: [
+              {
+                id: 'ev-road-1',
+                title: 'Citizen Narrative Statement',
+                description: challenge?.description || 'Road surface deterioration reported by community.',
+                epistemicClass: EvidenceEpistemicClass.OBSERVED,
+                supportWeight: 0.8,
+              } as any,
+            ],
+            contradictingEvidence: [],
+            missingEvidence: ['Pavement Condition Index (PCI) field rating', 'Core drill compaction test'],
+            falsificationCriteria: 'Sub-base core drill sample confirms nominal pavement thickness and subgrade compaction intact.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: `hyp-${challengeId}-2`,
+            incidentId: challengeId,
+            title: 'Sub-base waterlogging and inadequate stormwater runoff',
+            description: 'Poor roadside drainage gradient causing moisture entrapment and subgrade bearing capacity loss.',
+            failureMode: 'Drainage Sub-base Washout',
+            diagnosticSupportScore: 65,
+            status: HypothesisStatus.UNDER_EVALUATION,
+            supportingEvidence: [],
+            contradictingEvidence: [],
+            missingEvidence: ['Stormwater runoff gradient audit'],
+            falsificationCriteria: 'Drainage gradient inspection indicates zero standing water in road bed.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]);
+        setBranchDifferentialDeduction(null);
+      } else if (category.includes('LIGHT') || category.includes('ELECTRIC') || category.includes('POWER')) {
+        setHypotheses([
+          {
+            id: `hyp-${challengeId}-1`,
+            incidentId: challengeId,
+            title: 'Distribution transformer phase unbalance or localized overload',
+            description: 'Excessive phase loading exceeding transformer thermal capacity.',
+            failureMode: 'Thermal Overload / Phase Disconnect',
+            diagnosticSupportScore: 70,
+            status: HypothesisStatus.UNDER_EVALUATION,
+            supportingEvidence: [
+              {
+                id: 'ev-power-1',
+                title: 'Citizen Narrative Statement',
+                description: challenge?.description || 'Electrical disruption reported.',
+                epistemicClass: EvidenceEpistemicClass.OBSERVED,
+                supportWeight: 0.8,
+              } as any,
+            ],
+            contradictingEvidence: [],
+            missingEvidence: ['Substation SCADA log', 'Transformer thermal imaging scan'],
+            falsificationCriteria: 'Substation meter logs confirm balanced phase load below 80%.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]);
+        setBranchDifferentialDeduction(null);
+      } else if (category.includes('WATER')) {
+        setHypotheses([
+          {
+            id: `hyp-${challengeId}-1`,
+            incidentId: challengeId,
+            title: 'Feeder line pressure loss or localized seal failure',
+            description: 'Physical joint failure or pipe fissure in distribution line causing pressure drop.',
+            failureMode: 'Hydraulic Rupture / Joint Failure',
+            diagnosticSupportScore: 75,
+            status: HypothesisStatus.UNDER_EVALUATION,
+            supportingEvidence: [
+              {
+                id: 'ev-water-1',
+                title: 'Citizen Narrative Statement',
+                description: challenge?.description || 'Water supply disruption reported.',
+                epistemicClass: EvidenceEpistemicClass.OBSERVED,
+                supportWeight: 0.8,
+              } as any,
+            ],
+            contradictingEvidence: [],
+            missingEvidence: ['Acoustic pipe correlator telemetry', 'Residual chlorine test'],
+            falsificationCriteria: 'Acoustic leak test shows normal baseline acoustic response throughout sector.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]);
+        setBranchDifferentialDeduction(null);
+      } else {
+        setHypotheses([
+          {
+            id: `hyp-${challengeId}-1`,
+            incidentId: challengeId,
+            title: 'Civic asset maintenance deficit',
+            description: 'Scheduled preventive maintenance cycle interval exceeded, resulting in localized operational failure.',
+            failureMode: 'Asset Deterioration',
+            diagnosticSupportScore: 65,
+            status: HypothesisStatus.UNDER_EVALUATION,
+            supportingEvidence: [
+              {
+                id: 'ev-gen-1',
+                title: 'Citizen Narrative Statement',
+                description: challenge?.description || 'Issue reported by community.',
+                epistemicClass: EvidenceEpistemicClass.OBSERVED,
+                supportWeight: 0.75,
+              } as any,
+            ],
+            contradictingEvidence: [],
+            missingEvidence: ['Municipal department on-site field inspection'],
+            falsificationCriteria: 'Department maintenance log verifies recent inspection and component replacement.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]);
+        setBranchDifferentialDeduction(null);
+      }
     }
-  }, [challengeId, challenge?.isSystemic]);
+  }, [challengeId, challenge?.category, challenge?.description]);
 
   // 5. Fetch Collaboration Matches
   const fetchCollaboration = useCallback(async () => {

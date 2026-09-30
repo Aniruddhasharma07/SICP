@@ -5,11 +5,11 @@ import {
   MemoryOutcomeStatus,
 } from '@sicp/shared';
 
-const FALLBACK_MEMORIES: HistoricalRecommendationDto[] = [
+const CONTROLLED_DEMO_WATER_MEMORIES: HistoricalRecommendationDto[] = [
   {
     memoryId: 'mem-water-01',
     title: 'Sanganer Sector 4 Acoustic Pressure Relief & Dual-Stage Hydro-Excavation',
-    challengeCategory: 'Civic Infrastructure',
+    challengeCategory: 'Water Supply',
     relevanceScore: 0.88,
     outcomeStatus: 'SUCCESSFUL',
     evidenceLevel: 'FIELD_VERIFIED',
@@ -39,7 +39,7 @@ const FALLBACK_MEMORIES: HistoricalRecommendationDto[] = [
   {
     memoryId: 'mem-water-02',
     title: 'Bhopal Trunk Feeder 3B Hydro-Vacuum Trenchless Sluice Replacement',
-    challengeCategory: 'Civic Infrastructure',
+    challengeCategory: 'Water Supply',
     relevanceScore: 0.81,
     outcomeStatus: 'PARTIALLY_EFFECTIVE',
     evidenceLevel: 'INDEPENDENT_AUDIT',
@@ -69,6 +69,8 @@ const FALLBACK_MEMORIES: HistoricalRecommendationDto[] = [
 ];
 
 function buildRecurrenceSignal(mems: HistoricalRecommendationDto[]) {
+  if (!mems || mems.length === 0) return null;
+
   const matchingLoc = mems.find(
     (m: any) => (m.matchBreakdown?.geographicContext || 0) >= 0.75
   );
@@ -104,24 +106,26 @@ function buildRecurrenceSignal(mems: HistoricalRecommendationDto[]) {
 
 export const solutionMemoryService = {
   /**
-   * Retrieves evaluated historical solution precedents for a challenge, including recurrence signals.
+   * Retrieves evaluated historical solution precedents for a challenge.
+   * Strictly avoids cross-domain contamination (no water solutions on road complaints).
    */
   async getEvaluatedHistoricalSolutions(challengeId: string): Promise<{
     evaluated: any | null;
     retrieved: HistoricalRecommendationDto[];
     recurrenceSignal: any | null;
   }> {
+    const isDemo =
+      challengeId === 'demo' ||
+      challengeId.startsWith('SYS-2026-BHP') ||
+      challengeId === 'sys-incident-bhopal-001';
+
     try {
       const evalRes = await apiClient.request<any>(
         `/api/v1/solutions/historical/challenge/${challengeId}/evaluated`
       );
 
       if (evalRes.success && evalRes.data) {
-        let mems: HistoricalRecommendationDto[] = evalRes.data.retrievedMemories || [];
-        if (mems.length === 0) {
-          mems = FALLBACK_MEMORIES;
-        }
-
+        const mems: HistoricalRecommendationDto[] = evalRes.data.retrievedMemories || [];
         const recurrenceSignal = buildRecurrenceSignal(mems);
 
         return {
@@ -143,13 +147,22 @@ export const solutionMemoryService = {
         };
       }
     } catch {
-      // ignore
+      // ignore network errors
     }
 
+    if (isDemo) {
+      return {
+        evaluated: null,
+        retrieved: CONTROLLED_DEMO_WATER_MEMORIES,
+        recurrenceSignal: buildRecurrenceSignal(CONTROLLED_DEMO_WATER_MEMORIES),
+      };
+    }
+
+    // Honest empty state when no matching precedents exist for this problem category
     return {
       evaluated: null,
-      retrieved: FALLBACK_MEMORIES,
-      recurrenceSignal: buildRecurrenceSignal(FALLBACK_MEMORIES),
+      retrieved: [],
+      recurrenceSignal: null,
     };
   },
 
@@ -168,8 +181,8 @@ export const solutionMemoryService = {
       // ignore
     }
 
-    const fallback = FALLBACK_MEMORIES.find(
-      m => (m as any).memoryId === memoryId || (m as any).id === memoryId
+    const fallback = CONTROLLED_DEMO_WATER_MEMORIES.find(
+      (m) => (m as any).memoryId === memoryId || (m as any).id === memoryId
     );
     if (fallback) {
       return fallback as any;
