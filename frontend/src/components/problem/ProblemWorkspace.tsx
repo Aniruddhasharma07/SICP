@@ -37,6 +37,9 @@ import {
   SentinelProbeRequestDto,
   SentinelChoice,
   ChallengeIntelligenceDto,
+  ProblemTabId,
+  VALID_PROBLEM_TABS,
+  resolveProblemTab,
 } from '@sicp/shared';
 import { ProblemOverview } from './ProblemOverview';
 import { NextActionPanel } from './NextActionPanel';
@@ -56,7 +59,6 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 
-export type ProblemTabId = 'ground-truth' | 'investigation' | 'solution-memory' | 'collaboration' | 'governance';
 
 export interface ExtendedChallenge extends ChallengeDto {
   timelines: ChallengeTimelineDto[];
@@ -109,14 +111,6 @@ export interface ProblemWorkspaceProps {
   intelligence?: ChallengeIntelligenceDto | null;
 }
 
-const VALID_TABS: ProblemTabId[] = [
-  'ground-truth',
-  'investigation',
-  'solution-memory',
-  'collaboration',
-  'governance',
-];
-
 export function ProblemWorkspace({
   challenge,
   currentUser,
@@ -159,14 +153,13 @@ export function ProblemWorkspace({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Tab synchronization via URL query string
-  const rawTab = searchParams?.get('tab') as ProblemTabId | null;
-  const activeTab: ProblemTabId = rawTab && VALID_TABS.includes(rawTab) ? rawTab : 'ground-truth';
+  // Tab synchronization via URL query string (URL is the single source of truth)
+  const activeTab: ProblemTabId = resolveProblemTab(searchParams?.get('tab'));
 
   const handleSelectTab = (tabId: ProblemTabId) => {
     const params = new URLSearchParams(searchParams?.toString() || '');
     params.set('tab', tabId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   // Technical Investigation Drawer State
@@ -330,6 +323,28 @@ export function ProblemWorkspace({
     },
   ];
 
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % tabs.length;
+      handleSelectTab(tabs[nextIndex].id);
+      document.getElementById(`tab-${tabs[nextIndex].id}`)?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + tabs.length) % tabs.length;
+      handleSelectTab(tabs[prevIndex].id);
+      document.getElementById(`tab-${tabs[prevIndex].id}`)?.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      handleSelectTab(tabs[0].id);
+      document.getElementById(`tab-${tabs[0].id}`)?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      handleSelectTab(tabs[tabs.length - 1].id);
+      document.getElementById(`tab-${tabs[tabs.length - 1].id}`)?.focus();
+    }
+  };
+
   return (
     <div className="min-h-screen -m-4 md:-m-8 p-4 md:p-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors pb-24">
       {/* Top Utility Breadcrumbs */}
@@ -371,13 +386,13 @@ export function ProblemWorkspace({
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto space-y-6">
         {/* 5-TAB NAVIGATION BAR */}
-        <div className="relative border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-sm">
+        <div className="relative w-full max-w-full overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-sm">
           <div
             role="tablist"
             aria-label="Problem workspace tabs"
-            className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 px-1 relative"
+            className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar scrollbar-none py-0.5 px-1 relative w-full scroll-smooth"
           >
-            {tabs.map((tab) => {
+            {tabs.map((tab, idx) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
               return (
@@ -389,7 +404,8 @@ export function ProblemWorkspace({
                   aria-controls={`panel-${tab.id}`}
                   tabIndex={isActive ? 0 : -1}
                   onClick={() => handleSelectTab(tab.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 select-none ${
+                  onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
@@ -417,7 +433,10 @@ export function ProblemWorkspace({
             })}
           </div>
           {/* Subtle mobile right-edge gradient fade indicator */}
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent sm:hidden" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent sm:hidden"
+          />
         </div>
 
         {/* TAB 1: GROUND TRUTH */}

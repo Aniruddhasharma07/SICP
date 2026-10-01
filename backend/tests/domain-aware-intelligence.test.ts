@@ -3,6 +3,7 @@ import { RoadIntelligenceProvider } from '../src/domain/intelligence/providers/r
 import { WaterIntelligenceProvider } from '../src/domain/intelligence/providers/water-intelligence.provider';
 import { ElectricityIntelligenceProvider } from '../src/domain/intelligence/providers/electricity-intelligence.provider';
 import { GenericIntelligenceProvider } from '../src/domain/intelligence/providers/generic-intelligence.provider';
+import { resolveProblemTab, VALID_PROBLEM_TABS } from '@sicp/shared';
 
 describe('Domain-Aware Intelligence Routing & Protection', () => {
   it('correctly maps road and transport issues to RoadIntelligenceProvider', () => {
@@ -105,28 +106,68 @@ describe('Domain-Aware Intelligence Routing & Protection', () => {
     }
   });
 
+  it('guarantees Water Intelligence never contains road, asphalt, or pavement failure causes (two-way leak prevention)', async () => {
+    const waterProvider = new WaterIntelligenceProvider();
+    const challenge = {
+      id: 'test-water-real-2',
+      title: 'Water pipe leakage causing puddle',
+      description: 'Underground main line leak bubbling up to surface.',
+      category: 'WATER_SUPPLY',
+      district: 'Jaipur',
+      state: 'Rajasthan',
+      severity: 'MODERATE',
+      createdAt: new Date(),
+    };
+
+    const analysis = await waterProvider.analyze(challenge);
+    expect(analysis.category).toBe('Water & Sanitation');
+    expect(analysis.domain).toBe('WATER_SUPPLY');
+
+    const allTitles = analysis.possibleCauses.map((c) => c.title.toLowerCase()).join(' ');
+    const allDescs = analysis.possibleCauses.map((c) => c.description.toLowerCase()).join(' ');
+    const combined = `${allTitles} ${allDescs}`;
+
+    expect(combined).not.toContain('asphalt');
+    expect(combined).not.toContain('pothole');
+    expect(combined).not.toContain('bituminous');
+    expect(combined).not.toContain('sub-base');
+    expect(combined).not.toContain('wearing course');
+    expect(combined).toContain('pressure');
+    expect(combined).toContain('pipe');
+  });
+
   describe('Canonical Domain Resolution & Normalization', () => {
     const { DomainIntelligenceResolver } = require('../src/domain/intelligence/providers/domain-intelligence-resolver');
 
     it('resolves legacy and informal road strings to ROAD_TRANSPORT', () => {
       expect(DomainIntelligenceResolver.resolveDomain('Roads & Transport')).toBe('ROAD_TRANSPORT');
       expect(DomainIntelligenceResolver.resolveDomain('ROADS')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('ROADS_INFRASTRUCTURE')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('ROADS_TRANSPORT')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('NH Highway')).toBe('ROAD_TRANSPORT');
       expect(DomainIntelligenceResolver.resolveDomain('NH Highway Pothole')).toBe('ROAD_TRANSPORT');
       expect(DomainIntelligenceResolver.resolveDomain('Damaged asphalt pavement on Ring Road')).toBe('ROAD_TRANSPORT');
-      expect(DomainIntelligenceResolver.resolveDomain('Street traffic congestion and crater')).toBe('ROAD_TRANSPORT');
+      expect(DomainIntelligenceResolver.resolveDomain('Bridge expansion joint failure')).toBe('ROAD_TRANSPORT');
     });
 
     it('resolves water and pipeline strings to WATER_SUPPLY', () => {
       expect(DomainIntelligenceResolver.resolveDomain('Water')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('Water Supply')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('WATER_SUPPLY')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('WATER_SANITATION')).toBe('WATER_SUPPLY');
+      expect(DomainIntelligenceResolver.resolveDomain('Water Sanitation')).toBe('WATER_SUPPLY');
       expect(DomainIntelligenceResolver.resolveDomain('Jal pipeline')).toBe('WATER_SUPPLY');
       expect(DomainIntelligenceResolver.resolveDomain('Drinking water contamination odor')).toBe('WATER_SUPPLY');
       expect(DomainIntelligenceResolver.resolveDomain('Hydraulic pressure drop')).toBe('WATER_SUPPLY');
     });
 
     it('resolves electrical and power strings to ELECTRICITY', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Electric Power')).toBe('ELECTRICITY');
+      expect(DomainIntelligenceResolver.resolveDomain('POWER_GRID')).toBe('ELECTRICITY');
       expect(DomainIntelligenceResolver.resolveDomain('Electricity')).toBe('ELECTRICITY');
       expect(DomainIntelligenceResolver.resolveDomain('Transformer spark and blackout')).toBe('ELECTRICITY');
       expect(DomainIntelligenceResolver.resolveDomain('DISCOM power grid failure')).toBe('ELECTRICITY');
+      expect(DomainIntelligenceResolver.resolveDomain('Substation high voltage wire snap')).toBe('ELECTRICITY');
     });
 
     it('resolves drainage and sewer strings to SANITATION', () => {
@@ -136,9 +177,44 @@ describe('Domain-Aware Intelligence Routing & Protection', () => {
     });
 
     it('falls back to GENERIC for unmapped strings', () => {
+      expect(DomainIntelligenceResolver.resolveDomain('Unknown category')).toBe('GENERIC');
       expect(DomainIntelligenceResolver.resolveDomain('Civic issue')).toBe('GENERIC');
       expect(DomainIntelligenceResolver.resolveDomain(null)).toBe('GENERIC');
+      expect(DomainIntelligenceResolver.resolveDomain(undefined)).toBe('GENERIC');
       expect(DomainIntelligenceResolver.resolveDomain('')).toBe('GENERIC');
+    });
+  });
+
+  describe('Tab State Routing & URL Synchronization (resolveProblemTab)', () => {
+    it('defaults to ground-truth when query param is absent, null or empty', () => {
+      expect(resolveProblemTab(undefined)).toBe('ground-truth');
+      expect(resolveProblemTab(null)).toBe('ground-truth');
+      expect(resolveProblemTab('')).toBe('ground-truth');
+    });
+
+    it('resolves valid tab query parameters to their canonical ProblemTabId', () => {
+      expect(resolveProblemTab('ground-truth')).toBe('ground-truth');
+      expect(resolveProblemTab('investigation')).toBe('investigation');
+      expect(resolveProblemTab('solution-memory')).toBe('solution-memory');
+      expect(resolveProblemTab('collaboration')).toBe('collaboration');
+      expect(resolveProblemTab('governance')).toBe('governance');
+    });
+
+    it('falls back cleanly to ground-truth for invalid or malicious tab values', () => {
+      expect(resolveProblemTab('random')).toBe('ground-truth');
+      expect(resolveProblemTab('xyz')).toBe('ground-truth');
+      expect(resolveProblemTab('../malicious')).toBe('ground-truth');
+      expect(resolveProblemTab('INVESTIGATION')).toBe('ground-truth');
+    });
+
+    it('exposes exactly 5 valid problem tabs in VALID_PROBLEM_TABS', () => {
+      expect(VALID_PROBLEM_TABS).toEqual([
+        'ground-truth',
+        'investigation',
+        'solution-memory',
+        'collaboration',
+        'governance',
+      ]);
     });
   });
 });

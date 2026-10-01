@@ -43,12 +43,14 @@ export class ChallengeIntelligenceService {
     }
 
     // 2. Resolve Domain-Aware Intelligence Provider
-    const canonicalDomain = DomainIntelligenceResolver.resolveDomain(
-      `${challenge.category} ${challenge.title}`
-    );
-    const domainProvider = DomainIntelligenceResolver.resolveProvider(
-      `${challenge.category} ${challenge.title}`
-    );
+    let canonicalDomain = DomainIntelligenceResolver.resolveDomain(challenge.category);
+    if (canonicalDomain === 'GENERIC' && challenge.title) {
+      const fromTitle = DomainIntelligenceResolver.resolveDomain(challenge.title);
+      if (fromTitle !== 'GENERIC') {
+        canonicalDomain = fromTitle;
+      }
+    }
+    const domainProvider = DomainIntelligenceResolver.resolveProvider(canonicalDomain);
     const domainAnalysis = await domainProvider.analyze(challenge);
 
     // 3. Fetch associated relationships

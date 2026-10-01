@@ -21,9 +21,40 @@ export class DomainIntelligenceResolver {
    */
   public static resolveDomain(categoryOrText?: string | null): DomainType {
     const raw = categoryOrText ?? '';
-    const normalized = raw.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+    const normalized = raw.toUpperCase().replace(/[^A-Z]/g, '_');
 
-    // 1. Electricity & Power keywords (including street lighting, transformers, grid)
+    // 1. Road & Transport keywords
+    if (
+      normalized.includes('ROAD') ||
+      normalized.includes('TRANSPORT') ||
+      normalized.includes('HIGHWAY') ||
+      normalized.includes('PAVEMENT') ||
+      normalized.includes('POTHOLE') ||
+      normalized.includes('ASPHALT') ||
+      normalized.includes('BRIDGE')
+    ) {
+      this.logResolution(raw, 'ROAD_TRANSPORT', 'RULE_MATCH');
+      return 'ROAD_TRANSPORT';
+    }
+
+    // 2. Water Supply keywords (Water, Jal, Pipe, Hydraulic, Drinking, Contamination, Chlorine)
+    // Note: Compound strings like "Water Sanitation" resolve to WATER_SUPPLY per specification
+    if (
+      normalized.includes('WATER') ||
+      normalized.includes('JAL') ||
+      normalized.includes('PIPE') ||
+      normalized.includes('PIPELINE') ||
+      normalized.includes('HYDRAULIC') ||
+      normalized.includes('HYDRO') ||
+      normalized.includes('DRINKING') ||
+      normalized.includes('CONTAMINATION') ||
+      normalized.includes('CHLORINE')
+    ) {
+      this.logResolution(raw, 'WATER_SUPPLY', 'RULE_MATCH');
+      return 'WATER_SUPPLY';
+    }
+
+    // 3. Electricity & Power keywords
     if (
       normalized.includes('POWER') ||
       normalized.includes('ELECTRIC') ||
@@ -40,23 +71,7 @@ export class DomainIntelligenceResolver {
       return 'ELECTRICITY';
     }
 
-    // 2. Water Supply keywords
-    if (
-      normalized.includes('WATER') ||
-      normalized.includes('JAL') ||
-      normalized.includes('PIPE') ||
-      normalized.includes('PIPELINE') ||
-      normalized.includes('HYDRAULIC') ||
-      normalized.includes('HYDRO') ||
-      normalized.includes('DRINKING') ||
-      normalized.includes('CONTAMINATION') ||
-      normalized.includes('CHLORINE')
-    ) {
-      this.logResolution(raw, 'WATER_SUPPLY', 'RULE_MATCH');
-      return 'WATER_SUPPLY';
-    }
-
-    // 3. Drainage & Sanitation keywords
+    // 4. Drainage & Sanitation keywords
     if (
       normalized.includes('DRAIN') ||
       normalized.includes('SEWER') ||
@@ -66,22 +81,6 @@ export class DomainIntelligenceResolver {
     ) {
       this.logResolution(raw, 'SANITATION', 'RULE_MATCH');
       return 'SANITATION';
-    }
-
-    // 4. Road & Transport keywords
-    if (
-      normalized.includes('ROAD') ||
-      normalized.includes('TRANSPORT') ||
-      normalized.includes('HIGHWAY') ||
-      normalized.includes('PAVEMENT') ||
-      normalized.includes('POTHOLE') ||
-      normalized.includes('ASPHALT') ||
-      normalized.includes('BRIDGE') ||
-      normalized.includes('STREET') ||
-      normalized.includes('TRAFFIC')
-    ) {
-      this.logResolution(raw, 'ROAD_TRANSPORT', 'RULE_MATCH');
-      return 'ROAD_TRANSPORT';
     }
 
     this.logResolution(raw, 'GENERIC', 'FALLBACK');

@@ -4,6 +4,23 @@ import { EvidenceItemDto } from './domain.types';
 export type TopologyStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'CONTROLLED_DEMO';
 export type CanonicalDomain = 'ROAD_TRANSPORT' | 'WATER_SUPPLY' | 'ELECTRICITY' | 'SANITATION' | 'GENERIC';
 
+export type ProblemTabId = 'ground-truth' | 'investigation' | 'solution-memory' | 'collaboration' | 'governance';
+
+export const VALID_PROBLEM_TABS: readonly ProblemTabId[] = [
+  'ground-truth',
+  'investigation',
+  'solution-memory',
+  'collaboration',
+  'governance',
+] as const;
+
+export function resolveProblemTab(tabParam?: string | null): ProblemTabId {
+  if (tabParam && (VALID_PROBLEM_TABS as readonly string[]).includes(tabParam)) {
+    return tabParam as ProblemTabId;
+  }
+  return 'ground-truth';
+}
+
 export interface TopologyNodeDto {
   id: string;
   code: string;
