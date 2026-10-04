@@ -290,4 +290,28 @@ export class ProblemController {
       next(err);
     }
   }
+
+  public static async addGroupSolutionMemory(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { title, intervention, classification, evidenceSource } = req.body;
+      if (!title || !intervention) {
+        throw new ValidationError('title and intervention are required');
+      }
+
+      const memory = await prisma.groupSolutionMemory.create({
+        data: {
+          groupId: req.params.id,
+          title,
+          intervention,
+          classification: classification || 'PREVIOUSLY_WORKED',
+          evidenceSource: evidenceSource || 'Field Maintenance Log',
+        },
+      });
+
+      sendSuccess(res, memory, 201);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
+

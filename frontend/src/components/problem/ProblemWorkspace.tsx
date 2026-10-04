@@ -73,6 +73,15 @@ export interface ExtendedChallenge extends ChallengeDto {
   projects?: { id: string; title: string; status: any }[];
   validatedByName?: string;
   validationReason?: string;
+  universityName?: string | null;
+  industryName?: string | null;
+  deployedDate?: string | null;
+  finishedDate?: string | null;
+  totalCitizenProblems?: number;
+  verifiedCount?: number;
+  deniedCount?: number;
+  problemGroups?: any[];
+  challengeProblems?: any[];
 }
 
 export interface ProblemWorkspaceProps {
@@ -550,6 +559,13 @@ export function ProblemWorkspace({
           {/* Problem Overview Card */}
           <ProblemOverview challenge={challenge} intelligence={intelligence} />
 
+          {/* Grouped Problems & Correlated Clusters (Swipe Semantics) */}
+          <RelationshipPanel
+            challenge={challenge}
+            intelligence={intelligence}
+            onRefresh={() => router.refresh()}
+          />
+
           {/* What Happens Next Milestone Pipeline */}
           <NextActionPanel
             challenge={challenge}
@@ -595,7 +611,11 @@ export function ProblemWorkspace({
           </div>
 
           {/* Related Signals & Deduplication */}
-          <RelationshipPanel challenge={challenge} intelligence={intelligence} />
+          <RelationshipPanel
+            challenge={challenge}
+            intelligence={intelligence}
+            onRefresh={() => router.refresh()}
+          />
 
           {/* Possible Explanations (Grounded Hypotheses) */}
           <PossibleCauses challenge={challenge} intelligence={intelligence} />

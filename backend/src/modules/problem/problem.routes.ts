@@ -24,3 +24,4 @@ problemRouter.post('/challenges/:id/validate-investigation', optionalAuthMiddlew
 
 // Two-Level Solution Memory
 problemRouter.get('/challenges/:id/solution-memory', optionalAuthMiddleware, ProblemController.getSolutionMemory);
+problemRouter.post('/groups/:id/solution-memory', optionalAuthMiddleware, idempotencyMiddleware, ProblemController.addGroupSolutionMemory);
