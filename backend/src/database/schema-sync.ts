@@ -5,21 +5,15 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
   try {
     logger.info('[SCHEMA_SYNC] Verifying database schema integrity...');
 
-    // Check if Problem table already exists
-    const checkTable = await prisma.$queryRaw<Array<{ exists: boolean }>>`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'Problem'
-      ) as exists;
-    `;
-
-    if (checkTable[0]?.exists) {
-      logger.info('[SCHEMA_SYNC] Database schema is already up to date.');
-      return;
+    // 0. Ensure PostGIS Extension
+    try {
+      await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS postgis;`);
+      logger.info('[SCHEMA_SYNC] PostGIS extension verified/activated.');
+    } catch (err: any) {
+      logger.warn('[SCHEMA_SYNC] PostGIS extension activation notice: ' + err.message);
     }
 
-    logger.info('[SCHEMA_SYNC] Synchronizing forward database schema for Problem architecture...');
+    logger.info('[SCHEMA_SYNC] Synchronizing forward database schema for Problem & Geospatial architecture...');
 
     // 1. Enums
     await prisma.$executeRawUnsafe(`
@@ -186,10 +180,15 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       `CREATE INDEX IF NOT EXISTS "GovernmentOverrideLog_problemId_idx" ON "GovernmentOverrideLog"("problemId");`,
       `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_groupId_idx" ON "GroupSolutionMemory"("groupId");`,
       `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_classification_idx" ON "GroupSolutionMemory"("classification");`,
+      `CREATE INDEX IF NOT EXISTS "idx_challenge_geography_gist" ON "Challenge" USING GIST (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography);`,
     ];
 
     for (const stmt of indexStatements) {
-      await prisma.$executeRawUnsafe(stmt);
+      try {
+        await prisma.$executeRawUnsafe(stmt);
+      } catch (idxErr: any) {
+        logger.debug(`[SCHEMA_SYNC] Index statement notice (${idxErr.message})`);
+      }
     }
 
     // 5. Foreign Key Constraints (Protected in DO block)
