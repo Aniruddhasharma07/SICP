@@ -40,6 +40,8 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
     const enumAdditions = [
       'GOVERNMENT_VERIFIED',
       'GOVERNMENT_APPROVED',
+      'GOVERNMENT_REVIEW',
+      'PEOPLE_VERIFIED',
       'UNIVERSITY_ASSIGNED',
       'INDUSTRY_FUNDED',
       'OUTCOME_VERIFIED',
@@ -52,11 +54,15 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       }
     }
 
-    // Migrate any legacy GOVERNMENT_APPROVED records to GOVERNMENT_VERIFIED
+    // Migrate any legacy status records to canonical statuses
     try {
       await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'GOVERNMENT_VERIFIED' WHERE "status"::text = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'UNDER_GOV_REVIEW' WHERE "status"::text = 'GOVERNMENT_REVIEW';`);
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'OUTCOME_VERIFIED' WHERE "status"::text = 'PEOPLE_VERIFIED';`);
       await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'GOVERNMENT_VERIFIED' WHERE "fromStatus"::text = 'GOVERNMENT_APPROVED';`);
       await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'GOVERNMENT_VERIFIED' WHERE "toStatus"::text = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'UNDER_GOV_REVIEW' WHERE "fromStatus"::text = 'GOVERNMENT_REVIEW';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'UNDER_GOV_REVIEW' WHERE "toStatus"::text = 'GOVERNMENT_REVIEW';`);
     } catch (migErr: any) {
       logger.debug(`[SCHEMA_SYNC] ChallengeStatus migration notice: ${migErr.message}`);
     }
