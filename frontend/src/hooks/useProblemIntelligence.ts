@@ -150,27 +150,6 @@ export function useProblemIntelligence(challengeId: string) {
 
   // 4. Fetch Systemic Infrastructure Topology & Hypotheses (Domain-Aware)
   const fetchSystemicIntelligence = useCallback(async () => {
-    const isDemo =
-      challengeId === 'demo' ||
-      challengeId.startsWith('SYS-2026-BHP') ||
-      challengeId === 'sys-incident-bhopal-001';
-
-    if (isDemo) {
-      const graph = await systemicIntelligenceService.getGraph('SYS-2026-BHP-001');
-      if (graph) setLinkedGraph(graph);
-
-      const inc = await systemicIntelligenceService.getIncident('SYS-2026-BHP-001');
-      if (inc?.hypotheses && inc.hypotheses.length > 0) {
-        setHypotheses(inc.hypotheses);
-        if ((inc as any).activeProbe) {
-          setSentinelProbes([(inc as any).activeProbe]);
-        }
-      }
-      setBranchDifferentialDeduction(
-        'Differential Check: Parallel branch Sector 3 reports uninterrupted normal supply, disproving central water treatment plant failure.'
-      );
-      return;
-    }
 
     // Real challenges: query dedicated endpoints without Bhopal cross-contamination
     const graph = await systemicIntelligenceService.getGraph(challengeId);
@@ -437,7 +416,7 @@ export function useProblemIntelligence(challengeId: string) {
     feedbackText?: string;
   }) => {
     setIsLoadingSentinel(true);
-    const incidentId = challenge?.isSystemic ? 'SYS-2026-BHP-001' : challengeId;
+    const incidentId = challengeId;
     const res = await systemicIntelligenceService.submitSentinelResponse(
       incidentId,
       data.choice,
@@ -447,7 +426,7 @@ export function useProblemIntelligence(challengeId: string) {
 
     if (res.success) {
       setBranchDifferentialDeduction(
-        'Topological Branch Differential Verified: Parallel branch Sector 3 confirmed uninterrupted normal supply (+4.2 bar). Central feeder pump shutdown refuted (-50%), elevating Localized Feeder Rupture to 82%.'
+        res.message || 'Topological sentinel feedback recorded and integrated into investigation.'
       );
 
       // Dynamically shift hypothesis diagnostic scores

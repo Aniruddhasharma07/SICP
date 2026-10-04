@@ -34,13 +34,12 @@ import {
   ChevronRight,
   SlidersHorizontal,
   Layers,
+  Activity,
   Send,
   Loader2,
   X,
 } from 'lucide-react';
 import { ChallengeStatus, SeverityLevel, PriorityLevel, KnowledgeAssistantResponseDto } from '@sicp/shared';
-import { RootCauseDossierDrawer } from '../../src/components/intelligence/RootCauseDossierDrawer';
-import { GAMHARIA_SYSTEMIC_INCIDENT_SI_204, SEED_JHARKHAND_CHALLENGES } from '../../src/lib/scenarios/gamharia-incident-scenario';
 
 interface ComplaintItem {
   id: string;
@@ -72,14 +71,11 @@ export default function ComplaintDashboardPage() {
 
   // Active View: MY_GRIEVANCES | COMMUNITY_HOTSPOTS | RESOLVED_IMPACT
   const [activeTab, setActiveTab] = useState<'MY_GRIEVANCES' | 'COMMUNITY_HOTSPOTS' | 'RESOLVED_IMPACT'>('COMMUNITY_HOTSPOTS');
-  const [complaints, setComplaints] = useState<ComplaintItem[]>(SEED_JHARKHAND_CHALLENGES as any);
+  const [complaints, setComplaints] = useState<ComplaintItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // Systemic Incident SI-204 Dossier Drawer state
-  const [dossierOpen, setDossierOpen] = useState(false);
 
   // Upvoted IDs set
   const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
@@ -104,16 +100,12 @@ export default function ComplaintDashboardPage() {
       const res = await apiClient.request<any>('/api/v1/challenges?limit=100');
       if (res.success && res.data) {
         const items = Array.isArray(res.data) ? res.data : res.data.items || res.data.challenges || [];
-        if (items.length > 0) {
-          setComplaints(items);
-        } else {
-          setComplaints(SEED_JHARKHAND_CHALLENGES as any);
-        }
+        setComplaints(items);
       } else {
-        setComplaints(SEED_JHARKHAND_CHALLENGES as any);
+        setComplaints([]);
       }
     } catch {
-      setComplaints(SEED_JHARKHAND_CHALLENGES as any);
+      setComplaints([]);
     } finally {
       setLoading(false);
     }
@@ -253,41 +245,39 @@ export default function ComplaintDashboardPage() {
           </Alert>
         )}
 
-        {/* Systemic Incident SI-204 Intelligence Banner */}
-        <div className="bg-slate-900 dark:bg-slate-950 border-2 border-amber-500/60 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
+        {/* Civic Intelligence & Systemic Overview Banner */}
+        <div className="bg-slate-900 dark:bg-slate-950 border border-slate-700/60 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
-            <div className="space-y-2.5 max-w-3xl">
+            <div className="space-y-2 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                  ACTIVE SYSTEMIC INCIDENT: SI-204
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/40 flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-blue-400" />
+                  PROBLEM-CENTRIC CIVIC INTELLIGENCE
                 </span>
                 <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-200 border border-slate-700">
-                  Gamharia Block, Seraikela Kharsawan
+                  {complaints.length} Total Registered Grievances
                 </span>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-800">
-                  JJM Infrastructure Graph Correlated
-                </span>
-                <span className="text-[10px] font-mono text-slate-300 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
-                  Evidence Strength: 84/100 (8/12 Signals)
+                  Corridor Clustering Active
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-amber-100 tracking-tight">
-                25 Correlated Citizen Reports Aggregated Across 3 Habitations
+              <h2 className="text-lg sm:text-xl font-bold text-slate-100 tracking-tight">
+                Decoupled Grievance Intake &amp; Governed Systemic Investigation
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Automated multi-signal root-cause intelligence detected shared feeder failure (Gamharia Branch 3B-2) rather than isolated plumbing leaks. Differential baseline analysis (Village D unaffected) weakens WTP-level failure. Cross-utility power grid cascade logged at JBVNL Gamharia Substation.
+                Individual citizen problems are grouped by spatial corridor and infrastructure proximity without treating symptoms in isolation. Systemic investigation operates under government officer oversight.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <Button
-                onClick={() => setDossierOpen(true)}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs h-10 px-4 rounded-lg shadow-sm flex items-center gap-2 transition cursor-pointer"
-              >
-                <BrainCircuit className="w-4 h-4 text-slate-950" />
-                <span>Open Systemic Dossier &amp; Graph</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
+              <Link href="/challenges">
+                <Button
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-10 px-4 rounded-lg shadow-sm flex items-center gap-2 transition cursor-pointer"
+                >
+                  <Layers className="w-4 h-4 text-white" />
+                  <span>Explore Governed Challenges</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -705,12 +695,6 @@ export default function ComplaintDashboardPage() {
             </div>
           </div>
         )}
-
-        {/* Systemic Incident Root Cause Dossier Drawer */}
-        <RootCauseDossierDrawer
-          isOpen={dossierOpen}
-          onClose={() => setDossierOpen(false)}
-        />
       </div>
     </AppLayout>
   );

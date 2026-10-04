@@ -951,12 +951,12 @@ export default function GovernmentCommandCenterPage() {
             whatHappensIfIdle="Your current role cannot authorize municipal interventions or route problems."
             whatCanDoNext={[
               'Switch to an authorized Government Officer account',
-              'Explore Systemic Intelligence Command Center (Public Live Demo)',
+              'Explore Governed Challenges',
               'Return to Problem Explorer',
             ]}
             onActionClick={action => {
               if (action.includes('Switch')) router.push('/login');
-              else if (action.includes('Systemic')) router.push('/government/systemic-intelligence');
+              else if (action.includes('Governed')) router.push('/challenges');
               else router.push('/challenges');
             }}
           />
@@ -1049,41 +1049,32 @@ export default function GovernmentCommandCenterPage() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-400/30 shrink-0">
-              <Network className="w-6 h-6 animate-pulse" />
+              <Network className="w-6 h-6" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-300 bg-indigo-950/80 border border-indigo-700/60 px-2.5 py-0.5 rounded-full">
-                  Emerging Systemic Incident Radar
+                  Governed Challenge Intelligence
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 border border-amber-500/40 px-2 py-0.5 rounded-full">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                  Richards Heuer AMCH Active
-                </span>
-                <span className="text-[11px] font-mono font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-500/40 px-2 py-0.5 rounded-full">
-                  SYS-2026-BHP-001 Active
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  Corridor Grouping &amp; Investigation Active
                 </span>
               </div>
               <h2 className="text-lg font-bold text-white mt-1">
-                SYS-2026-BHP-001: Multi-Ward Water Supply Disruption &amp; Contamination Cluster
+                Problem-Centric Challenge Workspace &amp; Statutory Validation
               </h2>
               <p className="text-xs text-indigo-200/80 max-w-2xl mt-0.5">
-                4 citizen reports correlated across Wards 11, 12, 13. Lowest Common Ancestor traced to Trunk Line 4 downstream of MBR-02. Branch differential sentinel feedback active.
+                Investigate competing hypotheses, reallocate problems across groups with swipe controls, and statutorily validate root cause findings.
               </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-stretch lg:self-auto justify-end">
             <Link
-              href="/government/systemic-intelligence"
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/20 transition"
+              href="/challenges"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
             >
-              <span>View All Incidents</span>
-            </Link>
-            <Link
-              href="/government/systemic-intelligence/SYS-2026-BHP-001"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
-            >
-              <span>Inspect Incident Dossier</span>
+              <span>Open Governed Challenges</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

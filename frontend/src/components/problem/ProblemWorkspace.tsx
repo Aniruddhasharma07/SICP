@@ -47,6 +47,7 @@ import { RelationshipPanel } from './RelationshipPanel';
 import { EvidencePanel } from './EvidencePanel';
 import { PossibleCauses } from './PossibleCauses';
 import { SolutionMemoryPanel } from './SolutionMemoryPanel';
+import { FourCoreQuestionsBanner } from './FourCoreQuestionsBanner';
 import { TechnicalInvestigationDrawer } from './TechnicalInvestigationDrawer';
 import { PrecedentDetailDrawer } from '../intelligence/PrecedentDetailDrawer';
 import {
@@ -410,6 +411,14 @@ export function ProblemWorkspace({
 
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto space-y-6">
+        {/* Viewport 1 Executive Summary Hierarchy */}
+        <FourCoreQuestionsBanner
+          challenge={challenge}
+          onJumpToTab={(tabId) => handleSelectTab(tabId as any)}
+          branchDifferentialDeduction={branchDifferentialDeduction}
+          leadingHypothesisTitle={propHypotheses?.[0]?.title || intelligence?.hypotheses?.[0]?.title}
+        />
+
         {/* 5-TAB NAVIGATION BAR */}
         <div className="relative w-full max-w-full overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-sm">
           <div
@@ -549,25 +558,7 @@ export function ProblemWorkspace({
               </Button>
             </div>
 
-            {intelligence?.topology?.status === 'CONTROLLED_DEMO' ? (
-              <div className="p-4 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 text-xs space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300 border-none text-[10px]">
-                    CONTROLLED DEMO TOPOLOGY
-                  </Badge>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">
-                    Kolar Trunk Loop (Wards 11, 12, 13)
-                  </span>
-                </div>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Shared upstream junction identified at{' '}
-                  <span className="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">
-                    {intelligence.topology.lcaNodeName || 'MBR-2'}
-                  </span>
-                  . Correlates multiple citizen complaints along the trunk distribution path.
-                </p>
-              </div>
-            ) : intelligence?.topology?.status === 'AVAILABLE' && (intelligence?.topology?.nodes?.length || 0) > 0 ? (
+            {intelligence?.topology?.status === 'AVAILABLE' && (intelligence?.topology?.nodes?.length || 0) > 0 ? (
               <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                 <p className="font-semibold text-slate-900 dark:text-slate-100">
                   Municipal GIS assets mapped: {intelligence.topology.nodes.length} nodes,{' '}

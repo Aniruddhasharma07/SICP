@@ -20,9 +20,10 @@ export class ChallengeIntelligenceService {
    */
   public static async getChallengeIntelligence(challengeId: string): Promise<ChallengeIntelligenceDto> {
     const isDemo =
-      challengeId === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (challengeId === 'demo' ||
       challengeId.startsWith('SYS-2026-BHP') ||
-      challengeId === 'sys-incident-bhopal-001';
+      challengeId === 'sys-incident-bhopal-001');
 
     if (isDemo) {
       return this.buildControlledDemoIntelligence(challengeId);
@@ -483,9 +484,10 @@ export class ChallengeIntelligenceService {
     notes?: string
   ): Promise<{ success: boolean; message: string; validatedAt: string }> {
     const isDemo =
-      challengeId === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (challengeId === 'demo' ||
       challengeId.startsWith('SYS-2026-BHP') ||
-      challengeId === 'sys-incident-bhopal-001';
+      challengeId === 'sys-incident-bhopal-001');
 
     const validatedAt = new Date().toISOString();
 

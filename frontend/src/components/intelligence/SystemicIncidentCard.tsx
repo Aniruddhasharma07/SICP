@@ -159,7 +159,7 @@ export function SystemicIncidentCard({ incident, onExplore }: SystemicIncidentCa
         </div>
 
         <Link
-          href={`/government/systemic-intelligence/${incident.id}`}
+          href={`/challenges/${(incident as any).canonicalChallengeId || incident.id}`}
           onClick={onExplore}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-sm transition-colors text-xs"
         >

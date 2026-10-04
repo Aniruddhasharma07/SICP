@@ -19,13 +19,21 @@ export function PossibleCauses({ challenge, intelligence }: PossibleCausesProps)
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Systemic Root Cause Analysis
+            Possible Root Cause
           </h2>
           <p className="text-base font-bold text-slate-900 dark:text-slate-100">Competing Hypotheses</p>
         </div>
-        <Badge className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[10.5px] font-medium">
-          Investigation hypothesis — not confirmed
-        </Badge>
+        {challenge.validationReason || challenge.validatedByName ? (
+          <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 text-[10.5px] font-medium flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+            <span>Human-validated systemic finding</span>
+          </Badge>
+        ) : (
+          <Badge className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[10.5px] font-medium flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3 text-amber-600" />
+            <span>Possible Root Cause (Hypothesis — not confirmed)</span>
+          </Badge>
+        )}
       </div>
 
       <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">

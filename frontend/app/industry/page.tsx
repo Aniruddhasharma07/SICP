@@ -549,10 +549,10 @@ export default function IndustryPortalPage() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <Link
-              href="/government/systemic-intelligence"
+              href="/challenges"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg transition"
             >
-              <span>View Systemic Incidents</span>
+              <span>View Governed Challenges</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

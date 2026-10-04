@@ -266,7 +266,7 @@ export default function SolutionsRepositoryPage() {
             if (stage === 'problem' || stage === 'connected') {
               window.location.href = '/challenges';
             } else if (stage === 'systemic' || stage === 'infrastructure' || stage === 'investigation' || stage === 'sentinel' || stage === 'hypotheses' || stage === 'validation') {
-              window.location.href = '/government/systemic-intelligence';
+              window.location.href = '/challenges';
             } else if (stage === 'collaboration' || stage === 'intervention') {
               window.location.href = '/university';
             }

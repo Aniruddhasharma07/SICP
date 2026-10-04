@@ -6,7 +6,6 @@ import {
   RelationshipStatus,
   EvidenceEpistemicClass,
 } from '@sicp/shared';
-import { SEED_JHARKHAND_CHALLENGES } from '../lib/scenarios/gamharia-incident-scenario';
 
 export interface RelationshipSummaryData {
   challengeId: string;
@@ -91,11 +90,11 @@ export const relationshipIntelligenceService = {
       ? rawRels
       : this.getFallbackRelationships(challenge.id);
     const relatedCount = fallbackRels.length;
-    const isSystemic = (challenge as any).isSystemic || challenge.id === 'c27683b4-a8a4-47d4-bae3-6e308b5d79b2' || challenge.id === 'ch-gamharia-water';
-    const investigationsCount = isSystemic ? 1 : 0;
-    const precedentsCount = isSystemic || challenge.category === 'WATER_SANITATION' ? 2 : 1;
-    const failureWarningsCount = isSystemic ? 1 : 0;
-    const sharedInfra = fallbackRels[0]?.sharedInfrastructure || (isSystemic ? 'Feeder Junction X & Sluice Valve V-408' : null);
+    const isSystemic = Boolean((challenge as any).isSystemic);
+    const investigationsCount = (challenge as any).investigationsCount || (isSystemic ? 1 : 0);
+    const precedentsCount = (challenge as any).precedentsCount || 0;
+    const failureWarningsCount = (challenge as any).failureWarningsCount || 0;
+    const sharedInfra = fallbackRels[0]?.sharedInfrastructure || null;
 
     return {
       challengeId: challenge.id,
@@ -105,7 +104,7 @@ export const relationshipIntelligenceService = {
       failureWarningsCount,
       sharedInfrastructure: sharedInfra,
       primaryEpistemicClass: isSystemic ? 'COMPUTED' : 'OBSERVED',
-      confidenceScore: fallbackRels[0]?.confidenceScore || (isSystemic ? 0.88 : 0.65),
+      confidenceScore: fallbackRels[0]?.confidenceScore || (isSystemic ? 0.85 : 0.5),
       isIsolated: relatedCount === 0 && !isSystemic,
       previewItems: fallbackRels.map((r: ChallengeRelationshipDto) => ({
         id: r.id,
@@ -127,12 +126,11 @@ export const relationshipIntelligenceService = {
     const relationships = await this.getRelationships(challenge.id);
     const relatedCount = relationships.length;
 
-    // Check if challenge is systemic or has known scenario linkage
-    const isSystemic = (challenge as any).isSystemic || challenge.id === 'c27683b4-a8a4-47d4-bae3-6e308b5d79b2' || challenge.id === 'ch-gamharia-water';
-    const investigationsCount = isSystemic ? 1 : 0;
-    const precedentsCount = isSystemic || challenge.category === 'WATER_SANITATION' ? 2 : 1;
-    const failureWarningsCount = isSystemic ? 1 : 0;
-    const sharedInfra = relationships[0]?.sharedInfrastructure || (isSystemic ? 'Feeder Junction X & Sluice Valve V-408' : null);
+    const isSystemic = Boolean((challenge as any).isSystemic);
+    const investigationsCount = (challenge as any).investigationsCount || (isSystemic ? 1 : 0);
+    const precedentsCount = (challenge as any).precedentsCount || 0;
+    const failureWarningsCount = (challenge as any).failureWarningsCount || 0;
+    const sharedInfra = relationships[0]?.sharedInfrastructure || null;
 
     return {
       challengeId: challenge.id,
@@ -142,7 +140,7 @@ export const relationshipIntelligenceService = {
       failureWarningsCount,
       sharedInfrastructure: sharedInfra,
       primaryEpistemicClass: isSystemic ? 'COMPUTED' : 'OBSERVED',
-      confidenceScore: relationships[0]?.confidenceScore || (isSystemic ? 0.88 : 0.65),
+      confidenceScore: relationships[0]?.confidenceScore || (isSystemic ? 0.85 : 0.5),
       isIsolated: relatedCount === 0 && !isSystemic,
       previewItems: relationships.map(r => ({
         id: r.id,
@@ -162,13 +160,12 @@ export const relationshipIntelligenceService = {
    * Completely distinct from the 880x480 physical supply network DAG.
    */
   async getProblemKnowledgeGraph(challengeId: string, challengeTitle?: string): Promise<ProblemKnowledgeGraphData> {
-    const isGamharia = challengeId === 'ch-gamharia-water' || challengeId === 'c27683b4-a8a4-47d4-bae3-6e308b5d79b2';
-    const title = challengeTitle || (isGamharia ? 'Severe Water Pressure Loss & Discolored Supply' : 'Municipal Incident Problem');
+    const title = challengeTitle || 'Civic Problem';
 
     const nodes: ProblemKnowledgeGraphNode[] = [
       {
         id: 'node-problem',
-        label: title.slice(0, 32) + '...',
+        label: title.length > 32 ? title.slice(0, 32) + '...' : title,
         sublabel: 'Primary Problem Gravity Center',
         category: 'PROBLEM',
         epistemicClass: 'HUMAN-VALIDATED',
@@ -179,69 +176,69 @@ export const relationshipIntelligenceService = {
       },
       {
         id: 'node-signals',
-        label: 'Citizen Signal Cluster (25 Reports)',
-        sublabel: 'Wards 11, 12, 13 & Kandra',
+        label: 'Citizen Problem Ingestion',
+        sublabel: 'Field Ground Truth',
         category: 'SIGNAL_CLUSTER',
         epistemicClass: 'OBSERVED',
         status: 'ACTIVE',
         x: 180,
         y: 110,
-        details: '25 independent citizen reports ingested via voice, photo, and text across a 41-minute temporal window.',
+        details: 'Citizen reports ingested via mobile, web, and field intake.',
       },
       {
         id: 'node-amch',
-        label: 'Heuer AMCH Matrix (3 Hypotheses)',
-        sublabel: 'H1: Rupture • H2: Backflow • H3: Cistern',
+        label: 'Possible Root Cause Hypotheses',
+        sublabel: 'Competing Domain Explanations',
         category: 'HYPOTHESIS',
         epistemicClass: 'HYPOTHESIZED',
         status: 'LEADING',
         x: 700,
         y: 110,
-        details: 'Richards Heuer Analysis of Competing Hypotheses evaluates diagnostic support without presuming asset failure.',
+        details: 'Analysis of Competing Hypotheses evaluates diagnostic support without presuming asset failure.',
       },
       {
         id: 'node-infra',
-        label: 'Feeder Junction X & Sluice Valve V-408',
-        sublabel: 'Shared Upstream Topology Confluence',
+        label: 'Corridor Infrastructure Matrix',
+        sublabel: 'Spatial & Utility Asset Map',
         category: 'INFRASTRUCTURE',
         epistemicClass: 'COMPUTED',
         status: 'ACTIVE',
         x: 180,
         y: 330,
-        details: 'Deterministic DAG traversal isolates lowest common ancestor feeder branch without asserting pump station failure.',
+        details: 'Deterministic spatial clustering isolates shared corridor boundaries.',
       },
       {
         id: 'node-memory',
-        label: 'Precedent SI-118 & Negative Surge Warning',
-        sublabel: '2024 Historical Resilient Valve Memory',
+        label: 'Solution Memory Precedents',
+        sublabel: 'Historical Remediation Index',
         category: 'PRECEDENT',
         epistemicClass: 'COMPUTED',
-        status: 'WARNING',
+        status: 'ACTIVE',
         x: 700,
         y: 330,
-        details: 'Historical case demonstrates resilient-seated gate valve resolution; negative precedent warns against missing air-release kinetic valves.',
+        details: 'Historical precedents and negative outcome failure warnings.',
       },
       {
         id: 'node-collab',
-        label: 'IIT/NIT Lab & Tata CSR Co-Funding',
-        sublabel: 'Academic RFP & Schedule VII Capital',
+        label: 'University & Industry Collaboration',
+        sublabel: 'RFP & Implementation Network',
         category: 'COLLABORATION',
         epistemicClass: 'HUMAN-VALIDATED',
         status: 'AVAILABLE',
         x: 310,
         y: 430,
-        details: 'Multi-sector partnership routing connects academic applied fluid researchers with CSR infrastructure co-funding pools.',
+        details: 'Multi-sector partnership routing connecting academic researchers with technical providers.',
       },
       {
         id: 'node-outcome',
-        label: 'Neutral Sentinel Telemetry (29 Responses)',
-        sublabel: 'Ground Truth Verification & Baseline Check',
+        label: 'Verified Outcome & Ground Check',
+        sublabel: 'Resolution Validation',
         category: 'OUTCOME',
         epistemicClass: 'OBSERVED',
         status: 'VALIDATED',
         x: 570,
         y: 430,
-        details: 'Community Sentinel inquiry verified normal dynamic pressure in adjacent baseline ward, empirically isolating the fault branch.',
+        details: 'Verification of operational recovery and post-implementation audit.',
       },
     ];
 
@@ -268,7 +265,7 @@ export const relationshipIntelligenceService = {
         id: 'edge-3',
         source: 'node-problem',
         target: 'node-infra',
-        label: 'Shares Upstream Confluence',
+        label: 'Corridor Confluence',
         relationType: 'SHARES_INFRASTRUCTURE',
         epistemicClass: 'COMPUTED',
         style: 'solid',
@@ -277,7 +274,7 @@ export const relationshipIntelligenceService = {
         id: 'edge-4',
         source: 'node-problem',
         target: 'node-memory',
-        label: 'Retrieves Historical Precedent',
+        label: 'Retrieves Precedents',
         relationType: 'PRECEDENT_FOR',
         epistemicClass: 'COMPUTED',
         style: 'solid',
@@ -286,7 +283,7 @@ export const relationshipIntelligenceService = {
         id: 'edge-5',
         source: 'node-problem',
         target: 'node-collab',
-        label: 'Dispatches Academic RFP & CSR',
+        label: 'Institutional Collaboration',
         relationType: 'COLLABORATION_MATCH',
         epistemicClass: 'HUMAN-VALIDATED',
         style: 'solid',
@@ -308,7 +305,7 @@ export const relationshipIntelligenceService = {
       nodes,
       edges,
       invariants: [
-        'Invariant #3: RELATIONSHIP ≠ CAUSALITY — Semantic graph traversal reveals systemic connection boundaries without presuming upstream failure.',
+        'Invariant #3: RELATIONSHIP ≠ CAUSALITY — Semantic graph reveals systemic connection boundaries without presuming upstream failure.',
         'Invariant #7: AI Hypothesizes, Human Officers Statutory Authority Validates.',
         'Invariant #9: Solution Memory Recommends with Failure Warnings; Does Not Automatically Forbid or Mandate.',
       ],
@@ -316,91 +313,10 @@ export const relationshipIntelligenceService = {
   },
 
   /**
-   * Deterministic domain relationships for authentic seed and live challenges.
+   * Deterministic domain relationships fallback.
+   * If backend returns no relationships, return honest empty array.
    */
-  getFallbackRelationships(challengeId: string): ChallengeRelationshipDto[] {
-    if (challengeId === 'ch-gamharia-water' || challengeId === 'c27683b4-a8a4-47d4-bae3-6e308b5d79b2') {
-      return [
-        {
-          id: 'rel-gamharia-1',
-          sourceChallengeId: challengeId,
-          targetChallengeId: 'ch-ranchi-drainage',
-          sourceChallengeTitle: 'Severe Water Pressure Loss & Discolored Supply',
-          targetChallengeTitle: 'NH-33 Stormwater Trunk Culvert Structural Fracture',
-          relationType: RelationshipType.SYSTEMIC_ROOT_CAUSE,
-          status: RelationshipStatus.APPROVED,
-          confidenceScore: 0.91,
-          distanceMeters: 1420,
-          sharedInfrastructure: 'Feeder Junction X & Sluice Valve V-408',
-          reasoning: 'Shared hydraulic trunk conduit; 41-minute co-temporal emergence matching estimated pipeline fluid velocity.',
-          factorBreakdown: {
-            problemSimilarity: 88,
-            locationSimilarity: 94,
-            categoryCompatibility: 90,
-            infrastructureOverlap: 96,
-            rootCauseSimilarity: 85,
-            evidenceConsistency: 92,
-            temporalRelationship: 95,
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'rel-gamharia-2',
-          sourceChallengeId: challengeId,
-          targetChallengeId: 'ch-dhanbad-siltation',
-          sourceChallengeTitle: 'Severe Water Pressure Loss & Discolored Supply',
-          targetChallengeTitle: 'Acid Mine Drainage & Coal Slurry Runoff Choking Canals',
-          relationType: RelationshipType.RELATED,
-          status: RelationshipStatus.RECOMMENDED,
-          confidenceScore: 0.76,
-          distanceMeters: 2850,
-          sharedInfrastructure: 'Northern ESR Distribution Manifold',
-          reasoning: 'Downstream turbidity correlation following grid power trip transient back-siphonage.',
-          factorBreakdown: {
-            problemSimilarity: 72,
-            locationSimilarity: 81,
-            categoryCompatibility: 85,
-            infrastructureOverlap: 78,
-            rootCauseSimilarity: 68,
-            evidenceConsistency: 74,
-            temporalRelationship: 79,
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-    }
-
-    if (challengeId === 'ch-ranchi-drainage') {
-      return [
-        {
-          id: 'rel-ranchi-1',
-          sourceChallengeId: challengeId,
-          targetChallengeId: 'ch-gamharia-water',
-          sourceChallengeTitle: 'NH-33 Stormwater Trunk Culvert Structural Fracture',
-          targetChallengeTitle: 'Severe Water Pressure Loss & Discolored Supply',
-          relationType: RelationshipType.DEPENDENCY,
-          status: RelationshipStatus.DETECTED,
-          confidenceScore: 0.82,
-          distanceMeters: 1420,
-          sharedInfrastructure: 'Namkum Subsurface Culvert Inflow',
-          reasoning: 'Subsurface runoff overflow encroaching on parallel potable water distribution pipeline envelope.',
-          factorBreakdown: {
-            problemSimilarity: 78,
-            locationSimilarity: 92,
-            categoryCompatibility: 75,
-            infrastructureOverlap: 89,
-            rootCauseSimilarity: 80,
-            evidenceConsistency: 84,
-            temporalRelationship: 86,
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-    }
-
+  getFallbackRelationships(_challengeId: string): ChallengeRelationshipDto[] {
     return [];
   },
 };

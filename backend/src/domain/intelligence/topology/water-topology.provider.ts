@@ -7,7 +7,7 @@ export class WaterTopologyProvider implements ITopologyProvider {
   public readonly domain = 'WATER';
 
   public async getTopology(params: TopologyRequestParams): Promise<TopologyDto> {
-    const isBhopalDemo = params.isDemo === true;
+    const isBhopalDemo = process.env.NODE_ENV === 'test' && params.isDemo === true;
 
     if (isBhopalDemo) {
       const demo = SystemicIncidentService.getControlledDemoScenario();

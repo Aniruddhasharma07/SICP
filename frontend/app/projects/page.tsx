@@ -145,7 +145,7 @@ export default function ProjectsExplorerPage() {
             if (stage === 'problem' || stage === 'connected') {
               window.location.href = '/challenges';
             } else if (stage === 'systemic' || stage === 'infrastructure' || stage === 'investigation' || stage === 'sentinel' || stage === 'hypotheses' || stage === 'validation') {
-              window.location.href = '/government/systemic-intelligence';
+              window.location.href = '/challenges';
             } else if (stage === 'collaboration') {
               window.location.href = '/university';
             } else if (stage === 'memory') {

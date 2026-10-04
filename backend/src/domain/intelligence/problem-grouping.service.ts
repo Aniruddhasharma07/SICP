@@ -183,6 +183,24 @@ export class ProblemGroupingService {
 
       if (allMembers >= 2 && !bestGroup.challengeId) {
         await this.createChallengeForGroup(bestGroup.id);
+      } else if (bestGroup.challengeId) {
+        await prisma.challengeProblem.upsert({
+          where: {
+            challengeId_problemId: {
+              challengeId: bestGroup.challengeId,
+              problemId: problem.id,
+            },
+          },
+          create: {
+            challengeId: bestGroup.challengeId,
+            problemId: problem.id,
+          },
+          update: {},
+        });
+        await prisma.problem.update({
+          where: { id: problem.id },
+          data: { status: 'CHALLENGE_CREATED' },
+        });
       }
     } else {
       // Look for a standalone compatible problem to form a brand new group

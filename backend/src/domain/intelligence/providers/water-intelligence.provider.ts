@@ -13,9 +13,10 @@ export class WaterIntelligenceProvider implements IDomainIntelligenceProvider {
 
   public async analyze(challenge: any): Promise<DomainIntelligenceAnalysis> {
     const isDemo =
-      challenge.id === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (challenge.id === 'demo' ||
       challenge.id?.startsWith('SYS-2026-BHP') ||
-      challenge.id === 'sys-incident-bhopal-001';
+      challenge.id === 'sys-incident-bhopal-001');
 
     const possibleCauses = await this.getPossibleCauses(challenge);
     const evidence = await this.getEvidence(challenge);
@@ -41,9 +42,10 @@ export class WaterIntelligenceProvider implements IDomainIntelligenceProvider {
 
   public async getPossibleCauses(challenge: any): Promise<PossibleCauseDto[]> {
     const isDemo =
-      challenge.id === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (challenge.id === 'demo' ||
       challenge.id?.startsWith('SYS-2026-BHP') ||
-      challenge.id === 'sys-incident-bhopal-001';
+      challenge.id === 'sys-incident-bhopal-001');
 
     if (isDemo) {
       const demo = SystemicIncidentService.getControlledDemoScenario();
@@ -155,9 +157,10 @@ export class WaterIntelligenceProvider implements IDomainIntelligenceProvider {
     sentinelExplanation: string;
   }> {
     const isDemo =
-      challenge.id === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (challenge.id === 'demo' ||
       challenge.id?.startsWith('SYS-2026-BHP') ||
-      challenge.id === 'sys-incident-bhopal-001';
+      challenge.id === 'sys-incident-bhopal-001');
 
     const topology = await this.topologyProvider.getTopology({
       challengeId: challenge.id,

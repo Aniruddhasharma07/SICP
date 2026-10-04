@@ -4,23 +4,23 @@ import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-export default function SystemicIncidentDetailRedirect() {
+export default function ComplaintDetailRedirect() {
   const params = useParams();
   const router = useRouter();
 
   useEffect(() => {
     const id = params?.id as string;
-    if (id && !id.startsWith('SYS-') && id !== 'demo') {
-      router.replace(`/challenges/${id}`);
+    if (id) {
+      router.replace(`/problems/${id}`);
     } else {
-      router.replace('/challenges');
+      router.replace('/dashboard');
     }
   }, [params, router]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-500">
       <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      <p className="text-sm font-medium">Redirecting to Governed Challenge Workspace...</p>
+      <p className="text-sm font-medium">Redirecting to Ground Truth Problem Report...</p>
     </div>
   );
 }

@@ -61,6 +61,9 @@ export class ProblemController {
               solutionMemories: true,
             },
           },
+          challengeLinks: {
+            include: { challenge: true },
+          },
           overrideLogs: {
             orderBy: { createdAt: 'desc' },
           },

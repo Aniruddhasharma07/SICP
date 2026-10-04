@@ -41,7 +41,6 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { SEED_JHARKHAND_CHALLENGES } from '../src/lib/scenarios/gamharia-incident-scenario';
 import { ProblemRelationshipSummary } from '../src/components/problem/ProblemRelationshipSummary';
 
 interface ChallengeItem {
@@ -67,7 +66,7 @@ interface QuickAnalytics {
 
 export default function CivicPortalHomePage() {
   const { user } = useAuth();
-  const [challenges, setChallenges] = useState<ChallengeItem[]>(SEED_JHARKHAND_CHALLENGES as any);
+  const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
   const [analytics, setAnalytics] = useState<QuickAnalytics | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [loading, setLoading] = useState(false);
@@ -85,15 +84,15 @@ export default function CivicPortalHomePage() {
 
         if (chalRes.success && chalRes.data) {
           const items = Array.isArray(chalRes.data) ? chalRes.data : (chalRes.data as any).items || [];
-          if (items.length > 0) {
-            setChallenges(items);
-          }
+          setChallenges(items);
+        } else {
+          setChallenges([]);
         }
         if (analyticsRes.success && analyticsRes.data) {
           setAnalytics(analyticsRes.data);
         }
       } catch {
-        // Keeps SEED_JHARKHAND_CHALLENGES fallback
+        setChallenges([]);
       } finally {
         setLoading(false);
       }

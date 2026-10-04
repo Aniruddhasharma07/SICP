@@ -514,9 +514,11 @@ export class SystemicIncidentService {
   }): Promise<SystemicIncidentSummaryDto[]> {
     const list: SystemicIncidentSummaryDto[] = [];
 
-    // Ensure controlled demo is always initialized
-    if (!this.demoState) {
-      this.initControlledDemoScenario();
+    // Ensure controlled demo is ONLY accessible in test environments
+    if (process.env.NODE_ENV === 'test') {
+      if (!this.demoState) {
+        this.initControlledDemoScenario();
+      }
     }
 
     if (this.demoState) {
@@ -594,10 +596,11 @@ export class SystemicIncidentService {
    */
   public static async getIncidentById(id: string): Promise<SystemicIncidentDto> {
     const isDemoId =
-      id === 'demo' ||
+      process.env.NODE_ENV === 'test' &&
+      (id === 'demo' ||
       id === 'SYS-2026-BHP-001' ||
       id === 'sys-incident-bhopal-001' ||
-      (this.demoState && this.demoState.incident.id === id);
+      (this.demoState && this.demoState.incident.id === id));
 
     if (isDemoId) {
       if (!this.demoState) this.initControlledDemoScenario();
