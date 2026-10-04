@@ -86,9 +86,8 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
       title: 'Investigation & Triage Queue',
       items: [
         { label: 'Government Command', href: '/government', icon: LayoutDashboard, badge: 'SLA Active', color: 'text-purple-600' },
-        { label: 'Systemic Intelligence Radar', href: '/government/systemic-intelligence', icon: Network, isPrimary: true, badge: 'Radar', color: 'text-blue-600' },
         { label: 'Priority Triage Queue', href: '/government?mode=QUEUE', icon: CheckSquare, color: 'text-purple-600' },
-        { label: 'Jurisdictional Issues', href: '/challenges', icon: Compass, color: 'text-purple-600' },
+        { label: 'Jurisdictional Challenges', href: '/challenges', icon: Compass, color: 'text-purple-600' },
       ],
     },
     {

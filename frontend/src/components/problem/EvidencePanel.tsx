@@ -54,10 +54,10 @@ export function EvidencePanel({ challenge, intelligence }: EvidencePanelProps) {
     <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 sm:p-7 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Section 4 • Evidence Ledger
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Statutory Evidence Ledger
           </h2>
-          <p className="text-base font-bold text-slate-900 dark:text-slate-100">Available Evidence</p>
+          <p className="text-base font-bold text-slate-900 dark:text-slate-100">Verified Field & Sensor Evidence</p>
         </div>
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {availableItems.length} verified observations

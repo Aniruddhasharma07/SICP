@@ -17,11 +17,12 @@ interface NextActionPanelProps {
 }
 
 const CIVIC_MILESTONES = [
-  { id: 'REPORT', label: 'Citizen Report', keyStatuses: ['SUBMITTED', 'DRAFT'] },
-  { id: 'REVIEW', label: 'Municipal Review', keyStatuses: ['UNDER_GOV_REVIEW', 'SCREENING'] },
-  { id: 'VERIFY', label: 'Field Verification', keyStatuses: ['APPROVED', 'FIELD_VERIFICATION'] },
-  { id: 'PLAN', label: 'Resolution Planning', keyStatuses: ['ASSIGNED_TO_UNIVERSITY', 'IN_PROGRESS'] },
-  { id: 'OUTCOME', label: 'Outcome Recording', keyStatuses: ['RESOLVED', 'CLOSED'] },
+  { id: 'SUBMITTED', label: '1. Citizen Report', keyStatuses: ['SUBMITTED', 'DRAFT'] },
+  { id: 'GOVERNMENT_VERIFIED', label: '2. Govt Verified', keyStatuses: ['GOVERNMENT_VERIFIED', 'APPROVED', 'UNDER_GOV_REVIEW'] },
+  { id: 'UNIVERSITY_ASSIGNED', label: '3. University Assigned', keyStatuses: ['UNIVERSITY_ASSIGNED', 'ASSIGNED_TO_UNIVERSITY', 'IN_RESEARCH'] },
+  { id: 'INDUSTRY_FUNDED', label: '4. Industry Funded', keyStatuses: ['INDUSTRY_FUNDED', 'SOLUTION_PROPOSED'] },
+  { id: 'DEPLOYED', label: '5. Deployed', keyStatuses: ['DEPLOYED', 'IN_PILOT'] },
+  { id: 'OUTCOME_VERIFIED', label: '6. Outcome Verified', keyStatuses: ['OUTCOME_VERIFIED', 'RESOLVED', 'CLOSED'] },
 ];
 
 export function NextActionPanel({
@@ -36,10 +37,11 @@ export function NextActionPanel({
   // Determine current milestone index
   const getActiveMilestoneIndex = (): number => {
     const s = challenge.status as string;
-    if (s === 'RESOLVED' || s === 'CLOSED') return 4;
-    if (s === 'ASSIGNED_TO_UNIVERSITY' || s === 'IN_PROGRESS') return 3;
-    if (s === 'APPROVED' || s === 'FIELD_VERIFICATION') return 2;
-    if (s === 'UNDER_GOV_REVIEW') return 1;
+    if (s === 'OUTCOME_VERIFIED' || s === 'RESOLVED' || s === 'CLOSED') return 5;
+    if (s === 'DEPLOYED' || s === 'IN_PILOT') return 4;
+    if (s === 'INDUSTRY_FUNDED' || s === 'SOLUTION_PROPOSED') return 3;
+    if (s === 'UNIVERSITY_ASSIGNED' || s === 'ASSIGNED_TO_UNIVERSITY' || s === 'IN_RESEARCH') return 2;
+    if (s === 'GOVERNMENT_VERIFIED' || s === 'APPROVED' || s === 'UNDER_GOV_REVIEW') return 1;
     return 0;
   };
 
@@ -56,18 +58,18 @@ export function NextActionPanel({
     <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 sm:p-7 shadow-sm">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Section 2 • Next Steps
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Governed Lifecycle
           </h2>
-          <p className="text-base font-bold text-slate-900 dark:text-slate-100">What Happens Next</p>
+          <p className="text-base font-bold text-slate-900 dark:text-slate-100">Civic Progress Pipeline</p>
         </div>
         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-          Step {activeIndex + 1} of 5
+          Stage {activeIndex + 1} of 6
         </span>
       </div>
 
-      {/* 5-Stage Civic Milestone Pipeline */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 py-3 mb-6">
+      {/* 6-Stage Civic Milestone Pipeline */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 py-3 mb-6">
         {CIVIC_MILESTONES.map((step, idx) => {
           const isPassed = idx < activeIndex;
           const isCurrent = idx === activeIndex;

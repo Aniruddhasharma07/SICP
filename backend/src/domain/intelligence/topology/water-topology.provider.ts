@@ -7,12 +7,7 @@ export class WaterTopologyProvider implements ITopologyProvider {
   public readonly domain = 'WATER';
 
   public async getTopology(params: TopologyRequestParams): Promise<TopologyDto> {
-    const isBhopalDemo =
-      params.isDemo ||
-      params.challengeId === 'demo' ||
-      params.challengeId.startsWith('SYS-2026-BHP') ||
-      params.challengeId === 'sys-incident-bhopal-001' ||
-      (params.district?.toLowerCase() === 'bhopal' && params.category?.toUpperCase() === 'WATER');
+    const isBhopalDemo = params.isDemo === true;
 
     if (isBhopalDemo) {
       const demo = SystemicIncidentService.getControlledDemoScenario();

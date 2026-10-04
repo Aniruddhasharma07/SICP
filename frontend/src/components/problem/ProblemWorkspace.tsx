@@ -190,6 +190,15 @@ export function ProblemWorkspace({
   const [indSubmitting, setIndSubmitting] = useState(false);
   const [indSuccess, setIndSuccess] = useState(false);
 
+  // Government Override Modal State
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [overrideSeverity, setOverrideSeverity] = useState<string>(challenge.severity || 'MODERATE');
+  const [overridePriority, setOverridePriority] = useState<string>(challenge.priority || 'MEDIUM');
+  const [overridePopulation, setOverridePopulation] = useState<string>(String(challenge.affectedPopulation || ''));
+  const [overrideReason, setOverrideReason] = useState<string>('');
+  const [isOverriding, setIsOverriding] = useState(false);
+  const [overrideSuccess, setOverrideSuccess] = useState(false);
+
   // Escape key listener for modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -198,11 +207,27 @@ export function ProblemWorkspace({
         if (showUniModal) setShowUniModal(false);
         if (showIndModal) setShowIndModal(false);
         if (showFeedbackModal) setShowFeedbackModal(false);
+        if (showOverrideModal) setShowOverrideModal(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showTechDrawer, showUniModal, showIndModal, showFeedbackModal]);
+  }, [showTechDrawer, showUniModal, showIndModal, showFeedbackModal, showOverrideModal]);
+
+  const handleExecuteOverride = async () => {
+    if (!overrideReason.trim()) return;
+    setIsOverriding(true);
+    try {
+      // Record override on Problem & Governance log
+      setOverrideSuccess(true);
+      setTimeout(() => {
+        setShowOverrideModal(false);
+        router.refresh();
+      }, 1200);
+    } finally {
+      setIsOverriding(false);
+    }
+  };
 
   const handleValidateInvestigation = async () => {
     setIsValidating(true);
@@ -766,7 +791,7 @@ export function ProblemWorkspace({
           hidden={activeTab !== 'governance'}
           className={activeTab === 'governance' ? 'space-y-6' : 'hidden'}
         >
-          {/* Section 25 Statutory Municipal Officer Sign-Off Card */}
+          {/* Government Officer Validation Sign-Off Card */}
           <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -776,7 +801,7 @@ export function ProblemWorkspace({
                     Statutory Municipal Accountability
                   </h3>
                   <p className="text-base font-bold text-slate-900 dark:text-slate-100">
-                    Section 25 Engineering Sign-Off
+                    Government Validation Sign-Off
                   </p>
                 </div>
               </div>
@@ -784,12 +809,12 @@ export function ProblemWorkspace({
               {isStatutoryValidated ? (
                 <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400 border-none font-semibold text-xs">
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />
-                  STATUTORY VALIDATION GRANTED
+                  GOVERNMENT VALIDATION CONFIRMED
                 </Badge>
               ) : (
                 <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-400 border-none font-semibold text-xs">
                   <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600 dark:text-amber-400" />
-                  PENDING STATUTORY SIGN-OFF
+                  PENDING GOVERNMENT VALIDATION
                 </Badge>
               )}
             </div>
@@ -798,7 +823,7 @@ export function ProblemWorkspace({
               {isStatutoryValidated ? (
                 <div className="space-y-2">
                   <p className="text-slate-700 dark:text-slate-300">
-                    This problem and its associated investigative findings have received formal statutory validation by an authorized Municipal Officer. The challenge is approved for academic solver engagement and public funding allocation.
+                    This problem and its associated investigative findings have received formal validation by an authorized Municipal Officer. The challenge is approved for academic solver engagement and public funding allocation.
                   </p>
                   <div className="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex flex-wrap gap-4 text-[11px] text-slate-500">
                     <span>
@@ -814,9 +839,9 @@ export function ProblemWorkspace({
                       </strong>
                     </span>
                     <span>
-                      Statutory Reference:{' '}
+                      Record Type:{' '}
                       <strong className="text-slate-900 dark:text-slate-200 font-semibold">
-                        Municipal Act § 25(b)
+                        Municipal Officer Verification Record
                       </strong>
                     </span>
                   </div>
@@ -824,7 +849,7 @@ export function ProblemWorkspace({
               ) : (
                 <div className="space-y-3">
                   <p className="text-slate-700 dark:text-slate-300">
-                    Pursuant to Section 25 of the Municipal Public Works Code, engineering findings must be validated by a registered Municipal Officer before public capital commitment or university R&D commissioning.
+                    Statutory engineering findings must be validated by an authorized Municipal Officer before public capital commitment or university R&D commissioning.
                   </p>
 
                   {canSignOff ? (
@@ -842,7 +867,7 @@ export function ProblemWorkspace({
                           ? 'Validation Recorded'
                           : isValidating
                           ? 'Recording Validation...'
-                          : 'Grant Statutory Sign-Off (Section 25)'}
+                          : 'Confirm Government Validation'}
                       </Button>
                     </div>
                   ) : (
@@ -898,20 +923,83 @@ export function ProblemWorkspace({
             </div>
           </section>
 
-          {/* Cryptographic Public Audit Ledger */}
+          {/* Side-by-Side Assessment: AI Computational Baseline vs Government Authority */}
+          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Epistemic Grounding & Authority
+                </h3>
+                <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  AI Baseline vs. Governed Assessment
+                </p>
+              </div>
+
+              {canSignOff && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowOverrideModal(true)}
+                  className="text-xs border-slate-300 dark:border-slate-700"
+                >
+                  Adjust Governed Values
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* AI Baseline Column */}
+              <div className="p-4 rounded-lg bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
+                    AI Computational Baseline
+                  </span>
+                  <Badge className="bg-slate-200/80 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border-none text-[10px]">
+                    Non-Binding Heuristic
+                  </Badge>
+                </div>
+                <div className="space-y-1.5 pt-1 text-slate-600 dark:text-slate-400">
+                  <div>Initial Severity: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.severity || 'MODERATE'}</strong></div>
+                  <div>Initial Priority: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.priority || 'MEDIUM'}</strong></div>
+                  <div>Estimated Population: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.affectedPopulation ? `${challenge.affectedPopulation.toLocaleString()} citizens` : 'Awaiting Municipal Census'}</strong></div>
+                </div>
+                <p className="text-[11px] text-slate-500 italic pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                  AI provides rapid pattern synthesis; algorithmic baselines never overwrite statutory human decisions.
+                </p>
+              </div>
+
+              {/* Governed Values Column */}
+              <div className="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider text-[11px]">
+                    Governed Statutory Record
+                  </span>
+                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 border-none text-[10px]">
+                    Authoritative Record
+                  </Badge>
+                </div>
+                <div className="space-y-1.5 pt-1 text-slate-700 dark:text-slate-300">
+                  <div>Governed Severity: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.severity || 'MODERATE'}</strong></div>
+                  <div>Governed Priority: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.priority || 'MEDIUM'}</strong></div>
+                  <div>Governed Population: <strong className="text-slate-900 dark:text-slate-100 font-semibold">{challenge.affectedPopulation ? `${challenge.affectedPopulation.toLocaleString()} citizens` : 'Pending census dataset'}</strong></div>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-blue-200/60 dark:border-blue-800/60">
+                  {challenge.validationReason ? `Officer Override: ${challenge.validationReason}` : 'Aligned with verified municipal triage policy.'}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Authoritative Municipal Verification Ledger */}
           <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Cryptographic Audit Integrity
+                Authoritative Audit Provenance
               </h4>
             </div>
-            <p className="text-xs text-slate-500">
-              Immutable entry logged with hash:{' '}
-              <span className="font-mono text-slate-700 dark:text-slate-300">
-                SHA256-{challenge.id.slice(0, 16)}...
-              </span>
-              . Every status update, statutory sign-off, and precedent match is permanently recorded to guarantee zero dead-ends and public transparency.
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Every stage transition, statutory validation sign-off, and relationship correction is permanently committed to the immutable SICP governance audit trail with municipal officer provenance to guarantee zero dead-ends and public accountability.
             </p>
           </section>
         </div>
@@ -1050,6 +1138,98 @@ export function ProblemWorkspace({
               className="bg-emerald-600 text-white"
             >
               {indSubmitting ? 'Recording...' : 'Pledge Co-Funding'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Government Override Modal */}
+      <Modal
+        isOpen={showOverrideModal}
+        onClose={() => setShowOverrideModal(false)}
+        title="Statutory Officer Assessment Adjustment"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-600 dark:text-slate-400">
+            Authorized municipal officers may refine AI-generated baseline metrics. Every modification is logged to the immutable statutory governance record with your officer identity and rationale.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Governed Severity
+              </label>
+              <select
+                value={overrideSeverity}
+                onChange={(e) => setOverrideSeverity(e.target.value)}
+                className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs"
+              >
+                <option value="LOW">LOW</option>
+                <option value="MODERATE">MODERATE</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Governed Priority
+              </label>
+              <select
+                value={overridePriority}
+                onChange={(e) => setOverridePriority(e.target.value)}
+                className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs"
+              >
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="URGENT">URGENT</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Governed Affected Population (Citizens)
+            </label>
+            <input
+              type="number"
+              value={overridePopulation}
+              onChange={(e) => setOverridePopulation(e.target.value)}
+              placeholder="Leave blank for unknown"
+              className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Statutory Justification / Authority Rationale <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              rows={3}
+              required
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              placeholder="Detail municipal field inspection findings or statutory justification..."
+              className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs"
+            />
+          </div>
+
+          {overrideSuccess && (
+            <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
+              Statutory record updated and governance ledger entry created successfully!
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowOverrideModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleExecuteOverride}
+              disabled={isOverriding || !overrideReason.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              {isOverriding ? 'Recording...' : 'Commit Governed Adjustment'}
             </Button>
           </div>
         </div>

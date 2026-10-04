@@ -18,13 +18,13 @@ export function PossibleCauses({ challenge, intelligence }: PossibleCausesProps)
     <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 sm:p-7 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Section 5 • Scientific Inquiry
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Systemic Root Cause Analysis
           </h2>
-          <p className="text-base font-bold text-slate-900 dark:text-slate-100">Possible Explanations</p>
+          <p className="text-base font-bold text-slate-900 dark:text-slate-100">Competing Hypotheses</p>
         </div>
-        <Badge className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[10px]">
-          Requires Field Verification
+        <Badge className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[10.5px] font-medium">
+          Investigation hypothesis — not confirmed
         </Badge>
       </div>
 

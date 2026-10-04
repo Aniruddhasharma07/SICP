@@ -30,6 +30,7 @@ import { relationshipRouter } from './modules/relationship/relationship.routes';
 import { systemicRouter } from './modules/systemic/systemic.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { channelRouter } from './modules/channel/whatsapp.routes';
+import { problemRouter } from './modules/problem/problem.routes';
 import { authMiddleware } from './core/middlewares/auth.middleware';
 import { requirePermission } from './core/middlewares/rbac.middleware';
 import { AuditService } from './modules/audit/audit.service';
@@ -114,6 +115,7 @@ export function createApp(): Express {
   app.use('/api/v1/systemic-incidents', systemicRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/channels', channelRouter);
+  app.use('/api/v1/problems', problemRouter);
 
   // Audit Logs Route (Protected by audit:view)
   app.get('/api/v1/audit', authMiddleware, requirePermission('audit:view'), async (req: Request, res: Response, next) => {

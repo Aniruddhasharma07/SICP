@@ -96,13 +96,13 @@ export function ValidationLayer({
           AI models produce competing hypotheses, clustering metrics, and topological calculations; authorized Government Officers hold sole statutory authority to validate operational findings and mobilize public resources.
         </p>
 
-        {/* Section 25 Statutory Sign-Off Seal if Validated / Approved */}
+        {/* Government Validation Sign-Off Seal if Validated / Approved */}
         {isApproved ? (
           <div className="mt-3 p-4 bg-emerald-950/60 border-2 border-emerald-500/60 rounded-xl space-y-3 text-xs animate-sicp-scale-in shadow-lg shadow-emerald-950/50">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/30">
               <div className="flex items-center gap-2 font-black text-emerald-300 uppercase tracking-wide">
                 <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                <span>Statutory Sign-Off Sealed</span>
+                <span>Government Validation Confirmed</span>
               </div>
               <span className="font-mono text-[10px] font-bold bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 px-2.5 py-0.5 rounded">
                 GOV-VAL-{challenge.id}
@@ -228,7 +228,7 @@ export function ValidationLayer({
         <NextQuestionBridge
           currentStage="Stage 04 • Human Governance & Validation"
           questionAnswered="Is the evidence sufficient for an accountable decision?"
-          answeredSummary="Section 25 Statutory Sign-Off sealed on tamper-evident audit ledger by authorized Municipal Executive Engineer."
+          answeredSummary="Government Validation confirmed on tamper-evident audit ledger by authorized Municipal Executive Engineer."
           nextStage="Stage 05 • Institutional Solution Memory"
           nextQuestion="With official validation secured, has SICP solved similar hydraulic failures before in 700+ districts?"
           ctaLabel="Review Institutional Solution Precedents"

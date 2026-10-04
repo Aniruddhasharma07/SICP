@@ -50,6 +50,11 @@ import {
   SentinelProbeStatus,
   SentinelChoice,
   BranchDifferentialStatus,
+  GovernanceDecisionType,
+  GovernanceScope,
+  OutcomeClassification,
+  PopulationProvenanceStatus,
+  InvestigationEvidenceStatus,
 } from '../enums/status.enum';
 
 export interface UserDto {
@@ -1768,4 +1773,118 @@ export interface SystemicIncidentDto {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ProblemDto {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  category: string;
+  status: CitizenProblemStatus;
+  aiSeverity: SeverityLevel;
+  govSeverity?: SeverityLevel | null;
+  aiPriority: PriorityLevel;
+  govPriority?: PriorityLevel | null;
+  aiAffectedPopulation?: number | null;
+  govAffectedPopulation?: number | null;
+  populationStatus: PopulationProvenanceStatus;
+  populationProvenance?: string | null;
+  overrideReason?: string | null;
+  overriddenAt?: string | null;
+  overriddenById?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
+  district?: string | null;
+  state?: string | null;
+  wardNumber?: string | null;
+  cityCorporation?: string | null;
+  submitterId?: string | null;
+  isAnonymous?: boolean;
+  groupId?: string | null;
+  group?: ProblemGroupDto | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProblemGroupDto {
+  id: string;
+  title: string;
+  canonicalCategory: string;
+  relationshipStrength: number;
+  factorBreakdown: {
+    semantic?: number;
+    spatial?: number;
+    temporal?: number;
+    category?: number;
+    infrastructure?: number;
+  };
+  challengeId?: string | null;
+  members?: ProblemGroupMemberDto[];
+  solutionMemories?: GroupSolutionMemoryDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProblemGroupMemberDto {
+  id: string;
+  groupId: string;
+  problemId: string;
+  problem?: ProblemDto;
+  addedAt: string;
+}
+
+export interface RelationshipGovernanceMemoryDto {
+  id: string;
+  sourceEntityId: string;
+  targetEntityId: string;
+  scope: GovernanceScope;
+  decision: GovernanceDecisionType;
+  officerId?: string | null;
+  reason: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface GovernmentOverrideLogDto {
+  id: string;
+  problemId: string;
+  officerId?: string | null;
+  field: string;
+  previousValue: string;
+  overriddenValue: string;
+  reason: string;
+  createdAt: string;
+}
+
+export interface GroupSolutionMemoryDto {
+  id: string;
+  groupId: string;
+  title: string;
+  intervention: string;
+  classification: OutcomeClassification;
+  evidenceSource: string;
+  createdAt: string;
+}
+
+export interface InvestigationHypothesisDto {
+  id: string;
+  title: string;
+  description: string;
+  status: HypothesisStatus;
+  evidenceStatus: InvestigationEvidenceStatus;
+  falsificationCriteria?: string;
+  evidenceSignals?: string[];
+}
+
+export interface ChallengeInvestigationDto {
+  challengeId: string;
+  possibleRootCause: string;
+  rootCauseStatus: HypothesisStatus;
+  competingHypotheses: InvestigationHypothesisDto[];
+  falsificationCriteria: string[];
+  topologyAvailable: boolean;
+  topologyData?: any;
+}
+
 

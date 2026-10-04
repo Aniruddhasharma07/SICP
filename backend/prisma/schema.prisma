@@ -40,6 +40,10 @@ enum ChallengeStatus {
   RESOLVED
   MERGED_INTO_SYSTEMIC
   CLOSED
+  GOVERNMENT_VERIFIED
+  UNIVERSITY_ASSIGNED
+  INDUSTRY_FUNDED
+  OUTCOME_VERIFIED
 }
 
 enum OrganizationType {
@@ -599,6 +603,9 @@ model Challenge {
   solutionMemories     SolutionMemory[]
   solutionApplications SolutionMemoryApplication[]
   systemicSignals      SystemicIncidentSignal[]
+  problemGroups        ProblemGroup[]
+  challengeProblems    ChallengeProblem[]
+  challengeGroups      ChallengeGroup[]
 
   @@index([status])
   @@index([submitterId])
@@ -1683,3 +1690,184 @@ model SentinelProbeResponse {
 
   @@index([probeRequestId])
 }
+
+enum CitizenProblemStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  GROUPED
+  CHALLENGE_CREATED
+  RESOLVED
+  REJECTED
+}
+
+enum GovernanceDecisionType {
+  REJECT_RELATIONSHIP
+  REMOVE_FROM_GROUP
+  SPLIT_TO_NEW_CHALLENGE
+  MANUAL_MERGE
+  OVERRIDE_SEVERITY
+  OVERRIDE_PRIORITY
+}
+
+enum GovernanceScope {
+  PROBLEM_GROUP
+  GROUP_CHALLENGE
+  RELATIONSHIP
+}
+
+enum OutcomeClassification {
+  PREVIOUSLY_WORKED
+  NOT_WORKED
+  MIXED_OUTCOME
+  INSUFFICIENT_EVIDENCE
+}
+
+enum PopulationProvenanceStatus {
+  KNOWN
+  UNKNOWN
+}
+
+model Problem {
+  id                    String                     @id @default(uuid())
+  code                  String                     @unique
+  title                 String
+  description           String
+  category              String
+  status                CitizenProblemStatus       @default(SUBMITTED)
+  aiSeverity            SeverityLevel              @default(MODERATE)
+  govSeverity           SeverityLevel?
+  aiPriority            PriorityLevel              @default(MEDIUM)
+  govPriority           PriorityLevel?
+  aiAffectedPopulation  Int?
+  govAffectedPopulation Int?
+  populationStatus      PopulationProvenanceStatus @default(UNKNOWN)
+  populationProvenance  String?
+  overrideReason        String?
+  overriddenAt          DateTime?
+  overriddenById        String?
+  latitude              Float?
+  longitude             Float?
+  locationName          String?
+  district              String?
+  state                 String?
+  wardNumber            String?
+  cityCorporation       String?
+  submitterId           String?
+  isAnonymous           Boolean                    @default(false)
+  groupId               String?
+  group                 ProblemGroup?              @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groupMemberships      ProblemGroupMember[]
+  challengeLinks        ChallengeProblem[]
+  overrideLogs          GovernmentOverrideLog[]
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([district, state])
+  @@index([groupId])
+}
+
+model ProblemGroup {
+  id                   String                @id @default(uuid())
+  title                String
+  canonicalCategory    String
+  relationshipStrength Float                 @default(0.0)
+  factorBreakdown      Json?
+  challengeId          String?
+  challenge            Challenge?            @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  problems             Problem[]
+  members              ProblemGroupMember[]
+  challengeLinks       ChallengeGroup[]
+  solutionMemories     GroupSolutionMemory[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([canonicalCategory])
+  @@index([challengeId])
+}
+
+model ProblemGroupMember {
+  id        String       @id @default(uuid())
+  groupId   String
+  group     ProblemGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  problemId String
+  problem   Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  addedAt   DateTime     @default(now())
+
+  @@unique([groupId, problemId])
+  @@index([groupId])
+  @@index([problemId])
+}
+
+model ChallengeProblem {
+  id          String    @id @default(uuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  problemId   String
+  problem     Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  linkedAt    DateTime  @default(now())
+
+  @@unique([challengeId, problemId])
+  @@index([challengeId])
+  @@index([problemId])
+}
+
+model ChallengeGroup {
+  id          String       @id @default(uuid())
+  challengeId String
+  challenge   Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  groupId     String
+  group       ProblemGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  linkedAt    DateTime     @default(now())
+
+  @@unique([challengeId, groupId])
+  @@index([challengeId])
+  @@index([groupId])
+}
+
+model RelationshipGovernanceMemory {
+  id             String                 @id @default(uuid())
+  sourceEntityId String
+  targetEntityId String
+  scope          GovernanceScope
+  decision       GovernanceDecisionType
+  officerId      String?
+  reason         String
+  active         Boolean                @default(true)
+  createdAt      DateTime               @default(now())
+
+  @@index([sourceEntityId, targetEntityId])
+  @@index([scope])
+  @@index([active])
+}
+
+model GovernmentOverrideLog {
+  id              String   @id @default(uuid())
+  problemId       String
+  problem         Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  officerId       String?
+  field           String
+  previousValue   String
+  overriddenValue String
+  reason          String
+  createdAt       DateTime @default(now())
+
+  @@index([problemId])
+  @@index([officerId])
+}
+
+model GroupSolutionMemory {
+  id              String                @id @default(uuid())
+  groupId         String
+  group           ProblemGroup          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title           String
+  intervention    String
+  classification  OutcomeClassification
+  evidenceSource  String
+  createdAt       DateTime              @default(now())
+
+  @@index([groupId])
+  @@index([classification])
+}
+

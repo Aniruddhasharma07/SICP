@@ -1,0 +1,118 @@
+{
+  "scenario": "Systemic Road Arterial Corridor Cluster",
+  "domain": "ROAD_TRANSPORT",
+  "problems": [
+    {
+      "id": "fix-prob-001",
+      "code": "PRB-2026-1001",
+      "title": "Severe Pothole Cluster on Kolar Main Road",
+      "description": "Continuous asphalt cratering and deep potholes along 200m stretch near Sector C junction after monsoon rains.",
+      "category": "ROADS_TRANSPORT",
+      "latitude": 23.1815,
+      "longitude": 77.4126,
+      "locationName": "Kolar Main Road Sector C",
+      "district": "Bhopal",
+      "state": "Madhya Pradesh",
+      "wardNumber": "42"
+    },
+    {
+      "id": "fix-prob-002",
+      "code": "PRB-2026-1002",
+      "title": "Road Surface Subsidence and Waterlogging",
+      "description": "Subgrade depression causing localized flooding and vehicle axle damage along Kolar arterial corridor.",
+      "category": "ROADS_INFRASTRUCTURE",
+      "latitude": 23.1832,
+      "longitude": 77.4141,
+      "locationName": "Kolar Main Road Sector D",
+      "district": "Bhopal",
+      "state": "Madhya Pradesh",
+      "wardNumber": "42"
+    },
+    {
+      "id": "fix-prob-003",
+      "code": "PRB-2026-1003",
+      "title": "Carriageway Edge Cracking and Drainage Failure",
+      "description": "Road shoulder eroded and edge cracking extending toward center lane due to unchannelized stormwater runoff.",
+      "category": "Roads & Transport",
+      "latitude": 23.1848,
+      "longitude": 77.4155,
+      "locationName": "Kolar Main Road Sector E",
+      "district": "Bhopal",
+      "state": "Madhya Pradesh",
+      "wardNumber": "42"
+    },
+    {
+      "id": "fix-prob-004",
+      "code": "PRB-2026-1004",
+      "title": "Isolated Pothole at Residential Colony Entrance",
+      "description": "Single surface pothole at internal society entrance gate, unrelated to main road transit.",
+      "category": "ROADS",
+      "latitude": 23.215,
+      "longitude": 77.452,
+      "locationName": "Arera Colony Internal Lane 5",
+      "district": "Bhopal",
+      "state": "Madhya Pradesh",
+      "wardNumber": "48"
+    }
+  ],
+  "expectedGroups": [
+    {
+      "title": "Roads Transport Incident Cluster - Kolar Main Road",
+      "canonicalCategory": "ROAD_TRANSPORT",
+      "members": ["fix-prob-001", "fix-prob-002", "fix-prob-003"],
+      "expectedMinStrength": 0.65
+    },
+    {
+      "title": "Isolated Road Report - Arera Colony",
+      "canonicalCategory": "ROAD_TRANSPORT",
+      "members": ["fix-prob-004"]
+    }
+  ],
+  "competingHypotheses": [
+    {
+      "id": "hyp-subbase-saturation",
+      "title": "Sub-base moisture infiltration and subgrade saturation",
+      "initialStatus": "UNDER_EVALUATION",
+      "evidenceStatus": "SUPPORTS"
+    },
+    {
+      "id": "hyp-axle-overload",
+      "title": "Axle load overloading beyond pavement design capacity",
+      "initialStatus": "UNDER_EVALUATION",
+      "evidenceStatus": "UNKNOWN"
+    },
+    {
+      "id": "hyp-utility-settlement",
+      "title": "Unconsolidated utility trench restoration settlement",
+      "initialStatus": "UNDER_EVALUATION",
+      "evidenceStatus": "UNKNOWN"
+    }
+  ],
+  "humanOfficerCorrection": {
+    "officerId": "gov-off-991",
+    "officerName": "Executive Engineer PWD",
+    "override": {
+      "targetProblemId": "fix-prob-001",
+      "govSeverity": "SEVERE",
+      "govPriority": "CRITICAL",
+      "govAffectedPopulation": 68000,
+      "reason": "Arterial corridor carries heavy public transit bus routes; high risk of multi-vehicle commuter accidents."
+    },
+    "regroupSwipe": {
+      "problemId": "fix-prob-004",
+      "reason": "Internal residential lane has separate municipal jurisdiction from PWD arterial highway."
+    },
+    "investigationValidation": {
+      "confirmedHypothesis": "Sub-base moisture infiltration and subgrade saturation",
+      "validatedStatus": "HUMAN_VALIDATED",
+      "notes": "Core drilling on 2026-10-02 confirmed saturated clay subgrade and lack of transverse roadside drainage."
+    }
+  },
+  "verifiedOutcome": {
+    "status": "OUTCOME_VERIFIED",
+    "stage": 6,
+    "classification": "PREVIOUSLY_WORKED",
+    "intervention": "Full-depth reclamation with subgrade geotextile stabilization and side-drain culverts",
+    "measuredImpact": "Zero recurrent subsidence over 12 months; commuter throughput restored."
+  }
+}

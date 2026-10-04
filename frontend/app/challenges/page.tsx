@@ -26,11 +26,10 @@ import {
   Clock,
 } from 'lucide-react';
 
-import { SEED_JHARKHAND_CHALLENGES } from '../../src/lib/scenarios/gamharia-incident-scenario';
 import { ProblemRelationshipSummary } from '../../src/components/problem/ProblemRelationshipSummary';
 
 export default function ChallengesExplorerPage() {
-  const [challenges, setChallenges] = useState<ChallengeDto[]>(SEED_JHARKHAND_CHALLENGES as any);
+  const [challenges, setChallenges] = useState<ChallengeDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
@@ -42,13 +41,13 @@ export default function ChallengesExplorerPage() {
     try {
       const query = selectedStatus !== 'ALL' ? `?status=${selectedStatus}` : '';
       const res = await apiClient.request<{ items: ChallengeDto[]; total: number }>(`/api/v1/challenges${query}`);
-      if (res.success && res.data && (res.data.items || []).length > 0) {
+      if (res.success && res.data && Array.isArray(res.data.items)) {
         setChallenges(res.data.items);
       } else {
-        setChallenges(SEED_JHARKHAND_CHALLENGES as any);
+        setChallenges([]);
       }
     } catch {
-      setChallenges(SEED_JHARKHAND_CHALLENGES as any);
+      setChallenges([]);
     } finally {
       setLoading(false);
     }

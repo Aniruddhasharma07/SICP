@@ -113,8 +113,8 @@ export function ContextualActionRail({
 
     if (challenge.status === 'UNDER_GOV_REVIEW' && isGovOrAdmin) {
       return {
-        title: 'Section 25 Statutory Sign-Off',
-        subtitle: 'Scroll to validation seal to execute authorized finding',
+        title: 'Government Validation Sign-Off',
+        subtitle: 'Review investigative evidence to confirm systemic finding',
         action: () => onJumpToLayer('validation-layer'),
         variant: 'success' as const,
         icon: ShieldCheck,
@@ -169,7 +169,7 @@ export function ContextualActionRail({
     { label: 'Gemini Syntactic Normalization', fulfilled: !!challenge.impact, epistemic: 'AI_INTERPRETED', layer: 'signal-layer' },
     { label: 'Infrastructure Graph Overlap', fulfilled: (challenge as any).relationships?.length > 0, epistemic: 'COMPUTED', layer: 'relationship-layer' },
     { label: 'AMCH Diagnostic Matrix', fulfilled: true, epistemic: 'AI_INTERPRETED', layer: 'investigation-layer' },
-    { label: 'Section 25 Statutory Sign-Off', fulfilled: isApproved, epistemic: 'HUMAN_VALIDATED', layer: 'validation-layer' },
+    { label: 'Government Validation Sign-Off', fulfilled: isApproved, epistemic: 'HUMAN_VALIDATED', layer: 'validation-layer' },
     { label: 'Institutional Solution Memory Match', fulfilled: true, epistemic: 'SOURCE_DERIVED', layer: 'memory-layer' },
     { label: 'Field Ground Truth Telemetry', fulfilled: challenge.status === 'RESOLVED', epistemic: 'VERIFIED_OUTCOME', layer: 'outcome-layer' },
   ];

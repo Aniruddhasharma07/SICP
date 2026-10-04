@@ -93,7 +93,7 @@ export function FourCoreQuestionsBanner({
                 : hasProjects
                 ? `Operational intervention deployed under Project ${challenge.projects![0].id.slice(0, 8)}.`
                 : isApproved
-                ? 'Validated under Section 25 Statutory Sign-Off. Ready for university/CSR matching.'
+                ? 'Validated under Government Validation Sign-Off. Ready for university/CSR matching.'
                 : 'Citizen complaint verified. Awaiting municipal jurisdiction determination.'}
             </p>
           </div>
@@ -212,7 +212,7 @@ export function FourCoreQuestionsBanner({
                 ? 'Collect citizen outcome telemetry to verify 48-hour pressure stability.'
                 : isApproved
                 ? 'Mobilize university engineering lab and Schedule VII CSR co-funding.'
-                : 'Authorized Officer must inspect evidence and execute Section 25 Statutory Sign-Off.'}
+                : 'Authorized Officer must inspect evidence and execute Government Validation Sign-Off.'}
             </p>
           </div>
 
