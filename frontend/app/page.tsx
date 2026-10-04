@@ -70,7 +70,6 @@ export default function CivicPortalHomePage() {
   const [analytics, setAnalytics] = useState<QuickAnalytics | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [loading, setLoading] = useState(false);
-  const [activePipelineStep, setActivePipelineStep] = useState(0);
 
   const authorizedPortals = getAuthorizedPortals(user?.role);
 
@@ -111,100 +110,6 @@ export default function CivicPortalHomePage() {
   const systemicCount = analytics?.challenges?.systemicCount ?? challenges.filter(c => c.isSystemic).length;
   const totalProjects = analytics?.projects?.total ?? 0;
   const memoryCount = analytics?.innovation?.publishedSolutionMemories ?? 0;
-
-  const pipelineSteps = [
-    {
-      step: '01',
-      title: 'Citizen Signal',
-      subtitle: 'Verified Ground Intake',
-      desc: 'Citizens report local road, water, or civil hazards via text, voice, or media. Verifiable geocoding and symptom extraction are captured.',
-      badge: 'Citizen',
-    },
-    {
-      step: '02',
-      title: 'Intake Understood',
-      subtitle: 'Symptom & Boundary Parsing',
-      desc: 'SICP semantically extracts symptoms, severity, and service area boundaries without hallucinating nonexistent facts.',
-      badge: 'SICP AI',
-    },
-    {
-      step: '03',
-      title: 'Signals Connected',
-      subtitle: 'Spatio-Temporal Correlation',
-      desc: 'Proximity algorithms connect nearby reports sharing time windows (<48h), distance (<2km), and symptom overlap (>80%).',
-      badge: 'Correlation',
-    },
-    {
-      step: '04',
-      title: 'Systemic Pattern',
-      subtitle: 'Heuristic Scoring',
-      desc: 'Evidence crosses the systemic threshold (S_sys >= 0.70), alerting municipal command to a possible shared infrastructure failure.',
-      badge: 'Systemic',
-    },
-    {
-      step: '05',
-      title: 'Infrastructure Lineage',
-      subtitle: 'Topological Traversal',
-      desc: 'Directed graph traversal queries official Municipal GIS data to trace feeder lines and identify Lowest Common Ancestor (LCA) assets.',
-      badge: 'Topology',
-    },
-    {
-      step: '06',
-      title: 'Active Investigation',
-      subtitle: 'Field Inspection & Logging',
-      desc: 'Municipal engineers log physical observations, dynamic pressure readings, and acoustic correlation data.',
-      badge: 'Investigation',
-    },
-    {
-      step: '07',
-      title: 'Sentinel Probe',
-      subtitle: 'Targeted Control Inquiry',
-      desc: 'Strictly neutral, non-leading inquiries are dispatched to unaffected control areas to test branch boundary hypotheses.',
-      badge: 'Sentinel',
-    },
-    {
-      step: '08',
-      title: 'Competing Hypotheses',
-      subtitle: 'Richards Heuer AMCH v1.0',
-      desc: 'Analysis of Competing Hypotheses matrix evaluates mutually exclusive failure modes, penalizing inconsistent explanations.',
-      badge: 'AMCH',
-    },
-    {
-      step: '09',
-      title: 'Human Validation',
-      subtitle: 'Statutory Officer Sign-Off',
-      desc: 'Invariant #1: AI suggests and computes; only accredited human government officers hold statutory authority to validate findings.',
-      badge: 'Governance',
-    },
-    {
-      step: '10',
-      title: 'Collaboration',
-      subtitle: 'University & Industry Brief',
-      desc: 'Validated challenges convert into accredited academic R&D calls and corporate CSR deployment opportunities.',
-      badge: 'Partnership',
-    },
-    {
-      step: '11',
-      title: 'Field Intervention',
-      subtitle: 'Engineering Remediation',
-      desc: 'Multi-disciplinary university teams and industry partners execute sensor deployments and engineering fixes.',
-      badge: 'Intervention',
-    },
-    {
-      step: '12',
-      title: 'Verified Outcome',
-      subtitle: 'Ground Truth Confirmation',
-      desc: 'Citizen post-intervention surveys and municipal inspections verify permanent problem resolution on the ground.',
-      badge: 'Verified',
-    },
-    {
-      step: '13',
-      title: 'Solution Memory',
-      subtitle: 'SICP Remembers (Section 22)',
-      desc: 'Intervention telemetry, failure avoidance factors, and lessons learned are indexed into institutional memory for future learning.',
-      badge: 'Memory',
-    },
-  ];
 
   return (
     <AppLayout>
@@ -301,79 +206,6 @@ export default function CivicPortalHomePage() {
                 {memoryCount > 0 ? 'Indexed Precedents (Sec 22)' : 'Awaiting Field Indexing'}
               </span>
             </div>
-          </div>
-        </section>
-
-        {/* Interactive Societal Innovation Pipeline Visualizer */}
-        <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-5">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  13-Stage Canonical Intelligence Continuum
-                </span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                How SICP Transforms Civic Problems into Verified Interventions
-              </h2>
-            </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium self-start md:self-auto">
-              Click any stage to inspect the intelligence continuum
-            </span>
-          </div>
-
-          {/* Stepper Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-            {pipelineSteps.map((step, idx) => {
-              const isSelected = activePipelineStep === idx;
-              return (
-                <button
-                  key={step.step}
-                  type="button"
-                  onClick={() => setActivePipelineStep(idx)}
-                  className={`text-left p-3 rounded-xl border transition-all duration-150 ${
-                    isSelected
-                      ? 'bg-slate-900 dark:bg-slate-950 text-white border-slate-900 dark:border-blue-500 shadow-xs ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-blue-300' : 'text-slate-500 dark:text-slate-400'}`}>
-                      Step {step.step}
-                    </span>
-                    <span
-                      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-semibold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      {step.badge}
-                    </span>
-                  </div>
-                  <h4 className={`font-bold text-xs leading-tight line-clamp-1 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{step.title}</h4>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Active Stage Deep Dive */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-blue-300 uppercase tracking-wide">
-                  Stage {pipelineSteps[activePipelineStep].step} &bull; {pipelineSteps[activePipelineStep].subtitle}
-                </span>
-                <h3 className="text-lg md:text-xl font-black text-white">
-                  {pipelineSteps[activePipelineStep].title}
-                </h3>
-              </div>
-              <Badge className="bg-blue-600 text-white font-bold text-xs uppercase px-3 py-1">
-                {pipelineSteps[activePipelineStep].badge}
-              </Badge>
-            </div>
-            <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-              {pipelineSteps[activePipelineStep].desc}
-            </p>
           </div>
         </section>
 
