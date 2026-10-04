@@ -43,8 +43,8 @@ const PORTAL_PRESETS: PortalPreset[] = [
   {
     key: 'citizen',
     label: 'Citizen',
-    sublabel: 'Complaint & Civic Action',
-    destination: '/dashboard',
+    sublabel: 'Problem Intake & Verification',
+    destination: '/challenges',
     email: 'citizen@sicp.gov.in',
     role: 'CITIZEN',
     icon: Layers,
@@ -108,7 +108,7 @@ const PORTAL_PRESETS: PortalPreset[] = [
 ];
 
 export function getCanonicalPortalForRole(role?: string | null): { path: string; portalName: string } {
-  if (!role) return { path: '/dashboard', portalName: 'Citizen Complaint Portal' };
+  if (!role) return { path: '/challenges', portalName: 'Citizen Challenges Portal' };
   const r = role.toUpperCase();
 
   if (['GOVERNMENT_OFFICER', 'GOVERNMENT_DEPARTMENT', 'ULB', 'PRI'].includes(r)) {
@@ -123,7 +123,7 @@ export function getCanonicalPortalForRole(role?: string | null): { path: string;
   if (['SYSTEM_ADMIN'].includes(r)) {
     return { path: '/admin', portalName: 'System Admin Portal' };
   }
-  return { path: '/dashboard', portalName: 'Citizen Complaint Portal' };
+  return { path: '/challenges', portalName: 'Citizen Challenges Portal' };
 }
 
 export default function LoginPage() {

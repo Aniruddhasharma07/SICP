@@ -26,7 +26,7 @@ export function MobileNav() {
     if (role.includes('ADMIN')) {
       return { label: 'Admin', href: '/admin', icon: ShieldCheck };
     }
-    return { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard };
+    return { label: 'My Problems', href: '/my-problems', icon: LayoutDashboard };
   };
 
   const portalItem = getPortalItem();

@@ -165,7 +165,7 @@ export default function MyProblemsPage() {
           portalBadge={{ text: 'Citizen Grievance Hub', variant: 'civic' }}
           breadcrumbs={[
             { label: 'SICP', href: '/' },
-            { label: 'Citizen Portal', href: '/dashboard' },
+            { label: 'Challenges', href: '/challenges' },
             { label: 'My Problems' },
           ]}
           actions={

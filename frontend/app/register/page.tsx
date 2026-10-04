@@ -37,7 +37,7 @@ const ROLES = [
     role: UserRole.CITIZEN,
     label: 'Citizen',
     tagline: 'Report municipal grievances & verify societal solutions',
-    destination: '/dashboard',
+    destination: '/challenges',
     icon: User,
     color: 'text-blue-600 dark:text-blue-400',
     bg: 'bg-blue-50 dark:bg-blue-950/40',
@@ -286,7 +286,7 @@ export default function RegisterPage() {
       } else if (selectedRole === UserRole.GOVERNMENT_OFFICER) {
         router.push('/government');
       } else {
-        router.push('/dashboard');
+        router.push('/challenges');
       }
     } else {
       setError(res.error || 'Registration failed. Please check form entries.');

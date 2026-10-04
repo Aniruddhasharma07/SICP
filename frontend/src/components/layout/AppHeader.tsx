@@ -247,11 +247,11 @@ export function AppHeader() {
 
                     <div className="p-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-center">
                       <Link
-                        href="/dashboard"
+                        href="/challenges"
                         onClick={() => setIsNotifOpen(false)}
                         className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                       >
-                        View Dashboard Activity &rarr;
+                        View Platform Activity &rarr;
                       </Link>
                     </div>
                   </div>
@@ -262,7 +262,7 @@ export function AppHeader() {
             {/* Auth State Menu */}
             {user ? (
               <div className="flex items-center gap-2.5">
-                <Link href="/dashboard">
+                <Link href="/challenges">
                   <Badge variant="secondary" className="hidden md:inline-flex cursor-pointer hover:bg-slate-200 text-[11px] font-semibold">
                     {formatEnumToHuman(user.role)}
                   </Badge>
@@ -270,9 +270,9 @@ export function AppHeader() {
 
                 <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
                   <Link
-                    href="/dashboard"
+                    href="/my-problems"
                     className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs hover:ring-2 hover:ring-blue-300 transition-all"
-                    title="User Profile"
+                    title="My Reported Problems"
                   >
                     {user.fullName.charAt(0).toUpperCase()}
                   </Link>

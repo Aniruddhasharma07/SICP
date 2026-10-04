@@ -21,12 +21,12 @@ export interface PortalDef {
 
 export const PORTAL_DEFINITIONS: PortalDef[] = [
   {
-    id: 'complaint',
-    name: 'Complaint Dashboard',
-    shortName: 'Complaints',
-    path: '/dashboard',
+    id: 'citizen',
+    name: 'Citizen Hub',
+    shortName: 'Citizen',
+    path: '/my-problems',
     icon: '📋',
-    description: 'Citizens, Community Organizations & Government Agencies: triage, ground verification & tracking',
+    description: 'Citizens & Community: report problems, track challenges & verify deployed solutions',
     accentColor: 'blue',
     badge: 'Civic',
   },

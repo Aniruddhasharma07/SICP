@@ -184,12 +184,12 @@ export default function ProblemDetailPage() {
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-12 space-y-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/my-problems" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            Back to Grievances
+            Back to My Problems
           </Link>
           <Alert variant="destructive">{error || 'Problem report could not be found.'}</Alert>
-          <Button onClick={() => router.push('/dashboard')}>Return to Dashboard</Button>
+          <Button onClick={() => router.push('/my-problems')}>Return to My Problems</Button>
         </div>
       </AppLayout>
     );
@@ -206,8 +206,8 @@ export default function ProblemDetailPage() {
         {/* Navigation Breadcrumb */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-            <Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              Citizen Intake
+            <Link href="/my-problems" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              My Problems
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="font-mono font-bold text-slate-900 dark:text-slate-200">
