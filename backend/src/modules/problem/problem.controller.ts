@@ -82,7 +82,7 @@ export class ProblemController {
 
   public static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { category, district, status, limit, offset } = req.query;
+      const { category, district, status, submitterId, myOnly, limit, offset } = req.query;
       const take = limit ? parseInt(limit as string) : 50;
       const skip = offset ? parseInt(offset as string) : 0;
 
@@ -90,6 +90,11 @@ export class ProblemController {
       if (category) where.category = category as string;
       if (district) where.district = { contains: district as string, mode: 'insensitive' };
       if (status) where.status = status as any;
+      if (submitterId) {
+        where.submitterId = submitterId as string;
+      } else if (myOnly === 'true' && req.user?.id) {
+        where.submitterId = req.user.id;
+      }
 
       const [problems, total] = await Promise.all([
         prisma.problem.findMany({
@@ -104,6 +109,30 @@ export class ProblemController {
                 title: true,
                 relationshipStrength: true,
                 challengeId: true,
+                challenge: {
+                  select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    category: true,
+                    severity: true,
+                    priority: true,
+                  },
+                },
+              },
+            },
+            challengeLinks: {
+              include: {
+                challenge: {
+                  select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    category: true,
+                    severity: true,
+                    priority: true,
+                  },
+                },
               },
             },
           },

@@ -159,6 +159,15 @@ export interface ChallengeDto {
   evidence?: ChallengeEvidenceDto[];
   impact?: ImpactMetricDto | null;
   projects?: { id: string; title: string; status: ProjectStatus }[];
+  universityName?: string | null;
+  industryName?: string | null;
+  deployedDate?: string | null;
+  finishedDate?: string | null;
+  totalCitizenProblems?: number;
+  verifiedCount?: number;
+  deniedCount?: number;
+  challengeProblems?: any[];
+  problemGroups?: any[];
   createdAt: string;
   updatedAt: string;
 }

@@ -155,9 +155,18 @@ export function AppHeader() {
               <Search className="w-4 h-4 text-slate-600" />
             </Button>
 
+            {/* My Problems Link */}
+            {user && (
+              <Link href="/my-problems">
+                <Button variant="outline" size="sm" className="hidden sm:flex text-xs h-8 font-semibold">
+                  <span>My Problems</span>
+                </Button>
+              </Link>
+            )}
+
             {/* Submit Problem Button */}
             <Link href="/challenges/new">
-              <Button size="sm" className="hidden lg:flex gap-1.5 shadow-xs">
+              <Button size="sm" className="hidden lg:flex gap-1.5 shadow-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">
                 <PlusCircle className="w-4 h-4" />
                 <span>Submit Problem</span>
               </Button>

@@ -59,6 +59,8 @@ import { ChallengeIntelligenceClient } from '../../services/challengeIntelligenc
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
+import { CanonicalLifecycleTracker } from '../challenge/CanonicalLifecycleTracker';
+import { ChallengePartnerStrip } from '../challenge/ChallengePartnerStrip';
 
 
 export interface ExtendedChallenge extends ChallengeDto {
@@ -411,6 +413,20 @@ export function ProblemWorkspace({
 
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto space-y-6">
+        {/* Canonical 6-Stage Lifecycle Progress Tracker */}
+        <CanonicalLifecycleTracker
+          status={challenge.status}
+          variant="full"
+          verifiedCount={challenge.verifiedCount}
+          deniedCount={challenge.deniedCount}
+        />
+
+        {/* Executive Multi-Sector Partner & Citizen Verification Strip */}
+        <ChallengePartnerStrip
+          challenge={challenge}
+          onRefresh={() => router.refresh()}
+        />
+
         {/* Viewport 1 Executive Summary Hierarchy */}
         <FourCoreQuestionsBanner
           challenge={challenge}

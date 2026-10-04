@@ -239,8 +239,45 @@ export class ChallengeService {
           select: { id: true, fullName: true, email: true },
         },
         projects: {
-          select: { id: true, title: true, status: true },
+          include: {
+            leadingOrg: {
+              select: { id: true, name: true, type: true },
+            },
+            partnerships: {
+              include: {
+                partnerOrg: {
+                  select: { id: true, name: true, type: true },
+                },
+              },
+            },
+            deployments: {
+              orderBy: { deploymentDate: 'desc' },
+              take: 1,
+            },
+          },
           orderBy: { createdAt: 'desc' },
+        },
+        citizenVerifications: {
+          select: {
+            id: true,
+            rating: true,
+            verifiedImprovement: true,
+            problemStatus: true,
+            comments: true,
+            createdAt: true,
+            citizenId: true,
+          },
+        },
+        challengeProblems: {
+          include: {
+            problem: true,
+          },
+        },
+        problemGroups: {
+          include: {
+            problems: true,
+            solutionMemories: true,
+          },
         },
       },
     });
@@ -249,12 +286,14 @@ export class ChallengeService {
       throw new NotFoundError('Challenge', id);
     }
 
+    const c = challenge as any;
+
     const relationships: ChallengeRelationshipDto[] = [
-      ...challenge.sourceRelationships.map(r => ({
+      ...(c.sourceRelationships || []).map((r: any) => ({
         id: r.id,
         sourceChallengeId: r.sourceChallengeId,
         targetChallengeId: r.targetChallengeId,
-        targetChallengeTitle: r.targetChallenge.title,
+        targetChallengeTitle: r.targetChallenge?.title,
         relationType: r.relationType as unknown as import('@sicp/shared').RelationshipType,
         status: r.status as unknown as import('@sicp/shared').RelationshipStatus,
         confidenceScore: r.confidenceScore,
@@ -263,11 +302,11 @@ export class ChallengeService {
         createdAt: r.createdAt.toISOString(),
         updatedAt: r.updatedAt.toISOString(),
       })),
-      ...challenge.targetRelationships.map(r => ({
+      ...(c.targetRelationships || []).map((r: any) => ({
         id: r.id,
         sourceChallengeId: r.sourceChallengeId,
         targetChallengeId: r.targetChallengeId,
-        sourceChallengeTitle: r.sourceChallenge.title,
+        sourceChallengeTitle: r.sourceChallenge?.title,
         relationType: r.relationType as unknown as import('@sicp/shared').RelationshipType,
         status: r.status as unknown as import('@sicp/shared').RelationshipStatus,
         confidenceScore: r.confidenceScore,
@@ -279,44 +318,44 @@ export class ChallengeService {
     ];
 
     return {
-      id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      category: challenge.category,
-      severity: challenge.severity as unknown as SeverityLevel,
-      priority: challenge.priority as unknown as PriorityLevel,
-      priorityScore: challenge.priorityScore,
-      status: challenge.status as unknown as ChallengeStatus,
-      submitterId: challenge.submitterId,
-      submitterOrgId: challenge.submitterOrgId,
-      submitter: challenge.submitter
-        ? { id: challenge.submitter.id, fullName: challenge.submitter.fullName, email: challenge.submitter.email }
-        : (challenge.submitterId ? { id: challenge.submitterId, fullName: 'Citizen', email: '' } : null),
-      latitude: challenge.latitude,
-      longitude: challenge.longitude,
-      address: challenge.address,
-      district: challenge.district,
-      state: challenge.state,
-      affectedPopulation: challenge.affectedPopulation,
-      durationMonths: challenge.durationMonths,
-      isSystemic: challenge.isSystemic,
-      systemicSummary: challenge.systemicSummary,
-      isCanonical: challenge.isCanonical,
-      canonicalClusterId: challenge.canonicalClusterId,
-      version: challenge.version,
-      supportVotesCount: challenge.communityVotes.length,
-      timelines: challenge.timelines.map(t => ({
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      category: c.category,
+      severity: c.severity as unknown as SeverityLevel,
+      priority: c.priority as unknown as PriorityLevel,
+      priorityScore: c.priorityScore,
+      status: c.status as unknown as ChallengeStatus,
+      submitterId: c.submitterId,
+      submitterOrgId: c.submitterOrgId,
+      submitter: c.submitter
+        ? { id: c.submitter.id, fullName: c.submitter.fullName, email: c.submitter.email }
+        : (c.submitterId ? { id: c.submitterId, fullName: 'Citizen', email: '' } : null),
+      latitude: c.latitude,
+      longitude: c.longitude,
+      address: c.address,
+      district: c.district,
+      state: c.state,
+      affectedPopulation: c.affectedPopulation,
+      durationMonths: c.durationMonths,
+      isSystemic: c.isSystemic,
+      systemicSummary: c.systemicSummary,
+      isCanonical: c.isCanonical,
+      canonicalClusterId: c.canonicalClusterId,
+      version: c.version,
+      supportVotesCount: (c.communityVotes || []).length,
+      timelines: (c.timelines || []).map((t: any) => ({
         id: t.id,
         challengeId: t.challengeId,
         fromStatus: t.fromStatus as unknown as ChallengeStatus,
         toStatus: t.toStatus as unknown as ChallengeStatus,
         actorId: t.actorId,
-        actorRole: t.actor.role as unknown as UserRole,
+        actorRole: t.actor?.role as unknown as UserRole,
         reason: t.reason,
         metadata: t.metadata as Record<string, unknown> | null,
         createdAt: t.createdAt.toISOString(),
       })),
-      evidence: challenge.evidence.map(e => ({
+      evidence: (c.evidence || []).map((e: any) => ({
         id: e.id,
         challengeId: e.challengeId,
         fileKey: e.fileKey,
@@ -327,43 +366,51 @@ export class ChallengeService {
         uploadedById: e.uploadedById,
         createdAt: e.createdAt.toISOString(),
       })),
-      aiAnalysis: challenge.aiAnalysis,
+      aiAnalysis: c.aiAnalysis,
       relationships,
-      impact: challenge.impact
+      impact: c.impact
         ? {
-            id: challenge.impact.id,
-            challengeId: challenge.impact.challengeId,
-            problemType: challenge.impact.problemType as unknown as ProblemType,
-            metricType: challenge.impact.metricType as unknown as ImpactMetricType,
-            value: challenge.impact.estimatedValue,
-            unit: challenge.impact.unit,
-            timeBasis: challenge.impact.timeBasis as unknown as ImpactTimeBasis,
-            calculationMethod: challenge.impact.calculationMethod,
-            inputs: challenge.impact.inputs as Record<string, unknown>,
-            confidence: challenge.impact.confidence,
-            evidenceBasis: (challenge.impact.evidenceBasis as string[]) || [],
-            dataSources: (challenge.impact.dataSources as string[]) || [],
-            verificationStatus: challenge.impact.verificationStatus as unknown as ImpactVerificationStatus,
-            verifiedValue: challenge.impact.verifiedValue,
-            verifiedById: challenge.impact.verifiedById,
-            verifiedAt: challenge.impact.verifiedAt?.toISOString() || null,
-            verificationNotes: challenge.impact.verificationNotes,
-            normalizedMagnitude: challenge.impact.normalizedMagnitude,
-            missingInformation: (challenge.impact.missingInformation as string[]) || [],
-            suggestedQuestions: (challenge.impact.suggestedQuestions as unknown as AdaptiveQuestionDto[]) || [],
-            requiresHumanReview: challenge.impact.requiresHumanReview,
-            explanation: challenge.impact.explanation,
-            createdAt: challenge.impact.createdAt.toISOString(),
-            updatedAt: challenge.impact.updatedAt.toISOString(),
+            id: c.impact.id,
+            challengeId: c.impact.challengeId,
+            problemType: c.impact.problemType as unknown as ProblemType,
+            metricType: c.impact.metricType as unknown as ImpactMetricType,
+            value: c.impact.estimatedValue,
+            unit: c.impact.unit,
+            timeBasis: c.impact.timeBasis as unknown as ImpactTimeBasis,
+            calculationMethod: c.impact.calculationMethod,
+            inputs: c.impact.inputs as Record<string, unknown>,
+            confidence: c.impact.confidence,
+            evidenceBasis: (c.impact.evidenceBasis as string[]) || [],
+            dataSources: (c.impact.dataSources as string[]) || [],
+            verificationStatus: c.impact.verificationStatus as unknown as ImpactVerificationStatus,
+            verifiedValue: c.impact.verifiedValue,
+            verifiedById: c.impact.verifiedById,
+            verifiedAt: c.impact.verifiedAt?.toISOString() || null,
+            verificationNotes: c.impact.verificationNotes,
+            normalizedMagnitude: c.impact.normalizedMagnitude,
+            missingInformation: (c.impact.missingInformation as string[]) || [],
+            suggestedQuestions: (c.impact.suggestedQuestions as unknown as AdaptiveQuestionDto[]) || [],
+            requiresHumanReview: c.impact.requiresHumanReview,
+            explanation: c.impact.explanation,
+            createdAt: c.impact.createdAt.toISOString(),
+            updatedAt: c.impact.updatedAt.toISOString(),
           }
         : null,
-      projects: challenge.projects.map(p => ({
+      projects: (c.projects || []).map((p: any) => ({
         id: p.id,
         title: p.title,
         status: p.status as unknown as import('@sicp/shared').ProjectStatus,
       })),
-      createdAt: challenge.createdAt.toISOString(),
-      updatedAt: challenge.updatedAt.toISOString(),
+      universityName: c.projects?.[0]?.leadingOrg?.name || null,
+      industryName: c.projects?.[0]?.partnerships?.[0]?.partnerOrg?.name || null,
+      deployedDate: c.projects?.[0]?.deployments?.[0]?.deploymentDate ? new Date(c.projects[0].deployments[0].deploymentDate).toISOString() : null,
+      totalCitizenProblems: Math.max(1, (c.challengeProblems?.length || 0) + ((c.problemGroups || []).reduce((acc: number, g: any) => acc + (g.problems?.length || 0), 0) || 0)),
+      verifiedCount: (c.citizenVerifications || []).filter((v: any) => v.verifiedImprovement).length || 0,
+      deniedCount: (c.citizenVerifications || []).filter((v: any) => !v.verifiedImprovement).length || 0,
+      challengeProblems: (c.challengeProblems || []).map((cp: any) => cp.problem) || [],
+      problemGroups: c.problemGroups || [],
+      createdAt: c.createdAt.toISOString(),
+      updatedAt: c.updatedAt.toISOString(),
     };
   }
 
@@ -399,6 +446,12 @@ export class ChallengeService {
           submitter: {
             select: { id: true, fullName: true, email: true },
           },
+          citizenVerifications: {
+            select: { verifiedImprovement: true },
+          },
+          challengeProblems: {
+            select: { id: true },
+          },
         },
       }),
       prisma.challenge.count({ where: whereClause }),
@@ -431,6 +484,9 @@ export class ChallengeService {
         isCanonical: c.isCanonical,
         canonicalClusterId: c.canonicalClusterId,
         supportVotesCount: c.communityVotes.length,
+        totalCitizenProblems: Math.max(1, (c as any).challengeProblems?.length || 0),
+        verifiedCount: (c as any).citizenVerifications?.filter((v: any) => v.verifiedImprovement).length || 0,
+        deniedCount: (c as any).citizenVerifications?.filter((v: any) => !v.verifiedImprovement).length || 0,
         version: c.version,
         impact: c.impact
           ? {

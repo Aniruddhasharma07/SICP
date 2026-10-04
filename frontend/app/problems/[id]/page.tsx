@@ -11,6 +11,7 @@ import { Badge } from '../../../src/components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../src/components/ui/Card';
 import { Alert } from '../../../src/components/ui/Alert';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { CanonicalLifecycleTracker } from '../../../src/components/challenge/CanonicalLifecycleTracker';
 import {
   FileText,
   MapPin,
@@ -277,6 +278,12 @@ export default function ProblemDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* 6-Stage Intervention Lifecycle Progress Tracker */}
+        <CanonicalLifecycleTracker
+          status={associatedChallenge?.status || problem.status}
+          variant="full"
+        />
 
         {/* 2-COLUMN GRID: Original Narrative vs SICP Interpretation */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
