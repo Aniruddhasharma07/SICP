@@ -1202,13 +1202,21 @@ Return a strictly valid JSON object matching this schema:
 
             dims = request.dimensions or 768
             embedding_models = [
-                getattr(settings, 'GEMINI_EMBEDDING_MODEL', 'gemini-embedding-001'),
-                'gemini-embedding-2',
+                settings.GEMINI_EMBEDDING_MODEL,
+                'text-embedding-004',
                 'gemini-embedding-001'
             ]
+            # Deduplicate while preserving order
+            seen_models = set()
+            unique_emb_models = []
+            for m in embedding_models:
+                if m and m not in seen_models:
+                    seen_models.add(m)
+                    unique_emb_models.append(m)
+
             response = None
-            used_emb_model = 'gemini-embedding-001'
-            for em in embedding_models:
+            used_emb_model = unique_emb_models[0]
+            for em in unique_emb_models:
                 try:
                     response = client.models.embed_content(
                         model=em,
@@ -1218,9 +1226,8 @@ Return a strictly valid JSON object matching this schema:
                     used_emb_model = em
                     break
                 except Exception as emb_err:
-                    if GeminiAdapter._is_rate_limit_or_quota(emb_err):
-                        continue
-                    break
+                    logger.warning(f"[GEMINI_EMBEDDING_RETRY] Model {em} failed: {emb_err}")
+                    continue
 
             if not response or not response.embeddings or len(response.embeddings) == 0:
                 raise RuntimeError(f"No embedding returned from Gemini {used_emb_model}")

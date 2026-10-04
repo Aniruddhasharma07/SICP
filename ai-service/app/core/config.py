@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3.1-flash-lite"
-    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
+    GEMINI_EMBEDDING_MODEL: str = "text-embedding-004"
     DEFAULT_CONFIDENCE_THRESHOLD: float = 0.80
     HIGH_STAKES_CONFIDENCE_THRESHOLD: float = 0.90
 
