@@ -82,9 +82,29 @@ export default function MyProblemsPage() {
   const fetchMyProblems = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch problems with submitter filter or myOnly
-      const query = user?.id ? `?submitterId=${user.id}&limit=50` : `?limit=50`;
-      const res = await apiClient.request<{ items: CitizenProblemItem[]; total: number }>(`/api/v1/problems${query}`);
+      let localProblemIds: string[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('sicp_my_problem_ids');
+          if (raw) localProblemIds = JSON.parse(raw);
+        } catch {
+          // ignore
+        }
+      }
+
+      // Build query string
+      const params = new URLSearchParams();
+      params.set('limit', '50');
+      if (user?.id) {
+        params.set('submitterId', user.id);
+      }
+      if (localProblemIds.length > 0) {
+        params.set('ids', localProblemIds.slice(-20).join(','));
+      }
+
+      const res = await apiClient.request<{ items: CitizenProblemItem[]; total: number }>(
+        `/api/v1/problems?${params.toString()}`
+      );
       if (res.success && res.data && Array.isArray(res.data.items)) {
         setProblems(res.data.items);
       } else {

@@ -146,7 +146,7 @@ export default function GovernmentCommandCenterPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [activeTab, setActiveTab] = useState<'CRITICAL_SLA' | 'PENDING_REVIEW' | 'ROUTED_UNIVERSITY' | 'SYSTEMIC' | 'ALL'>('CRITICAL_SLA');
+  const [activeTab, setActiveTab] = useState<'CRITICAL_SLA' | 'PENDING_REVIEW' | 'ROUTED_UNIVERSITY' | 'SYSTEMIC' | 'ALL'>('PENDING_REVIEW');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 

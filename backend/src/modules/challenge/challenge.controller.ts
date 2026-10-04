@@ -21,7 +21,17 @@ export class ChallengeController {
     try {
       const validated = createChallengeSchema.parse(req.body);
       const requestId = (res.locals.requestId as string) || 'unknown';
-      const result = await ChallengeService.create(validated, req.user!.id, req.user!.organizationId, {
+
+      let submitterId = req.user?.id;
+      let submitterOrgId = req.user?.organizationId;
+      if (!submitterId) {
+        const citizen = await prisma.user.findFirst({
+          where: { role: 'CITIZEN' },
+        });
+        submitterId = citizen ? citizen.id : (await prisma.user.findFirst())?.id || '00000000-0000-0000-0000-000000000001';
+      }
+
+      const result = await ChallengeService.create(validated, submitterId, submitterOrgId, {
         requestId,
         ipAddress: req.ip,
       });

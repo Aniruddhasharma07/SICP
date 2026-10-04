@@ -12,6 +12,7 @@ import { prisma } from '../../database/prisma';
 import { DomainIntelligenceResolver } from './providers/domain-intelligence-resolver';
 import { AffectedPopulationProvider } from './population/affected-population.provider';
 import { SpatialPolicyEngine } from './spatial-policy.engine';
+import { SlaService } from '../sla/sla.service';
 import { logger } from '../../utils/logger';
 
 export interface CreateProblemInput {
@@ -184,19 +185,28 @@ export class ProblemGroupingService {
       if (allMembers >= 2 && !bestGroup.challengeId) {
         await this.createChallengeForGroup(bestGroup.id);
       } else if (bestGroup.challengeId) {
-        await prisma.challengeProblem.upsert({
-          where: {
-            challengeId_problemId: {
+        if (typeof (prisma.challengeProblem as any).upsert === 'function') {
+          await (prisma.challengeProblem as any).upsert({
+            where: {
+              challengeId_problemId: {
+                challengeId: bestGroup.challengeId,
+                problemId: problem.id,
+              },
+            },
+            create: {
               challengeId: bestGroup.challengeId,
               problemId: problem.id,
             },
-          },
-          create: {
-            challengeId: bestGroup.challengeId,
-            problemId: problem.id,
-          },
-          update: {},
-        });
+            update: {},
+          });
+        } else {
+          await prisma.challengeProblem.create({
+            data: {
+              challengeId: bestGroup.challengeId,
+              problemId: problem.id,
+            },
+          });
+        }
         await prisma.problem.update({
           where: { id: problem.id },
           data: { status: 'CHALLENGE_CREATED' },
@@ -214,6 +224,7 @@ export class ProblemGroupingService {
         take: 10,
       });
 
+      let paired = false;
       for (const other of otherProblems) {
         // Check governance rejection between these two problems
         const memoryReject = await prisma.relationshipGovernanceMemory.findFirst({
@@ -230,6 +241,7 @@ export class ProblemGroupingService {
 
         const scoreResult = this.calculateGroupMatchScore(problem, [other]);
         if (scoreResult.totalScore >= 0.6) {
+          paired = true;
           // Create new Problem Group!
           const newGroup = await prisma.problemGroup.create({
             data: {
@@ -261,6 +273,29 @@ export class ProblemGroupingService {
           await this.createChallengeForGroup(newGroup.id);
           break;
         }
+      }
+
+      if (!paired) {
+        // Form a dedicated root-cause cluster and Challenge for this standalone problem
+        const newGroup = await prisma.problemGroup.create({
+          data: {
+            title: `${problem.category.replace(/_/g, ' ')} Incident Cluster - ${problem.locationName || problem.district || 'Regional'}`,
+            canonicalCategory: problem.category,
+            relationshipStrength: 0.85,
+            factorBreakdown: { semantic: 1, spatial: 1, temporal: 1, category: 1, infrastructure: 0 },
+          },
+        });
+
+        await prisma.problem.update({
+          where: { id: problem.id },
+          data: { groupId: newGroup.id, status: 'GROUPED' },
+        });
+
+        await prisma.problemGroupMember.create({
+          data: { groupId: newGroup.id, problemId: problem.id },
+        });
+
+        await this.createChallengeForGroup(newGroup.id);
       }
     }
   }
@@ -326,6 +361,13 @@ export class ProblemGroupingService {
         data: { status: 'CHALLENGE_CREATED' },
       });
     }
+
+    // Initialize SLA tracking for municipal governance
+    await SlaService.initOrUpdateSLA(
+      challenge.id,
+      challenge.severity as any,
+      challenge.priority as any
+    ).catch(() => {});
 
     // Attach initial Group Solution Memory
     await this.seedGroupSolutionMemory(group.id, group.canonicalCategory);

@@ -4,6 +4,7 @@ import { SystemicInvestigationEngine } from '../../domain/intelligence/providers
 import { prisma } from '../../database/prisma';
 import { sendSuccess } from '../../utils/response';
 import { NotFoundError, ValidationError } from '../../utils/errors';
+import { SelfHealingService } from './self-healing.service';
 
 export class ProblemController {
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -82,7 +83,8 @@ export class ProblemController {
 
   public static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { category, district, status, submitterId, myOnly, limit, offset } = req.query;
+      await SelfHealingService.runOnce().catch(() => {});
+      const { category, district, status, submitterId, myOnly, ids, limit, offset } = req.query;
       const take = limit ? parseInt(limit as string) : 50;
       const skip = offset ? parseInt(offset as string) : 0;
 
@@ -94,6 +96,18 @@ export class ProblemController {
         where.submitterId = submitterId as string;
       } else if (myOnly === 'true' && req.user?.id) {
         where.submitterId = req.user.id;
+      }
+
+      if (ids) {
+        const idList = (ids as string).split(',').map(s => s.trim()).filter(Boolean);
+        if (idList.length > 0) {
+          const currentSubmitterId = where.submitterId;
+          delete where.submitterId;
+          where.OR = [
+            { id: { in: idList } },
+            ...(currentSubmitterId ? [{ submitterId: currentSubmitterId }] : []),
+          ];
+        }
       }
 
       const [problems, total] = await Promise.all([

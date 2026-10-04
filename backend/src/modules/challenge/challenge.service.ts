@@ -74,6 +74,7 @@ export class ChallengeService {
       evidenceCount: 0,
     });
 
+    let createdProblemId: string | null = null;
     const challenge = await prisma.$transaction(async tx => {
       const created = await tx.challenge.create({
         data: {
@@ -83,7 +84,7 @@ export class ChallengeService {
           severity: data.severity as unknown as import('@prisma/client').$Enums.SeverityLevel,
           priority: data.priority as unknown as import('@prisma/client').$Enums.PriorityLevel,
           priorityScore: priorityCalc.score,
-          status: ChallengeStatus.DRAFT as unknown as import('@prisma/client').$Enums.ChallengeStatus,
+          status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
           submitterId,
           submitterOrgId: submitterOrgId || null,
           latitude: data.latitude || null,
@@ -100,10 +101,61 @@ export class ChallengeService {
       await tx.challengeTimeline.create({
         data: {
           challengeId: created.id,
-          fromStatus: ChallengeStatus.DRAFT as unknown as import('@prisma/client').$Enums.ChallengeStatus,
-          toStatus: ChallengeStatus.DRAFT as unknown as import('@prisma/client').$Enums.ChallengeStatus,
+          fromStatus: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
+          toStatus: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
           actorId: submitterId,
-          reason: 'Initial challenge draft created by citizen',
+          reason: 'Initial citizen problem report submitted',
+        },
+      });
+
+      // Automatically create a corresponding Problem record so it exists in the Citizen Problem Registry
+      const code = `PRB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const problem = await tx.problem.create({
+        data: {
+          code,
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          status: 'CHALLENGE_CREATED',
+          latitude: data.latitude || null,
+          longitude: data.longitude || null,
+          locationName: data.address || null,
+          district: data.district || null,
+          state: data.state || null,
+          submitterId,
+          aiSeverity: (data.severity as any) || SeverityLevel.MODERATE,
+          aiPriority: (data.priority as any) || PriorityLevel.MEDIUM,
+          aiAffectedPopulation: data.affectedPopulation || null,
+        },
+      });
+      createdProblemId = problem.id;
+
+      // Create Problem Group and link
+      const group = await tx.problemGroup.create({
+        data: {
+          title: `${data.category} Incident Cluster - ${data.district || 'Regional'}`,
+          canonicalCategory: data.category,
+          challengeId: created.id,
+          relationshipStrength: 0.85,
+        },
+      });
+
+      await tx.problemGroupMember.create({
+        data: {
+          groupId: group.id,
+          problemId: problem.id,
+        },
+      });
+
+      await tx.problem.update({
+        where: { id: problem.id },
+        data: { groupId: group.id },
+      });
+
+      await tx.challengeProblem.create({
+        data: {
+          challengeId: created.id,
+          problemId: problem.id,
         },
       });
 
@@ -183,6 +235,13 @@ export class ChallengeService {
       });
     });
 
+    // Initialize SLA tracking for government review
+    await SlaService.initOrUpdateSLA(
+      challenge.id,
+      (data.severity as any) || SeverityLevel.MODERATE,
+      (data.priority as any) || PriorityLevel.MEDIUM
+    ).catch(() => {});
+
     return {
       id: challenge.id,
       title: challenge.title,
@@ -206,7 +265,8 @@ export class ChallengeService {
       version: challenge.version,
       createdAt: challenge.createdAt.toISOString(),
       updatedAt: challenge.updatedAt.toISOString(),
-    };
+      problemId: createdProblemId || undefined,
+    } as any;
   }
 
   public static async getById(id: string): Promise<

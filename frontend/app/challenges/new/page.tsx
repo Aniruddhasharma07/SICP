@@ -250,6 +250,17 @@ export default function NewChallengePage() {
       if (res.success && res.data) {
         const created = res.data;
         setSubmittedChallenge({ id: created.id, title: created.title || title });
+        if (typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('sicp_my_problem_ids');
+            const ids: string[] = raw ? JSON.parse(raw) : [];
+            if (created.problemId) ids.push(created.problemId);
+            if (created.id) ids.push(created.id);
+            localStorage.setItem('sicp_my_problem_ids', JSON.stringify(Array.from(new Set(ids))));
+          } catch {
+            // non-fatal
+          }
+        }
       } else {
         setErrorMessage(res.error?.message || 'Failed to submit challenge. Please check your network and try again.');
       }
@@ -302,8 +313,13 @@ export default function NewChallengePage() {
                   View Problem Intelligence <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
+              <Link href="/my-problems">
+                <Button variant="outline" className="w-full sm:w-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                  Track in My Problems
+                </Button>
+              </Link>
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => {
                   setSubmittedChallenge(null);
                   setTitle('');

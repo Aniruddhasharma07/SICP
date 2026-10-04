@@ -4,9 +4,13 @@ import { logger } from './utils/logger';
 import { QueueManager } from './jobs/queue.manager';
 import { prisma } from './database/prisma';
 import { ensureDatabaseSchemaSynchronized } from './database/schema-sync';
+import { SelfHealingService } from './modules/problem/self-healing.service';
 
 async function bootstrap() {
   await ensureDatabaseSchemaSynchronized();
+  await SelfHealingService.healOrphanedDraftsAndProblems().catch(err => {
+    logger.warn('Startup self-healing skipped: ' + (err as Error).message);
+  });
 
   const app = createApp();
 

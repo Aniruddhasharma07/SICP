@@ -6,6 +6,7 @@ import { UniversityMatchingEngine } from '../../domain/matching/university-match
 import { IndustryMatchingEngine } from '../../domain/matching/industry-matching.engine';
 import { PartnershipService } from '../partnership/partnership.service';
 import { NotificationService } from '../notification/notification.service';
+import { SelfHealingService } from '../problem/self-healing.service';
 import { UserRole, ChallengeStatus, SeverityLevel, PriorityLevel, AuditAction, PartnershipType, PartnershipStatus, ProjectStatus } from '@sicp/shared';
 import {
   ValidationError,
@@ -48,6 +49,7 @@ export class GovernmentController {
    */
   public static async getOverview(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      await SelfHealingService.runOnce().catch(() => {});
       const [
         totalCount,
         urgentCount,
@@ -125,6 +127,7 @@ export class GovernmentController {
    */
   public static async getQueue(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      await SelfHealingService.runOnce().catch(() => {});
       const filter = (req.query.filter as string) || 'ALL';
       const category = req.query.category as string | undefined;
       const district = req.query.district as string | undefined;
@@ -160,6 +163,8 @@ export class GovernmentController {
               { priority: PriorityLevel.CRITICAL },
               { severity: { in: [SeverityLevel.SEVERE, SeverityLevel.CATASTROPHIC] } },
               { sla: { escalationStatus: { in: ['WARNING', 'ESCALATED'] } } },
+              { sla: { assignedOfficerId: null } },
+              { status: ChallengeStatus.SUBMITTED },
             ],
           },
         ];

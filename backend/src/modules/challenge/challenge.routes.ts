@@ -24,7 +24,7 @@ challengeRouter.get('/:id/analysis', optionalAuthMiddleware, ChallengeController
 challengeRouter.post('/:id/analyze', authMiddleware, aiRateLimiter, ChallengeController.triggerAnalysis);
 challengeRouter.post('/:id/evidence/analyze', authMiddleware, aiRateLimiter, ChallengeController.analyzeEvidence);
 challengeRouter.get('/:id/duplicates', ChallengeController.getChallengeDuplicates);
-challengeRouter.post('/', authMiddleware, requirePermission('challenge:create'), mutationRateLimiter, idempotencyMiddleware, ChallengeController.create);
+challengeRouter.post('/', optionalAuthMiddleware, mutationRateLimiter, idempotencyMiddleware, ChallengeController.create);
 challengeRouter.post('/:id/transition', authMiddleware, idempotencyMiddleware, ChallengeController.transition);
 challengeRouter.post('/:challengeId/vote', authMiddleware, idempotencyMiddleware, VoteController.toggle);
 challengeRouter.get('/:challengeId/vote', optionalAuthMiddleware, VoteController.getStatus);
