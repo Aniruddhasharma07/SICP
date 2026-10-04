@@ -39,6 +39,7 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
     // 2. Enum value additions
     const enumAdditions = [
       'GOVERNMENT_VERIFIED',
+      'GOVERNMENT_APPROVED',
       'UNIVERSITY_ASSIGNED',
       'INDUSTRY_FUNDED',
       'OUTCOME_VERIFIED',
@@ -49,6 +50,15 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       } catch (err) {
         logger.debug(`[SCHEMA_SYNC] ChallengeStatus value ${val} already exists or error: ${err}`);
       }
+    }
+
+    // Migrate any legacy GOVERNMENT_APPROVED records to GOVERNMENT_VERIFIED
+    try {
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'GOVERNMENT_VERIFIED' WHERE "status"::text = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'GOVERNMENT_VERIFIED' WHERE "fromStatus"::text = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'GOVERNMENT_VERIFIED' WHERE "toStatus"::text = 'GOVERNMENT_APPROVED';`);
+    } catch (migErr: any) {
+      logger.debug(`[SCHEMA_SYNC] ChallengeStatus migration notice: ${migErr.message}`);
     }
 
     // 3. Tables (Each as a separate statement)
