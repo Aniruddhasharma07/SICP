@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -23,6 +23,7 @@ import {
   Network,
   Cpu,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import {
   ChallengeDto,
@@ -61,6 +62,7 @@ import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 import { CanonicalLifecycleTracker } from '../challenge/CanonicalLifecycleTracker';
 import { ChallengePartnerStrip } from '../challenge/ChallengePartnerStrip';
+import { apiClient } from '../../lib/api-client';
 
 
 export interface ExtendedChallenge extends ChallengeDto {
@@ -112,6 +114,38 @@ export interface ProblemWorkspaceProps {
   industryMatches?: IndustryMatchDto[];
   loadingCollaboration?: boolean;
   intelligence?: ChallengeIntelligenceDto | null;
+}
+
+export function calculateDynamicProblemImpact(category: string, popStr: string) {
+  const pop = parseInt(popStr, 10);
+  if (isNaN(pop) || pop <= 0) return null;
+  const cat = (category || '').toUpperCase();
+  if (cat.includes('ROAD') || cat.includes('BRIDGE') || cat.includes('TRANSIT')) {
+    const model = 'Road Corridor Mobility Model (daily commuters traveling segment)';
+    if (pop >= 20000) return { priority: 'CRITICAL', severity: 'SEVERE', model };
+    if (pop >= 5000) return { priority: 'HIGH', severity: 'MODERATE', model };
+    if (pop >= 1000) return { priority: 'MEDIUM', severity: 'MODERATE', model };
+    return { priority: 'LOW', severity: 'LOW', model };
+  }
+  if (cat.includes('FLOOD') || cat.includes('DRAIN') || cat.includes('WATERLOGGING')) {
+    const model = 'Environmental Inundation Model (village residents exposed)';
+    if (pop >= 1000) return { priority: 'CRITICAL', severity: 'CATASTROPHIC', model };
+    if (pop >= 300) return { priority: 'HIGH', severity: 'SEVERE', model };
+    if (pop >= 50) return { priority: 'MEDIUM', severity: 'MODERATE', model };
+    return { priority: 'LOW', severity: 'LOW', model };
+  }
+  if (cat.includes('WATER') || cat.includes('SUPPLY') || cat.includes('SANITATION')) {
+    const model = 'Locality Water Scarcity Model (neighborhood households affected)';
+    if (pop >= 5000) return { priority: 'CRITICAL', severity: 'SEVERE', model };
+    if (pop >= 1500) return { priority: 'HIGH', severity: 'MODERATE', model };
+    if (pop >= 300) return { priority: 'MEDIUM', severity: 'MODERATE', model };
+    return { priority: 'LOW', severity: 'LOW', model };
+  }
+  const model = 'Civic Infrastructure Scale Model';
+  if (pop >= 25000) return { priority: 'CRITICAL', severity: 'SEVERE', model };
+  if (pop >= 10000) return { priority: 'HIGH', severity: 'MODERATE', model };
+  if (pop >= 2000) return { priority: 'MEDIUM', severity: 'MODERATE', model };
+  return { priority: 'LOW', severity: 'LOW', model };
 }
 
 export function ProblemWorkspace({
@@ -217,16 +251,32 @@ export function ProblemWorkspace({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showTechDrawer, showUniModal, showIndModal, showFeedbackModal, showOverrideModal]);
 
+  const dynamicImpact = useMemo(() => {
+    return calculateDynamicProblemImpact(challenge.category, overridePopulation);
+  }, [challenge.category, overridePopulation]);
+
   const handleExecuteOverride = async () => {
     if (!overrideReason.trim()) return;
     setIsOverriding(true);
     try {
-      // Record override on Problem & Governance log
-      setOverrideSuccess(true);
-      setTimeout(() => {
-        setShowOverrideModal(false);
-        router.refresh();
-      }, 1200);
+      const res = await apiClient.request(`/api/v1/challenges/${challenge.id}/override`, {
+        method: 'POST',
+        body: JSON.stringify({
+          severity: overrideSeverity,
+          priority: overridePriority,
+          affectedPopulation: overridePopulation ? parseInt(overridePopulation, 10) : undefined,
+          reason: overrideReason,
+        }),
+      });
+      if (res.success) {
+        setOverrideSuccess(true);
+        setTimeout(() => {
+          setShowOverrideModal(false);
+          router.refresh();
+        }, 1200);
+      }
+    } catch (err) {
+      console.error('Failed to commit override:', err);
     } finally {
       setIsOverriding(false);
     }
@@ -1205,6 +1255,29 @@ export function ProblemWorkspace({
               placeholder="Leave blank for unknown"
               className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-mono"
             />
+            {dynamicImpact && (
+              <div className="mt-2 p-2.5 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/50 space-y-1.5 animate-in fade-in">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-indigo-900 dark:text-indigo-200 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    AI Dynamic Impact Model
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOverridePriority(dynamicImpact.priority);
+                      setOverrideSeverity(dynamicImpact.severity);
+                    }}
+                    className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Auto-Apply ({dynamicImpact.priority} / {dynamicImpact.severity})
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-slate-600 dark:text-slate-400">
+                  {dynamicImpact.model}: {parseInt(overridePopulation, 10).toLocaleString()} people → Recalculated Priority: <strong className="text-slate-900 dark:text-white">{dynamicImpact.priority}</strong>, Severity: <strong className="text-slate-900 dark:text-white">{dynamicImpact.severity}</strong>
+                </p>
+              </div>
+            )}
           </div>
 
           <div>

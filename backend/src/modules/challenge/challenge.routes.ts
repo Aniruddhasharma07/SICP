@@ -46,5 +46,6 @@ challengeRouter.post(
   idempotencyMiddleware,
   ChallengeController.validateInvestigation
 );
+challengeRouter.post('/:id/override', optionalAuthMiddleware, idempotencyMiddleware, ChallengeController.override);
 
 

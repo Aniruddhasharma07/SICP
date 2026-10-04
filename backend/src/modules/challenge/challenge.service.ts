@@ -41,6 +41,7 @@ import { SlaService } from '../../domain/sla/sla.service';
 import { ImpactService } from '../../domain/impact/impact.service';
 import { ChallengeIntelligenceOrchestrator } from '../../domain/intelligence/challenge-intelligence.orchestrator';
 import { SpatialPolicyEngine } from '../../domain/intelligence/spatial-policy.engine';
+import { ProblemGroupingService } from '../../domain/intelligence/problem-grouping.service';
 
 export class ChallengeService {
   public static async create(
@@ -938,6 +939,85 @@ export class ChallengeService {
       challenge.description,
       context.requestId
     );
+  }
+
+  public static async applyGovernmentOverride(
+    challengeId: string,
+    overrides: {
+      severity?: SeverityLevel;
+      priority?: PriorityLevel;
+      affectedPopulation?: number;
+      reason: string;
+      officerId?: string;
+    }
+  ) {
+    const challenge = await prisma.challenge.findUnique({
+      where: { id: challengeId },
+      include: {
+        challengeProblems: { include: { problem: true } },
+      },
+    });
+
+    if (!challenge) {
+      throw new NotFoundError('Challenge', challengeId);
+    }
+
+    const updates: any = {};
+    let finalSeverity = overrides.severity || challenge.severity;
+    let finalPriority = overrides.priority || challenge.priority;
+    let finalPopulation = overrides.affectedPopulation !== undefined ? overrides.affectedPopulation : challenge.affectedPopulation;
+
+    if (overrides.affectedPopulation !== undefined) {
+      updates.affectedPopulation = overrides.affectedPopulation;
+
+      // Auto-recalculate priority/severity if not explicitly provided
+      if (!overrides.priority || !overrides.severity) {
+        const computed = ProblemGroupingService.calculatePriorityAndSeverityByProblemType(
+          challenge.category,
+          overrides.affectedPopulation,
+          finalSeverity as any
+        );
+        if (!overrides.priority) {
+          finalPriority = computed.priority;
+          updates.priority = computed.priority;
+        }
+        if (!overrides.severity) {
+          finalSeverity = computed.severity;
+          updates.severity = computed.severity;
+        }
+      }
+    }
+
+    if (overrides.severity) {
+      updates.severity = overrides.severity;
+    }
+    if (overrides.priority) {
+      updates.priority = overrides.priority;
+    }
+
+    updates.priorityScore = ProblemGroupingService.calculateChallengePriorityScore(
+      finalSeverity as any,
+      finalPriority as any,
+      finalPopulation
+    );
+
+    const updated = await prisma.challenge.update({
+      where: { id: challengeId },
+      data: updates,
+    });
+
+    // Also update member problems and log overrides
+    for (const cp of challenge.challengeProblems) {
+      await ProblemGroupingService.applyGovernmentOverride(cp.problemId, {
+        severity: overrides.severity,
+        priority: overrides.priority,
+        affectedPopulation: overrides.affectedPopulation,
+        reason: `Propagated from Challenge ${challengeId} override: ${overrides.reason}`,
+        officerId: overrides.officerId,
+      }).catch((e) => logger.warn(`Failed to propagate override to problem ${cp.problemId}: ${e.message}`));
+    }
+
+    return updated;
   }
 }
 

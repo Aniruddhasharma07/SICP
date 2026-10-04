@@ -58,7 +58,7 @@ export class ProblemGroupingService {
 
     // 3. AI Initial Severity and Priority assessment
     const aiSeverity = this.assessInitialSeverity(input.description);
-    const aiPriority = this.assessInitialPriority(aiSeverity, populationResult.value);
+    const aiPriority = this.assessInitialPriority(aiSeverity, populationResult.value, canonicalCategory);
 
     // Generate unique problem code (e.g. PRB-2026-XXXX)
     const code = `PRB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -598,6 +598,10 @@ export class ProblemGroupingService {
   ) {
     const problem = await prisma.problem.findUnique({
       where: { id: problemId },
+      include: {
+        group: { include: { challenge: true } },
+        challengeLinks: { include: { challenge: true } },
+      },
     });
 
     if (!problem) {
@@ -650,13 +654,83 @@ export class ProblemGroupingService {
           reason: overrides.reason,
         },
       });
+
+      // Recalculate priority & severity based on problem type and affected population if not explicitly passed
+      if (!overrides.priority || !overrides.severity) {
+        const computed = this.calculatePriorityAndSeverityByProblemType(
+          problem.category,
+          overrides.affectedPopulation,
+          (overrides.severity as SeverityLevel) || (problem.govSeverity as SeverityLevel) || (problem.aiSeverity as SeverityLevel) || SeverityLevel.MODERATE
+        );
+
+        if (!overrides.priority && computed.priority) {
+          updates.govPriority = computed.priority;
+          await prisma.governmentOverrideLog.create({
+            data: {
+              problemId,
+              officerId: overrides.officerId,
+              field: 'priority',
+              previousValue: problem.govPriority || problem.aiPriority,
+              overriddenValue: computed.priority,
+              reason: `AI auto-recalculated priority based on ${problem.category} problem type and overridden affected population (${overrides.affectedPopulation.toLocaleString()})`,
+            },
+          });
+        }
+
+        if (!overrides.severity && computed.severity) {
+          updates.govSeverity = computed.severity;
+          await prisma.governmentOverrideLog.create({
+            data: {
+              problemId,
+              officerId: overrides.officerId,
+              field: 'severity',
+              previousValue: problem.govSeverity || problem.aiSeverity,
+              overriddenValue: computed.severity,
+              reason: `AI auto-recalculated severity based on ${problem.category} problem type and overridden affected population (${overrides.affectedPopulation.toLocaleString()})`,
+            },
+          });
+        }
+      }
     }
 
-    return await prisma.problem.update({
+    const updatedProblem = await prisma.problem.update({
       where: { id: problemId },
       data: updates,
       include: { overrideLogs: true },
     });
+
+    // Sync changes to parent challenge if linked
+    const parentChallengeId =
+      problem.group?.challengeId ||
+      (problem.challengeLinks && problem.challengeLinks[0]?.challengeId);
+
+    if (parentChallengeId) {
+      const challengeUpdates: any = {};
+      if (updates.govAffectedPopulation !== undefined) {
+        challengeUpdates.affectedPopulation = updates.govAffectedPopulation;
+      }
+      if (updates.govPriority) {
+        challengeUpdates.priority = updates.govPriority;
+      }
+      if (updates.govSeverity) {
+        challengeUpdates.severity = updates.govSeverity;
+      }
+
+      const finalPriority = updates.govPriority || problem.govPriority || problem.aiPriority;
+      const finalSeverity = updates.govSeverity || problem.govSeverity || problem.aiSeverity;
+      challengeUpdates.priorityScore = this.calculateChallengePriorityScore(
+        finalSeverity,
+        finalPriority,
+        updates.govAffectedPopulation ?? problem.govAffectedPopulation ?? problem.aiAffectedPopulation
+      );
+
+      await prisma.challenge.update({
+        where: { id: parentChallengeId },
+        data: challengeUpdates,
+      }).catch((e) => logger.warn(`Failed to sync parent challenge ${parentChallengeId}: ${e.message}`));
+    }
+
+    return updatedProblem;
   }
 
   /**
@@ -731,7 +805,85 @@ export class ProblemGroupingService {
     return SeverityLevel.LOW;
   }
 
-  private static assessInitialPriority(severity: SeverityLevel, population: number | null): PriorityLevel {
+  public static calculatePriorityAndSeverityByProblemType(
+    category: string,
+    population: number | null,
+    baseSeverity: SeverityLevel = SeverityLevel.MODERATE
+  ): { priority: PriorityLevel; severity: SeverityLevel } {
+    if (population === null || population === undefined) {
+      return {
+        priority:
+          baseSeverity === SeverityLevel.CATASTROPHIC || baseSeverity === SeverityLevel.SEVERE
+            ? PriorityLevel.CRITICAL
+            : baseSeverity === SeverityLevel.MODERATE
+            ? PriorityLevel.MEDIUM
+            : PriorityLevel.LOW,
+        severity: baseSeverity,
+      };
+    }
+
+    const catUpper = (category || '').toUpperCase();
+
+    // 1. Road Usage / Corridor (Traffic throughput along road)
+    if (catUpper.includes('ROAD') || catUpper.includes('BRIDGE') || catUpper.includes('TRANSIT')) {
+      if (population >= 20000) return { priority: PriorityLevel.CRITICAL, severity: SeverityLevel.SEVERE };
+      if (population >= 5000) return { priority: PriorityLevel.HIGH, severity: SeverityLevel.MODERATE };
+      if (population >= 1000) return { priority: PriorityLevel.MEDIUM, severity: SeverityLevel.MODERATE };
+      return { priority: PriorityLevel.LOW, severity: SeverityLevel.LOW };
+    }
+
+    // 2. Flood / Environmental (Village & Inundation Exposure)
+    if (catUpper.includes('FLOOD') || catUpper.includes('DRAIN') || catUpper.includes('WATERLOGGING')) {
+      if (population >= 1000) return { priority: PriorityLevel.CRITICAL, severity: SeverityLevel.CATASTROPHIC };
+      if (population >= 300) return { priority: PriorityLevel.HIGH, severity: SeverityLevel.SEVERE };
+      if (population >= 50) return { priority: PriorityLevel.MEDIUM, severity: SeverityLevel.MODERATE };
+      return { priority: PriorityLevel.LOW, severity: SeverityLevel.LOW };
+    }
+
+    // 3. Water Scarcity / Sanitation (Locality Household Exposure)
+    if (catUpper.includes('WATER') || catUpper.includes('SUPPLY') || catUpper.includes('SANITATION')) {
+      if (population >= 5000) return { priority: PriorityLevel.CRITICAL, severity: SeverityLevel.SEVERE };
+      if (population >= 1500) return { priority: PriorityLevel.HIGH, severity: SeverityLevel.MODERATE };
+      if (population >= 300) return { priority: PriorityLevel.MEDIUM, severity: SeverityLevel.MODERATE };
+      return { priority: PriorityLevel.LOW, severity: SeverityLevel.LOW };
+    }
+
+    // 4. General Civic Infrastructure
+    if (population >= 25000) return { priority: PriorityLevel.CRITICAL, severity: SeverityLevel.SEVERE };
+    if (population >= 10000) return { priority: PriorityLevel.HIGH, severity: SeverityLevel.MODERATE };
+    if (population >= 2000) return { priority: PriorityLevel.MEDIUM, severity: SeverityLevel.MODERATE };
+    return { priority: PriorityLevel.LOW, severity: SeverityLevel.LOW };
+  }
+
+  public static calculateChallengePriorityScore(
+    severity: string,
+    priority: string,
+    population: number | null
+  ): number {
+    let score = 50;
+    const sev = (severity || '').toUpperCase();
+    const prio = (priority || '').toUpperCase();
+
+    if (sev === 'CATASTROPHIC') score += 35;
+    else if (sev === 'SEVERE') score += 25;
+    else if (sev === 'MODERATE') score += 10;
+
+    if (prio === 'CRITICAL' || prio === 'URGENT') score += 20;
+    else if (prio === 'HIGH') score += 12;
+    else if (prio === 'MEDIUM') score += 5;
+
+    if (population && population > 0) {
+      const popBonus = Math.min(15, Math.round(Math.log10(population) * 3));
+      score += popBonus;
+    }
+
+    return Math.min(100, Math.max(10, score));
+  }
+
+  private static assessInitialPriority(severity: SeverityLevel, population: number | null, category?: string): PriorityLevel {
+    if (category && population !== null && population !== undefined) {
+      return this.calculatePriorityAndSeverityByProblemType(category, population, severity).priority;
+    }
     if (severity === SeverityLevel.SEVERE || severity === SeverityLevel.CATASTROPHIC) {
       return PriorityLevel.CRITICAL;
     }

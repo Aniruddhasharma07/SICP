@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '../../../src/lib/api-client';
@@ -11,7 +11,9 @@ import { Badge } from '../../../src/components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../src/components/ui/Card';
 import { Alert } from '../../../src/components/ui/Alert';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { Modal } from '../../../src/components/ui/Modal';
 import { CanonicalLifecycleTracker } from '../../../src/components/challenge/CanonicalLifecycleTracker';
+import { calculateDynamicProblemImpact } from '../../../src/components/problem/ProblemWorkspace';
 import {
   FileText,
   MapPin,
@@ -124,6 +126,21 @@ export default function ProblemDetailPage() {
   const [reallocating, setReallocating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Government Officer Override State
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [overrideSeverity, setOverrideSeverity] = useState<string>('MODERATE');
+  const [overridePriority, setOverridePriority] = useState<string>('MEDIUM');
+  const [overridePopulation, setOverridePopulation] = useState<string>('');
+  const [overrideReason, setOverrideReason] = useState<string>('');
+  const [isOverriding, setIsOverriding] = useState(false);
+  const [overrideSuccess, setOverrideSuccess] = useState(false);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
+
+  const dynamicImpact = useMemo(() => {
+    if (!problem) return null;
+    return calculateDynamicProblemImpact(problem.category, overridePopulation);
+  }, [problem, overridePopulation]);
+
   const fetchProblem = useCallback(async () => {
     if (!problemId) return;
     setLoading(true);
@@ -145,6 +162,53 @@ export default function ProblemDetailPage() {
   useEffect(() => {
     fetchProblem();
   }, [fetchProblem]);
+
+  const handleOpenOverrideModal = () => {
+    if (!problem) return;
+    setOverrideSeverity(problem.govSeverity || problem.aiSeverity || 'MODERATE');
+    setOverridePriority(problem.govPriority || problem.aiPriority || 'MEDIUM');
+    setOverridePopulation(
+      problem.govAffectedPopulation || problem.aiAffectedPopulation
+        ? String(problem.govAffectedPopulation || problem.aiAffectedPopulation)
+        : ''
+    );
+    setOverrideReason('');
+    setOverrideError(null);
+    setOverrideSuccess(false);
+    setShowOverrideModal(true);
+  };
+
+  const handleExecuteOverride = async () => {
+    if (!problem || !overrideReason.trim()) return;
+    setIsOverriding(true);
+    setOverrideError(null);
+    try {
+      const res = await apiClient.request(`/api/v1/problems/${problem.id}/override`, {
+        method: 'POST',
+        body: JSON.stringify({
+          severity: overrideSeverity,
+          priority: overridePriority,
+          affectedPopulation: overridePopulation ? parseInt(overridePopulation, 10) : undefined,
+          reason: overrideReason,
+        }),
+      });
+      if (res.success) {
+        setOverrideSuccess(true);
+        setToastMessage('Statutory officer override applied and recorded on governance ledger.');
+        setTimeout(() => {
+          setShowOverrideModal(false);
+          setOverrideSuccess(false);
+          fetchProblem();
+        }, 1200);
+      } else {
+        setOverrideError(res.error?.message || 'Failed to apply override.');
+      }
+    } catch (err: any) {
+      setOverrideError(err?.message || 'Failed to apply override.');
+    } finally {
+      setIsOverriding(false);
+    }
+  };
 
   const handleRemoveFromGroup = async () => {
     if (!problem?.id) return;
@@ -441,6 +505,47 @@ export default function ProblemDetailPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Officer Override Action Button */}
+                {isOfficer && (
+                  <div className="pt-2">
+                    <Button
+                      size="sm"
+                      onClick={handleOpenOverrideModal}
+                      className="w-full h-8 text-xs font-bold gap-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 shadow-xs"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <span>Adjust Statutory Assessment (Government Override)</span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Audit Trail for Past Government Overrides */}
+                {problem.overrideLogs && problem.overrideLogs.length > 0 && (
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                      Statutory Override Ledger ({problem.overrideLogs.length})
+                    </span>
+                    <div className="space-y-1.5">
+                      {problem.overrideLogs.map((log) => (
+                        <div
+                          key={log.id}
+                          className="p-2 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px] space-y-0.5"
+                        >
+                          <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 font-semibold">
+                            <span className="capitalize">{log.field}: {log.previousValue} → {log.overriddenValue}</span>
+                            <span className="text-[10px] text-slate-400">
+                              {new Date(log.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-400 italic">
+                            &ldquo;{log.reason}&rdquo;
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -562,6 +667,125 @@ export default function ProblemDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Statutory Officer Assessment Adjustment (Government Override Modal) */}
+      <Modal
+        isOpen={showOverrideModal}
+        onClose={() => setShowOverrideModal(false)}
+        title="Statutory Officer Assessment Adjustment (Override)"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-600 dark:text-slate-400">
+            Authorized municipal officers may refine AI-generated baseline metrics. Every modification is recorded on the immutable statutory governance ledger with your officer identity and rationale.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Governed Severity
+              </label>
+              <select
+                value={overrideSeverity}
+                onChange={(e) => setOverrideSeverity(e.target.value)}
+                className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-semibold"
+              >
+                <option value="LOW">LOW</option>
+                <option value="MODERATE">MODERATE</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Governed Priority
+              </label>
+              <select
+                value={overridePriority}
+                onChange={(e) => setOverridePriority(e.target.value)}
+                className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-semibold"
+              >
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="URGENT">URGENT</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Governed Affected Population (Citizens Exposed)
+            </label>
+            <input
+              type="number"
+              value={overridePopulation}
+              onChange={(e) => setOverridePopulation(e.target.value)}
+              placeholder="Leave blank for unknown"
+              className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-mono"
+            />
+            {dynamicImpact && (
+              <div className="mt-2 p-2.5 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/50 space-y-1.5 animate-in fade-in">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-indigo-900 dark:text-indigo-200 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    AI Problem-Type Impact Model
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOverridePriority(dynamicImpact.priority);
+                      setOverrideSeverity(dynamicImpact.severity);
+                    }}
+                    className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Auto-Apply ({dynamicImpact.priority} / {dynamicImpact.severity})
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-slate-600 dark:text-slate-400">
+                  {dynamicImpact.model}: {parseInt(overridePopulation, 10).toLocaleString()} people → Recalculated Priority: <strong className="text-slate-900 dark:text-white">{dynamicImpact.priority}</strong>, Severity: <strong className="text-slate-900 dark:text-white">{dynamicImpact.severity}</strong>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Statutory Justification / Rationale <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              rows={3}
+              required
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              placeholder="Detail municipal field survey findings, traffic counts, or flood perimeter..."
+              className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs"
+            />
+          </div>
+
+          {overrideError && (
+            <Alert variant="destructive">{overrideError}</Alert>
+          )}
+
+          {overrideSuccess && (
+            <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
+              Statutory override recorded and governance ledger updated!
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowOverrideModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleExecuteOverride}
+              disabled={isOverriding || !overrideReason.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              {isOverriding ? 'Recording...' : 'Commit Governed Adjustment'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </AppLayout>
   );
 }

@@ -13,7 +13,7 @@ import { ChallengeStatus, ProblemType } from '@sicp/shared';
 import { ImpactService } from '../../domain/impact/impact.service';
 import { ImpactModelRegistry } from '../../domain/impact/impact-model.registry';
 import { prisma } from '../../database/prisma';
-import { NotFoundError } from '../../utils/errors';
+import { NotFoundError, ValidationError } from '../../utils/errors';
 import { ChallengeIntelligenceService } from '../../domain/intelligence/challenge-intelligence.service';
 
 export class ChallengeController {
@@ -302,6 +302,30 @@ export class ChallengeController {
         officerName,
         notes
       );
+      sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async override(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { severity, priority, affectedPopulation, reason } = req.body;
+      if (!reason) {
+        throw new ValidationError('A recorded justification reason is required for government overrides.');
+      }
+
+      const result = await ChallengeService.applyGovernmentOverride(req.params.id, {
+        severity,
+        priority,
+        affectedPopulation:
+          affectedPopulation !== undefined && affectedPopulation !== '' && affectedPopulation !== null
+            ? parseInt(String(affectedPopulation))
+            : undefined,
+        reason,
+        officerId: req.user?.id,
+      });
+
       sendSuccess(res, result, 200);
     } catch (err) {
       next(err);
