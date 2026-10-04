@@ -57,9 +57,9 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       }
     }
 
-    // 3. Tables
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "Problem" (
+    // 3. Tables (Each as a separate statement)
+    const tableStatements = [
+      `CREATE TABLE IF NOT EXISTS "Problem" (
           "id" TEXT NOT NULL,
           "code" TEXT NOT NULL,
           "title" TEXT NOT NULL,
@@ -90,9 +90,8 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           "updatedAt" TIMESTAMP(3) NOT NULL,
           CONSTRAINT "Problem_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "ProblemGroup" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ProblemGroup" (
           "id" TEXT NOT NULL,
           "title" TEXT NOT NULL,
           "canonicalCategory" TEXT NOT NULL,
@@ -102,33 +101,29 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           "updatedAt" TIMESTAMP(3) NOT NULL,
           CONSTRAINT "ProblemGroup_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "ProblemGroupMember" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ProblemGroupMember" (
           "id" TEXT NOT NULL,
           "groupId" TEXT NOT NULL,
           "problemId" TEXT NOT NULL,
           "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "ProblemGroupMember_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "ChallengeProblem" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ChallengeProblem" (
           "id" TEXT NOT NULL,
           "challengeId" TEXT NOT NULL,
           "problemId" TEXT NOT NULL,
           "linkedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "ChallengeProblem_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "ChallengeGroup" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ChallengeGroup" (
           "id" TEXT NOT NULL,
           "challengeId" TEXT NOT NULL,
           "groupId" TEXT NOT NULL,
           "linkedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "ChallengeGroup_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "RelationshipGovernanceMemory" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "RelationshipGovernanceMemory" (
           "id" TEXT NOT NULL,
           "sourceEntityId" TEXT NOT NULL,
           "targetEntityId" TEXT NOT NULL,
@@ -139,9 +134,8 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "active" BOOLEAN NOT NULL DEFAULT true,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "RelationshipGovernanceMemory_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "GovernmentOverrideLog" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "GovernmentOverrideLog" (
           "id" TEXT NOT NULL,
           "problemId" TEXT NOT NULL,
           "officerId" TEXT,
@@ -151,9 +145,8 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "reason" TEXT NOT NULL,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "GovernmentOverrideLog_pkey" PRIMARY KEY ("id")
-      );
-
-      CREATE TABLE IF NOT EXISTS "GroupSolutionMemory" (
+      );`,
+      `CREATE TABLE IF NOT EXISTS "GroupSolutionMemory" (
           "id" TEXT NOT NULL,
           "groupId" TEXT NOT NULL,
           "title" TEXT NOT NULL,
@@ -162,36 +155,44 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "evidenceSource" TEXT NOT NULL,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "GroupSolutionMemory_pkey" PRIMARY KEY ("id")
-      );
-    `);
+      );`,
+    ];
 
-    // 4. Indexes
-    await prisma.$executeRawUnsafe(`
-      CREATE UNIQUE INDEX IF NOT EXISTS "Problem_code_key" ON "Problem"("code");
-      CREATE INDEX IF NOT EXISTS "Problem_status_idx" ON "Problem"("status");
-      CREATE INDEX IF NOT EXISTS "Problem_category_idx" ON "Problem"("category");
-      CREATE INDEX IF NOT EXISTS "Problem_district_state_idx" ON "Problem"("district", "state");
-      CREATE INDEX IF NOT EXISTS "Problem_groupId_idx" ON "Problem"("groupId");
-      CREATE INDEX IF NOT EXISTS "ProblemGroup_canonicalCategory_idx" ON "ProblemGroup"("canonicalCategory");
-      CREATE INDEX IF NOT EXISTS "ProblemGroup_challengeId_idx" ON "ProblemGroup"("challengeId");
-      CREATE INDEX IF NOT EXISTS "ProblemGroupMember_groupId_idx" ON "ProblemGroupMember"("groupId");
-      CREATE INDEX IF NOT EXISTS "ProblemGroupMember_problemId_idx" ON "ProblemGroupMember"("problemId");
-      CREATE UNIQUE INDEX IF NOT EXISTS "ProblemGroupMember_groupId_problemId_key" ON "ProblemGroupMember"("groupId", "problemId");
-      CREATE INDEX IF NOT EXISTS "ChallengeProblem_challengeId_idx" ON "ChallengeProblem"("challengeId");
-      CREATE INDEX IF NOT EXISTS "ChallengeProblem_problemId_idx" ON "ChallengeProblem"("problemId");
-      CREATE UNIQUE INDEX IF NOT EXISTS "ChallengeProblem_challengeId_problemId_key" ON "ChallengeProblem"("challengeId", "problemId");
-      CREATE INDEX IF NOT EXISTS "ChallengeGroup_challengeId_idx" ON "ChallengeGroup"("challengeId");
-      CREATE INDEX IF NOT EXISTS "ChallengeGroup_groupId_idx" ON "ChallengeGroup"("groupId");
-      CREATE UNIQUE INDEX IF NOT EXISTS "ChallengeGroup_challengeId_groupId_key" ON "ChallengeGroup"("challengeId", "groupId");
-      CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_sourceEntityId_idx" ON "RelationshipGovernanceMemory"("sourceEntityId");
-      CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_targetEntityId_idx" ON "RelationshipGovernanceMemory"("targetEntityId");
-      CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_active_idx" ON "RelationshipGovernanceMemory"("active");
-      CREATE INDEX IF NOT EXISTS "GovernmentOverrideLog_problemId_idx" ON "GovernmentOverrideLog"("problemId");
-      CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_groupId_idx" ON "GroupSolutionMemory"("groupId");
-      CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_classification_idx" ON "GroupSolutionMemory"("classification");
-    `);
+    for (const stmt of tableStatements) {
+      await prisma.$executeRawUnsafe(stmt);
+    }
 
-    // 5. Foreign Key Constraints
+    // 4. Indexes (Each as a separate statement)
+    const indexStatements = [
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Problem_code_key" ON "Problem"("code");`,
+      `CREATE INDEX IF NOT EXISTS "Problem_status_idx" ON "Problem"("status");`,
+      `CREATE INDEX IF NOT EXISTS "Problem_category_idx" ON "Problem"("category");`,
+      `CREATE INDEX IF NOT EXISTS "Problem_district_state_idx" ON "Problem"("district", "state");`,
+      `CREATE INDEX IF NOT EXISTS "Problem_groupId_idx" ON "Problem"("groupId");`,
+      `CREATE INDEX IF NOT EXISTS "ProblemGroup_canonicalCategory_idx" ON "ProblemGroup"("canonicalCategory");`,
+      `CREATE INDEX IF NOT EXISTS "ProblemGroup_challengeId_idx" ON "ProblemGroup"("challengeId");`,
+      `CREATE INDEX IF NOT EXISTS "ProblemGroupMember_groupId_idx" ON "ProblemGroupMember"("groupId");`,
+      `CREATE INDEX IF NOT EXISTS "ProblemGroupMember_problemId_idx" ON "ProblemGroupMember"("problemId");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "ProblemGroupMember_groupId_problemId_key" ON "ProblemGroupMember"("groupId", "problemId");`,
+      `CREATE INDEX IF NOT EXISTS "ChallengeProblem_challengeId_idx" ON "ChallengeProblem"("challengeId");`,
+      `CREATE INDEX IF NOT EXISTS "ChallengeProblem_problemId_idx" ON "ChallengeProblem"("problemId");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "ChallengeProblem_challengeId_problemId_key" ON "ChallengeProblem"("challengeId", "problemId");`,
+      `CREATE INDEX IF NOT EXISTS "ChallengeGroup_challengeId_idx" ON "ChallengeGroup"("challengeId");`,
+      `CREATE INDEX IF NOT EXISTS "ChallengeGroup_groupId_idx" ON "ChallengeGroup"("groupId");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "ChallengeGroup_challengeId_groupId_key" ON "ChallengeGroup"("challengeId", "groupId");`,
+      `CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_sourceEntityId_idx" ON "RelationshipGovernanceMemory"("sourceEntityId");`,
+      `CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_targetEntityId_idx" ON "RelationshipGovernanceMemory"("targetEntityId");`,
+      `CREATE INDEX IF NOT EXISTS "RelationshipGovernanceMemory_active_idx" ON "RelationshipGovernanceMemory"("active");`,
+      `CREATE INDEX IF NOT EXISTS "GovernmentOverrideLog_problemId_idx" ON "GovernmentOverrideLog"("problemId");`,
+      `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_groupId_idx" ON "GroupSolutionMemory"("groupId");`,
+      `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_classification_idx" ON "GroupSolutionMemory"("classification");`,
+    ];
+
+    for (const stmt of indexStatements) {
+      await prisma.$executeRawUnsafe(stmt);
+    }
+
+    // 5. Foreign Key Constraints (Protected in DO block)
     await prisma.$executeRawUnsafe(`
       DO $$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Problem_groupId_fkey') THEN
