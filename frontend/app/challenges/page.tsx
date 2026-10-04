@@ -25,7 +25,22 @@ import {
   CheckCircle2,
   XCircle,
   ArrowUpDown,
+  Navigation,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
+
+function computeHaversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
 
 export default function ChallengesExplorerPage() {
   const [challenges, setChallenges] = useState<ChallengeDto[]>([]);
@@ -35,11 +50,17 @@ export default function ChallengesExplorerPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<string>('DATE_DESC');
+  const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
 
-  const fetchChallenges = async () => {
+  const fetchChallenges = async (coords = userCoords, activeSort = sortBy) => {
     setLoading(true);
     try {
-      const res = await apiClient.request<{ items: ChallengeDto[]; total: number }>(`/api/v1/challenges?limit=100`);
+      let url = `/api/v1/challenges?limit=100`;
+      if (activeSort === 'NEAREST' && coords) {
+        url += `&sortBy=NEAREST&lat=${coords.lat}&lon=${coords.lon}`;
+      }
+      const res = await apiClient.request<{ items: ChallengeDto[]; total: number }>(url);
       if (res.success && res.data && Array.isArray(res.data.items)) {
         setChallenges(res.data.items);
       } else {
@@ -49,6 +70,39 @@ export default function ChallengesExplorerPage() {
       setChallenges([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const requestLocation = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setLocationStatus('denied');
+      return;
+    }
+    setLocationStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        setUserCoords(coords);
+        setLocationStatus('granted');
+        fetchChallenges(coords, 'NEAREST');
+      },
+      () => {
+        setLocationStatus('denied');
+      },
+      { timeout: 8000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    if (newSort === 'NEAREST') {
+      if (!userCoords) {
+        requestLocation();
+      } else {
+        fetchChallenges(userCoords, 'NEAREST');
+      }
+    } else {
+      fetchChallenges(userCoords, newSort);
     }
   };
 
@@ -100,6 +154,21 @@ export default function ChallengesExplorerPage() {
 
     // Sort operations
     return list.sort((a, b) => {
+      if (sortBy === 'NEAREST') {
+        const distA =
+          a.distanceKm ??
+          (userCoords && a.latitude != null && a.longitude != null
+            ? computeHaversineKm(userCoords.lat, userCoords.lon, a.latitude, a.longitude)
+            : null) ??
+          Infinity;
+        const distB =
+          b.distanceKm ??
+          (userCoords && b.latitude != null && b.longitude != null
+            ? computeHaversineKm(userCoords.lat, userCoords.lon, b.latitude, b.longitude)
+            : null) ??
+          Infinity;
+        return distA - distB;
+      }
       if (sortBy === 'DATE_DESC') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -119,7 +188,7 @@ export default function ChallengesExplorerPage() {
       }
       return 0;
     });
-  }, [challenges, searchQuery, selectedCategory, selectedSeverity, selectedStatus, sortBy]);
+  }, [challenges, searchQuery, selectedCategory, selectedSeverity, selectedStatus, sortBy, userCoords]);
 
   const stages = [
     { id: 'ALL', label: 'All Challenges' },
@@ -148,7 +217,7 @@ export default function ChallengesExplorerPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={fetchChallenges}
+                onClick={() => fetchChallenges()}
                 className="text-xs flex items-center gap-1.5"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -186,15 +255,23 @@ export default function ChallengesExplorerPage() {
               </span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => handleSortChange(e.target.value)}
                 className="text-xs px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-800 dark:text-slate-200 focus:outline-blue-500"
               >
                 <option value="DATE_DESC">Newest Submitted</option>
-                <option value="DATE_ASC">Oldest Submitted</option>
+                <option value="NEAREST">📍 Nearest to Me (Nearest to Farthest)</option>
                 <option value="PRIORITY_DESC">Highest Priority Score</option>
                 <option value="LOCATION_ASC">Location (A to Z)</option>
+                <option value="DATE_ASC">Oldest Submitted</option>
                 <option value="CATEGORY_ASC">Domain / Category</option>
               </select>
+
+              {locationStatus === 'requesting' && (
+                <span className="text-[11px] text-blue-600 dark:text-blue-400 flex items-center gap-1 font-medium animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  GPS...
+                </span>
+              )}
             </div>
 
             {/* Category Dropdown */}
@@ -251,6 +328,15 @@ export default function ChallengesExplorerPage() {
           </div>
         </div>
 
+        {locationStatus === 'denied' && sortBy === 'NEAREST' && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>
+              Device location access was blocked. To sort challenges by exact distance from your physical location, please enable location permissions for this site in your browser.
+            </span>
+          </div>
+        )}
+
         {/* Results Grid with Apple-grade Cards */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -295,6 +381,11 @@ export default function ChallengesExplorerPage() {
               const totalProblems = c.totalCitizenProblems || (c.challengeProblems?.length || 1);
               const verified = c.verifiedCount || 0;
               const denied = c.deniedCount || 0;
+              const distanceKm =
+                c.distanceKm ??
+                (userCoords && c.latitude != null && c.longitude != null
+                  ? computeHaversineKm(userCoords.lat, userCoords.lon, c.latitude, c.longitude)
+                  : null);
 
               return (
                 <div
@@ -329,11 +420,17 @@ export default function ChallengesExplorerPage() {
 
                     {/* Outer Details: Place & Date Submitted */}
                     <div className="space-y-1 text-xs text-slate-500 dark:text-slate-400">
-                      <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span className="truncate font-medium text-slate-700 dark:text-slate-300">
                           {c.district ? `${c.district}, ${c.state || ''}` : 'Location pending'}
                         </span>
+                        {distanceKm != null && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 shadow-2xs">
+                            <Navigation className="w-2.5 h-2.5" />
+                            {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm} km away`}
+                          </span>
+                        )}
                         {c.affectedPopulation ? (
                           <span className="text-[11px] text-slate-400 shrink-0">
                             • {c.affectedPopulation.toLocaleString()} affected

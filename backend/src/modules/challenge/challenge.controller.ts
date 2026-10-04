@@ -60,6 +60,9 @@ export class ChallengeController {
         ? req.user.id
         : (req.query.submitterId as string | undefined);
       const isSystemic = req.query.isSystemic === 'true' ? true : req.query.isSystemic === 'false' ? false : undefined;
+      const sortBy = req.query.sortBy as string | undefined;
+      const lat = req.query.lat !== undefined && req.query.lat !== '' ? Number(req.query.lat) : undefined;
+      const lon = req.query.lon !== undefined && req.query.lon !== '' ? Number(req.query.lon) : undefined;
       const limit = Number(req.query.limit) || 20;
       const offset = Number(req.query.offset) || 0;
 
@@ -70,6 +73,9 @@ export class ChallengeController {
         state,
         submitterId,
         isSystemic,
+        sortBy,
+        lat: lat !== undefined && !isNaN(lat) ? lat : undefined,
+        lon: lon !== undefined && !isNaN(lon) ? lon : undefined,
         limit,
         offset,
       });

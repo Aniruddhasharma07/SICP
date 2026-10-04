@@ -40,6 +40,7 @@ import { DuplicateClusteringService, ClusterCandidate } from '../../domain/intel
 import { SlaService } from '../../domain/sla/sla.service';
 import { ImpactService } from '../../domain/impact/impact.service';
 import { ChallengeIntelligenceOrchestrator } from '../../domain/intelligence/challenge-intelligence.orchestrator';
+import { SpatialPolicyEngine } from '../../domain/intelligence/spatial-policy.engine';
 
 export class ChallengeService {
   public static async create(
@@ -481,6 +482,9 @@ export class ChallengeService {
     state?: string;
     submitterId?: string;
     isSystemic?: boolean;
+    sortBy?: string;
+    lat?: number;
+    lon?: number;
     limit?: number;
     offset?: number;
   }): Promise<{ items: ChallengeDto[]; total: number }> {
@@ -494,12 +498,45 @@ export class ChallengeService {
       deletedAt: null,
     };
 
+    const isNearestSort = filter.sortBy === 'NEAREST' || filter.sortBy === 'LOCATION_NEAREST';
+    const hasCoordinates = filter.lat != null && filter.lon != null;
+    const postgisDistances = new Map<string, number>();
+
+    // PostGIS Spatial Query Execution (with graceful fallback if extension unavailable)
+    if (hasCoordinates && typeof (prisma as any).$queryRaw === 'function') {
+      try {
+        const rawResults: any = await (prisma as any).$queryRaw`
+          SELECT 
+            c.id,
+            ROUND(
+              ST_Distance(
+                ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326)::geography,
+                ST_SetSRID(ST_MakePoint(${filter.lon!}, ${filter.lat!}), 4326)::geography
+              )::numeric, 1
+            )::float AS distance_meters
+          FROM "Challenge" c
+          WHERE c."deletedAt" IS NULL
+            AND c.latitude IS NOT NULL 
+            AND c.longitude IS NOT NULL
+        `;
+        if (Array.isArray(rawResults)) {
+          for (const row of rawResults) {
+            if (row && row.id && row.distance_meters != null) {
+              postgisDistances.set(row.id, Number(row.distance_meters));
+            }
+          }
+        }
+      } catch (err: any) {
+        logger.info(`PostGIS spatial query unavailable (${err.message}). Using mathematical Haversine calculation.`);
+      }
+    }
+
     const [items, total] = await Promise.all([
       prisma.challenge.findMany({
         where: whereClause,
         orderBy: [{ priorityScore: 'desc' }, { createdAt: 'desc' }],
-        take: filter.limit || 20,
-        skip: filter.offset || 0,
+        take: isNearestSort ? 100 : (filter.limit || 20),
+        skip: isNearestSort ? 0 : (filter.offset || 0),
         include: {
           communityVotes: true,
           impact: true,
@@ -517,8 +554,16 @@ export class ChallengeService {
       prisma.challenge.count({ where: whereClause }),
     ]);
 
-    return {
-      items: items.map(c => ({
+    const mappedItems: ChallengeDto[] = items.map(c => {
+      let distanceMeters: number | null = null;
+      if (postgisDistances.has(c.id)) {
+        distanceMeters = postgisDistances.get(c.id)!;
+      } else if (filter.lat != null && filter.lon != null && c.latitude != null && c.longitude != null) {
+        distanceMeters = SpatialPolicyEngine.calculateDistanceMeters(filter.lat, filter.lon, c.latitude, c.longitude);
+      }
+      const distanceKm = distanceMeters != null ? Math.round((distanceMeters / 1000) * 10) / 10 : null;
+
+      return {
         id: c.id,
         title: c.title,
         description: c.description,
@@ -534,6 +579,8 @@ export class ChallengeService {
           : (c.submitterId ? { id: c.submitterId, fullName: 'Citizen', email: '' } : null),
         latitude: c.latitude,
         longitude: c.longitude,
+        distanceMeters,
+        distanceKm,
         address: c.address,
         district: c.district,
         state: c.state,
@@ -572,7 +619,25 @@ export class ChallengeService {
           : null,
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),
-      })),
+      };
+    });
+
+    if (isNearestSort) {
+      mappedItems.sort((a, b) => {
+        const distA = a.distanceMeters ?? Infinity;
+        const distB = b.distanceMeters ?? Infinity;
+        return distA - distB;
+      });
+      const offset = filter.offset || 0;
+      const limit = filter.limit || 20;
+      return {
+        items: mappedItems.slice(offset, offset + limit),
+        total,
+      };
+    }
+
+    return {
+      items: mappedItems,
       total,
     };
   }

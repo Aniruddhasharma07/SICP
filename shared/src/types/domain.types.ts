@@ -168,6 +168,8 @@ export interface ChallengeDto {
   deniedCount?: number;
   challengeProblems?: any[];
   problemGroups?: any[];
+  distanceMeters?: number | null;
+  distanceKm?: number | null;
   createdAt: string;
   updatedAt: string;
 }
