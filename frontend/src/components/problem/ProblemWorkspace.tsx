@@ -486,13 +486,6 @@ export function ProblemWorkspace({
           onRefresh={() => router.refresh()}
         />
 
-        {/* Viewport 1 Executive Summary Hierarchy */}
-        <FourCoreQuestionsBanner
-          challenge={challenge}
-          onJumpToTab={(tabId) => handleSelectTab(tabId as any)}
-          branchDifferentialDeduction={branchDifferentialDeduction}
-          leadingHypothesisTitle={propHypotheses?.[0]?.title || intelligence?.hypotheses?.[0]?.title}
-        />
 
         {/* 5-TAB NAVIGATION BAR */}
         <div className="relative w-full max-w-full overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-sm">
@@ -679,6 +672,9 @@ export function ProblemWorkspace({
           <SolutionMemoryPanel
             challenge={challenge}
             intelligence={intelligence}
+            historicalSolutions={historicalSolutions}
+            historicalEvaluation={historicalEvaluation}
+            loadingHistorical={loadingHistorical}
             onInspectPrecedent={handleInspectPrecedent}
           />
         </div>

@@ -63,11 +63,30 @@ export class SolutionRetrievalEngine {
       status: { in: allowedStatuses },
     };
 
+    const categoryKeywords: string[] = [];
     if (query.category) {
-      whereClause.challengeCategory = { equals: query.category, mode: 'insensitive' };
+      const rawCat = query.category.trim().toUpperCase();
+      if (rawCat.includes('ROAD') || rawCat.includes('TRANSPORT') || rawCat.includes('POTHOLE')) {
+        categoryKeywords.push('ROAD_TRANSPORT', 'ROAD', 'TRANSPORT');
+      } else if (rawCat.includes('WATER') || rawCat.includes('JAL') || rawCat.includes('PIPE')) {
+        categoryKeywords.push('WATER_SUPPLY', 'WATER');
+      } else if (rawCat.includes('DRAIN') || rawCat.includes('SEWER') || rawCat.includes('SANIT')) {
+        categoryKeywords.push('SANITATION', 'DRAINAGE');
+      } else if (rawCat.includes('SMOG') || rawCat.includes('ENVIRON') || rawCat.includes('AIR')) {
+        categoryKeywords.push('ENVIRONMENT', 'AIR_QUALITY');
+      } else if (rawCat.includes('LIGHT') || rawCat.includes('ELECTR') || rawCat.includes('POWER')) {
+        categoryKeywords.push('ELECTRICITY', 'POWER_SUPPLY');
+      }
+      categoryKeywords.push(query.category.trim());
     }
 
-    const candidateMemories = await prisma.solutionMemory.findMany({
+    if (categoryKeywords.length > 0) {
+      whereClause.OR = categoryKeywords.map((k) => ({
+        challengeCategory: { contains: k, mode: 'insensitive' },
+      }));
+    }
+
+    let candidateMemories = await prisma.solutionMemory.findMany({
       where: whereClause,
       include: {
         project: {
@@ -94,6 +113,37 @@ export class SolutionRetrievalEngine {
       },
       take: 50,
     });
+
+    // If no candidate memories match with strict category, fall back to all published memories so hybrid scoring can find semantic matches!
+    if (candidateMemories.length === 0) {
+      candidateMemories = await prisma.solutionMemory.findMany({
+        where: { status: { in: allowedStatuses } },
+        include: {
+          project: {
+            select: { id: true, title: true, status: true },
+          },
+          challenge: {
+            select: { id: true, title: true, district: true, state: true, latitude: true, longitude: true },
+          },
+          applications: {
+            select: {
+              id: true,
+              projectId: true,
+              challengeId: true,
+              outcomeStatus: true,
+              observedImpact: true,
+              targetAchieved: true,
+              successFactors: true,
+              failureFactors: true,
+              failureReason: true,
+              maintenanceIssues: true,
+              createdAt: true,
+            },
+          },
+        },
+        take: 50,
+      });
+    }
 
     if (candidateMemories.length === 0) {
       return [];

@@ -22,10 +22,12 @@ import {
   HelpCircle,
   MessageSquare,
   Send,
+  Eye,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
+import { ProblemDetailModal } from './ProblemDetailModal';
 import { apiClient } from '../../lib/api-client';
 import { ChallengeIntelligenceDto } from '@sicp/shared';
 import { ExtendedChallenge } from './ProblemWorkspace';
@@ -80,6 +82,9 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
       ];
 
   const totalProblemReports = groups.reduce((acc, g) => acc + (g.problems?.length || 0), 0);
+
+  // Problem inspection modal state
+  const [inspectingProblem, setInspectingProblem] = useState<any | null>(null);
 
   // Problem swipe state
   const [selectedProblem, setSelectedProblem] = useState<{ problem: any; currentGroupId: string } | null>(null);
@@ -568,9 +573,13 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                         <div className="p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
                           <div className="space-y-1.5 min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                              <button
+                                type="button"
+                                onClick={() => setInspectingProblem(problem)}
+                                className="text-xs font-bold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline text-left cursor-pointer transition-colors"
+                              >
                                 {problem.title || `Citizen Report #${probId.slice(0, 6)}`}
-                              </span>
+                              </button>
                               <Badge className="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800 shrink-0">
                                 {statusDisplay}
                               </Badge>
@@ -628,8 +637,17 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                             })()}
                           </div>
 
-                          {/* Problem Buttons: Request Clarification & Left Swipe */}
+                          {/* Problem Buttons: Inspect Details, Clarify & Left Swipe */}
                           <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setInspectingProblem(problem)}
+                              className="text-xs text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800 flex items-center gap-1 font-semibold"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                              <span>Inspect Details</span>
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -869,6 +887,18 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Problem Detail & Multimodal Evidence Inspection Modal */}
+      {inspectingProblem && (
+        <ProblemDetailModal
+          isOpen={!!inspectingProblem}
+          onClose={() => setInspectingProblem(null)}
+          problem={inspectingProblem}
+          challenge={challenge}
+          clarifications={clarifications}
+          onRefresh={onRefresh}
+        />
       )}
     </div>
   );

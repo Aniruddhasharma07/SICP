@@ -72,8 +72,8 @@ const PORTAL_METAS: Record<PortalType, PortalMeta> = {
     accentText: 'text-indigo-950 dark:text-indigo-200',
     tagline: 'Applied research, multidisciplinary teams, prototyping & solution memory',
     quickAction: {
-      label: 'Browse R&D Calls',
-      href: '/university?tab=assigned',
+      label: 'Applied Projects Cockpit',
+      href: '/projects',
     },
   },
   industry: {

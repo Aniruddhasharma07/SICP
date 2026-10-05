@@ -92,14 +92,6 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
       ],
     },
     {
-      title: 'Institutional Governance',
-      items: [
-        { label: 'Accredited Universities', href: '/government?mode=UNIVERSITIES', icon: GraduationCap, badge: 'Ratings', color: 'text-indigo-600' },
-        { label: 'Industry & CSR Partnerships', href: '/government?mode=INDUSTRY', icon: Briefcase, badge: 'CSR', color: 'text-amber-600' },
-        { label: 'Field Interventions & Pilots', href: '/projects', icon: FolderKanban, color: 'text-blue-600' },
-      ],
-    },
-    {
       title: 'Resolution Telemetry & Memory',
       items: [
         { label: 'Solution Memory (Precedents)', href: '/solutions', icon: BrainCircuit, badge: 'Memory', color: 'text-emerald-600' },
@@ -112,19 +104,11 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
   // 3. UNIVERSITY PORTAL NAVIGATION
   const universitySections: NavSection[] = [
     {
-      title: 'R&D Calls & Proposals',
-      items: [
-        { label: 'Academic Dashboard', href: '/university', icon: LayoutDashboard, badge: 'Calls', color: 'text-indigo-600' },
-        { label: 'Browse R&D Opportunities', href: '/university?tab=assigned', icon: Compass, isPrimary: true, color: 'text-indigo-600' },
-        { label: 'Research Proposals Desk', href: '/university?tab=proposals', icon: FileCheck, color: 'text-indigo-600' },
-      ],
-    },
-    {
       title: 'Applied Research Cockpit',
       items: [
+        { label: 'Academic Dashboard', href: '/university', icon: LayoutDashboard, badge: 'Calls', color: 'text-indigo-600' },
         { label: 'Institutional Projects', href: '/projects', icon: FolderKanban, badge: 'Cockpit', color: 'text-blue-600' },
         { label: 'Multidisciplinary Teams', href: '/university?tab=teams', icon: Users, color: 'text-indigo-600' },
-        { label: 'Testing & Prototype Labs', href: '/projects', icon: FlaskConical, color: 'text-cyan-600' },
       ],
     },
     {

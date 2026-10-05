@@ -2119,6 +2119,63 @@ export async function seedPlatformUniverse() {
     update: {},
   });
 
+  // Seed Photographic and Statutory Field Evidence for Seeded Challenges
+  const seededEvidenceRecords = [
+    {
+      id: 'ev-mathura-01',
+      challengeId: chalMathura.id,
+      fileKey: 'mathura_drainage_culvert_silt_obstruction.jpg',
+      originalName: 'Mathura_Culvert_Inlet_Silt_Accumulation.jpg',
+      mimeType: 'image/jpeg',
+      sizeBytes: 1845000,
+      uploadedById: officerMathura.id,
+    },
+    {
+      id: 'ev-mathura-02',
+      challengeId: chalMathura.id,
+      fileKey: 'mathura_monsoon_backflow_waterlogging.jpg',
+      originalName: 'Ward18_Pilgrim_Corridor_Waterlogging_FieldRecord.jpg',
+      mimeType: 'image/jpeg',
+      sizeBytes: 2420000,
+      uploadedById: officerMathura.id,
+    },
+    {
+      id: 'ev-bhopal-01',
+      challengeId: chalBhopal.id,
+      fileKey: 'bhopal_kolar_road_subgrade_cavitation.jpg',
+      originalName: 'Kolar_Road_Crater_Subgrade_Failure_CorePhoto.jpg',
+      mimeType: 'image/jpeg',
+      sizeBytes: 3120000,
+      uploadedById: officerBhopal.id,
+    },
+    {
+      id: 'ev-bhopal-02',
+      challengeId: chalBhopal.id,
+      fileKey: 'bhopal_utility_trench_uncompacted_settlement.jpg',
+      originalName: 'Avantika_Gas_Trench_Settlement_Audit.jpg',
+      mimeType: 'image/jpeg',
+      sizeBytes: 1980000,
+      uploadedById: officerBhopal.id,
+    },
+  ];
+
+  for (const ev of seededEvidenceRecords) {
+    await prisma.challengeEvidence.upsert({
+      where: { id: ev.id },
+      create: {
+        id: ev.id,
+        challengeId: ev.challengeId,
+        fileKey: ev.fileKey,
+        originalName: ev.originalName,
+        mimeType: ev.mimeType,
+        sizeBytes: ev.sizeBytes,
+        storageBucket: 'challenge-evidence',
+        uploadedById: ev.uploadedById,
+      },
+      update: {},
+    });
+  }
+
   // --------------------------------------------------------------------------
   // 9. ROLE-SCOPED NOTIFICATIONS
   // --------------------------------------------------------------------------

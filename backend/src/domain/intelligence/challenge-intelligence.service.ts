@@ -103,11 +103,11 @@ export class ChallengeIntelligenceService {
         description: challenge.description,
         district: challenge.district,
         state: challenge.state,
-        limit: 3,
+        limit: 6,
       });
 
-      // Strict domain protection: ensure memories align with the challenge domain
-      precedents = retrieved.filter((p) => {
+      // Domain-aware preference: prioritize memories aligning with the challenge domain
+      const domainMatches = retrieved.filter((p) => {
         if (!p.challengeCategory) return false;
         const normCat = p.challengeCategory.toUpperCase();
         if (canonicalDomain === 'ROAD_TRANSPORT') {
@@ -124,6 +124,8 @@ export class ChallengeIntelligenceService {
         }
         return true;
       });
+
+      precedents = domainMatches.length > 0 ? domainMatches : retrieved;
     } catch (err) {
       logger.warn(`Precedent retrieval non-fatal fallback for ${challengeId}: ${(err as Error).message}`);
     }

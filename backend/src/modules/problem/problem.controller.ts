@@ -5,6 +5,7 @@ import { prisma } from '../../database/prisma';
 import { sendSuccess } from '../../utils/response';
 import { NotFoundError, ValidationError } from '../../utils/errors';
 import { SelfHealingService } from './self-healing.service';
+import { SolutionRetrievalEngine } from '../../domain/intelligence/solution-retrieval.engine';
 
 export class ProblemController {
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -55,7 +56,9 @@ export class ProblemController {
         include: {
           group: {
             include: {
-              challenge: true,
+              challenge: {
+                include: { evidence: true },
+              },
               members: {
                 include: { problem: true },
               },
@@ -63,10 +66,19 @@ export class ProblemController {
             },
           },
           challengeLinks: {
-            include: { challenge: true },
+            include: {
+              challenge: {
+                include: { evidence: true },
+              },
+            },
           },
           overrideLogs: {
             orderBy: { createdAt: 'desc' },
+          },
+          clarificationRequests: {
+            include: {
+              responses: true,
+            },
           },
         },
       });
@@ -75,7 +87,24 @@ export class ProblemController {
         throw new NotFoundError('Problem', req.params.id);
       }
 
-      sendSuccess(res, problem, 200);
+      const challengeEvidence =
+        problem.challengeLinks?.[0]?.challenge?.evidence ||
+        (problem.group as any)?.challenge?.evidence ||
+        [];
+
+      sendSuccess(
+        res,
+        {
+          ...problem,
+          evidence: challengeEvidence,
+          mediaUrls: challengeEvidence.map((e: any) =>
+            e.fileKey.startsWith('http') || e.fileKey.startsWith('data:')
+              ? e.fileKey
+              : `/api/v1/evidence/${e.fileKey}`
+          ),
+        },
+        200
+      );
     } catch (err) {
       next(err);
     }
@@ -269,10 +298,55 @@ export class ProblemController {
       );
 
       // Challenge-level systemic solution memory
-      const challengeMemories = await prisma.solutionMemory.findMany({
+      let challengeMemories = await prisma.solutionMemory.findMany({
         where: { challengeId },
         take: 10,
       });
+
+      // If no memory is explicitly tagged with this challengeId, query live precedents via SolutionRetrievalEngine!
+      if (challengeMemories.length === 0) {
+        const challenge = await prisma.challenge.findUnique({
+          where: { id: challengeId },
+        });
+
+        if (challenge) {
+          const livePrecedents = await SolutionRetrievalEngine.retrieveRelevantSolutions({
+            challengeId: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+            category: challenge.category,
+            district: challenge.district,
+            state: challenge.state,
+            limit: 6,
+          });
+
+          sendSuccess(res, {
+            challengeId,
+            groupLevel: groupMemories,
+            challengeLevel: livePrecedents.map((m) => ({
+              id: m.memoryId,
+              title: m.title,
+              intervention: m.technicalApproach || m.title,
+              classification:
+                m.outcomeStatus === 'SUCCESSFUL' || m.outcomeStatus === 'EFFECTIVE'
+                  ? 'PREVIOUSLY_WORKED'
+                  : m.outcomeStatus === 'FAILED' || m.outcomeStatus === 'INEFFECTIVE'
+                  ? 'NOT_WORKED'
+                  : 'MIXED_OUTCOME',
+              evidenceSource: m.verifiedImpact || m.whatWorked || 'State Innovation Repository Verified Outcome',
+              scope: 'CHALLENGE_SYSTEMIC_CAUSE',
+              domain: m.challengeCategory,
+              relevanceScore: m.relevanceScore,
+              reusabilityScore: m.reusabilityScore,
+              whatWorked: m.whatWorked,
+              whatFailed: m.whatFailed,
+              knownLimitations: m.knownLimitations,
+              lessonsLearned: m.lessonsLearned,
+            })),
+          }, 200);
+          return;
+        }
+      }
 
       sendSuccess(res, {
         challengeId,
@@ -281,9 +355,10 @@ export class ProblemController {
           id: m.id,
           title: m.title,
           intervention: m.technicalApproach || m.title,
-          classification: m.outcomeStatus === 'SUCCESSFUL' ? 'PREVIOUSLY_WORKED' : 'MIXED_OUTCOME',
+          classification: m.outcomeStatus === 'SUCCESSFUL' ? 'PREVIOUSLY_WORKED' : m.outcomeStatus === 'FAILED' ? 'NOT_WORKED' : 'MIXED_OUTCOME',
           evidenceSource: m.reusabilityExplanation || m.whatWorked || 'State Innovation Repository Verified Outcome',
           scope: 'CHALLENGE_SYSTEMIC_CAUSE',
+          domain: m.challengeCategory,
         })),
       }, 200);
     } catch (err) {
