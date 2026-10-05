@@ -102,10 +102,12 @@ export class CategoryResolutionEngine {
       canonicalCategory: 'Education & Schools',
       extentType: 'LOCALITY_RESIDENTS',
       keywords: [
-        'school', 'classroom', 'college', 'teacher', 'student', 'midday meal', 'blackboard'
+        'education', 'educational', 'school', 'schools', 'classroom', 'college',
+        'teacher', 'teachers', 'student', 'students', 'university', 'coaching',
+        'tuition', 'learning', 'anganwadi', 'study', 'teaching', 'blackboard'
       ],
       strongIndicators: [
-        /\b(?:school|classroom|college|student)\b/i,
+        /\b(?:education|educational|school|schools|classroom|college|students?|teachers?|university|coaching|anganwadi)\b/i,
       ],
     },
     {

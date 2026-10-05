@@ -132,7 +132,9 @@ export class ChallengeService {
       const candRes = CategoryResolutionEngine.resolve(cand.title, cand.description, cand.category);
       const isDomainMatch =
         candRes.domainKey === resolution.domainKey ||
-        cand.category.toLowerCase() === canonicalCategory.toLowerCase();
+        cand.category.toLowerCase() === canonicalCategory.toLowerCase() ||
+        cand.category.toLowerCase() === (data.category || '').toLowerCase() ||
+        candRes.canonicalCategory.toLowerCase() === canonicalCategory.toLowerCase();
 
       if (!isDomainMatch) continue;
 

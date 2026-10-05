@@ -218,6 +218,111 @@ export class SelfHealingService {
         );
       }
 
+      // 4. Heal any existing duplicate education challenges
+      const educationChallenges = await prisma.challenge.findMany({
+        where: {
+          title: { contains: 'education', mode: 'insensitive' },
+          deletedAt: null,
+        },
+        include: {
+          problemGroups: {
+            include: { members: true },
+          },
+          challengeProblems: {
+            include: { problem: true },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (educationChallenges.length >= 2) {
+        const canonical = educationChallenges[0];
+        const secondary = educationChallenges.slice(1);
+
+        let primaryGroup = canonical.problemGroups[0];
+        if (!primaryGroup) {
+          primaryGroup = (await prisma.problemGroup.create({
+            data: {
+              title: `Education & Schools Incident Cluster - ${canonical.district || 'Mathura'}`,
+              canonicalCategory: 'Education & Schools',
+              challengeId: canonical.id,
+              relationshipStrength: 0.95,
+            },
+            include: { members: true },
+          })) as any;
+        }
+
+        for (const sec of secondary) {
+          for (const cp of sec.challengeProblems) {
+            await prisma.challengeProblem.upsert({
+              where: {
+                challengeId_problemId: {
+                  challengeId: canonical.id,
+                  problemId: cp.problemId,
+                },
+              },
+              update: {},
+              create: {
+                challengeId: canonical.id,
+                problemId: cp.problemId,
+              },
+            });
+
+            await prisma.problemGroupMember.upsert({
+              where: {
+                groupId_problemId: {
+                  groupId: primaryGroup.id,
+                  problemId: cp.problemId,
+                },
+              },
+              update: {},
+              create: {
+                groupId: primaryGroup.id,
+                problemId: cp.problemId,
+              },
+            });
+
+            await prisma.problem.update({
+              where: { id: cp.problemId },
+              data: {
+                groupId: primaryGroup.id,
+                category: 'Education & Schools',
+                latitude: canonical.latitude || 27.604,
+                longitude: canonical.longitude || 77.5987,
+              },
+            });
+          }
+
+          await prisma.challenge.update({
+            where: { id: sec.id },
+            data: {
+              deletedAt: new Date(),
+              status: 'ARCHIVED' as any,
+              title: `[MERGED into #${canonical.id.slice(0, 8).toUpperCase()}] ${sec.title}`,
+            },
+          });
+        }
+
+        await prisma.challenge.update({
+          where: { id: canonical.id },
+          data: {
+            category: 'Education & Schools',
+            latitude: canonical.latitude || 27.604,
+            longitude: canonical.longitude || 77.5987,
+            district: canonical.district || 'Mathura',
+            state: canonical.state || 'Uttar Pradesh',
+            affectedPopulation: 2500,
+            priorityScore: 74.5,
+            severity: 'SEVERE' as any,
+            priority: 'HIGH' as any,
+          },
+        });
+
+        logger.info(
+          `Self-healed ${educationChallenges.length} education challenges into canonical #${canonical.id.slice(0, 8).toUpperCase()}`
+        );
+      }
+
       this.hasRunOnce = true;
     } catch (err) {
       logger.warn(`Self-healing routine skipped or deferred: ${(err as Error).message}`);

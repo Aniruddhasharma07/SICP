@@ -125,14 +125,14 @@ function detectCategoryFromText(titleText: string, descText: string) {
     };
   }
   if (
-    /\b(?:school|classroom|college|student)\b/i.test(text)
+    /\b(?:education|educational|school|schools|classroom|college|students?|teachers?|university|coaching|tuition|learning|anganwadi)\b/i.test(text)
   ) {
     return {
       category: 'Education & Schools',
       extentType: 'LOCALITY_RESIDENTS',
-      estimatedPopulation: 1400,
+      estimatedPopulation: 2500,
       badgeText: '✨ AI Detected: Education & Schools',
-      reason: 'Education facility deficit — student & family extent',
+      reason: 'Educational institution deficit — student, child & family locality extent',
     };
   }
   if (
@@ -319,19 +319,57 @@ export default function NewChallengePage() {
         setLongitude(lng);
         setGpsLoading(false);
 
-        // Attempt reverse geocode lookup
-        apiClient
-          .request<any>(`/api/v1/geospatial/reverse-geocode?latitude=${lat}&longitude=${lng}`)
-          .then((res) => {
-            if (res.data) {
-              if (res.data.district) setDistrict(res.data.district);
-              if (res.data.state) setState(res.data.state);
-              if (res.data.displayName) setAddress(res.data.displayName);
+        // Immediate reverse geocode lookup
+        const doReverseLookup = async () => {
+          try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&addressdetails=1`;
+            const r = await fetch(url, {
+              headers: { Accept: 'application/json', 'Accept-Language': 'en' },
+            });
+            if (r.ok) {
+              const geoJson = await r.json();
+              const addr = geoJson.address || {};
+              const dist =
+                addr.state_district ||
+                addr.district ||
+                addr.county ||
+                addr.city ||
+                addr.town ||
+                '';
+              const st = addr.state || '';
+              const loc =
+                addr.suburb ||
+                addr.neighbourhood ||
+                addr.village ||
+                addr.town ||
+                addr.city_district ||
+                addr.road ||
+                '';
+              const fullAddr = geoJson.display_name || '';
+
+              if (dist) setDistrict(dist.replace(/\s+District$/i, '').trim());
+              if (st) setState(st.trim());
+              setAddress(fullAddr || [loc, dist, st].filter(Boolean).join(', '));
+              return;
             }
-          })
-          .catch(() => {
-            // Non-fatal: coordinates are preserved
-          });
+          } catch {
+            // Fallback to backend API
+          }
+
+          apiClient
+            .request<any>(`/api/v1/geospatial/reverse-geocode?latitude=${lat}&longitude=${lng}`)
+            .then((res) => {
+              if (res.data) {
+                if (res.data.district) setDistrict(res.data.district);
+                if (res.data.state) setState(res.data.state);
+                const full = res.data.formattedAddress || res.data.displayName || res.data.locality;
+                if (full) setAddress(full);
+              }
+            })
+            .catch(() => {});
+        };
+
+        doReverseLookup();
       },
       (err) => {
         setGpsLoading(false);
