@@ -48,7 +48,6 @@ import { RelationshipPanel } from './RelationshipPanel';
 import { EvidencePanel } from './EvidencePanel';
 import { PossibleCauses } from './PossibleCauses';
 import { SolutionMemoryPanel } from './SolutionMemoryPanel';
-import { FourCoreQuestionsBanner } from './FourCoreQuestionsBanner';
 import { TechnicalInvestigationDrawer } from './TechnicalInvestigationDrawer';
 import { PrecedentDetailDrawer } from '../intelligence/PrecedentDetailDrawer';
 import {
