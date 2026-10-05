@@ -1,6 +1,6 @@
 import { prisma } from '../../database/prisma';
 import { SlaService } from '../../domain/sla/sla.service';
-import { SeverityLevel, PriorityLevel } from '@sicp/shared';
+import { SeverityLevel, PriorityLevel, ChallengeStatus } from '@sicp/shared';
 import { logger } from '../../utils/logger';
 
 export class SelfHealingService {
@@ -192,7 +192,7 @@ export class SelfHealingService {
             where: { id: sec.id },
             data: {
               deletedAt: new Date(),
-              status: 'ARCHIVED' as any,
+              status: ChallengeStatus.MERGED_INTO_SYSTEMIC as any,
               title: `[MERGED into #${canonical.id.slice(0, 8).toUpperCase()}] ${sec.title}`,
             },
           });
@@ -297,7 +297,7 @@ export class SelfHealingService {
             where: { id: sec.id },
             data: {
               deletedAt: new Date(),
-              status: 'ARCHIVED' as any,
+              status: ChallengeStatus.MERGED_INTO_SYSTEMIC as any,
               title: `[MERGED into #${canonical.id.slice(0, 8).toUpperCase()}] ${sec.title}`,
             },
           });
