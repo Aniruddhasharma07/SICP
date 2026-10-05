@@ -8,7 +8,7 @@ import { SelfHealingService } from './modules/problem/self-healing.service';
 
 async function bootstrap() {
   await ensureDatabaseSchemaSynchronized();
-  await SelfHealingService.healOrphanedDraftsAndProblems().catch(err => {
+  await SelfHealingService.runOnce().catch(err => {
     logger.warn('Startup self-healing skipped: ' + (err as Error).message);
   });
 

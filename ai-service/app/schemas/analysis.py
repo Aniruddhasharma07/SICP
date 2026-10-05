@@ -1,9 +1,20 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+import re
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, List, Dict, Any, Set
+
+# Dangerous ASCII control characters: null bytes and C0 control codes except newline (\n), carriage return (\r), tab (\t)
+CONTROL_CHAR_REGEX = re.compile(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]')
+
+def sanitize_civic_text(val: Optional[str]) -> str:
+    if val is None:
+        return ""
+    # Strip null bytes and unsafe control chars while preserving natural newlines and tabs
+    sanitized = CONTROL_CHAR_REGEX.sub('', str(val))
+    return sanitized.strip()
 
 class AnalysisRequest(BaseModel):
-    title: str = Field(..., min_length=3, max_length=250)
-    description: Optional[str] = Field(default="", description="Citizen text description")
+    title: str = Field(..., min_length=1, max_length=300, description="Citizen problem title")
+    description: Optional[str] = Field(default="", max_length=5000, description="Citizen text description")
     category: Optional[str] = Field(default="Infrastructure")
     district: Optional[str] = None
     state: Optional[str] = None
@@ -16,6 +27,24 @@ class AnalysisRequest(BaseModel):
     videoKeyframes: Optional[List[Any]] = Field(default_factory=list, description="Extracted video keyframes")
     documents: Optional[List[Any]] = Field(default_factory=list, description="Document excerpts or {name, text, mimeType}")
     modalitiesProvided: Optional[List[str]] = Field(default_factory=list, description="Explicit list of modalities submitted")
+
+    @field_validator('title', mode='before')
+    @classmethod
+    def sanitize_title(cls, v: Any) -> str:
+        cleaned = sanitize_civic_text(v)
+        if not cleaned:
+            raise ValueError("Problem title cannot be empty or whitespace only.")
+        if len(cleaned) > 300:
+            raise ValueError("Problem title exceeds maximum length of 300 characters.")
+        return cleaned
+
+    @field_validator('description', mode='before')
+    @classmethod
+    def sanitize_description(cls, v: Any) -> str:
+        cleaned = sanitize_civic_text(v)
+        if len(cleaned) > 5000:
+            raise ValueError("Problem description exceeds maximum length of 5000 characters.")
+        return cleaned
 
 class SeverityBreakdown(BaseModel):
     riskLevel: str = "MODERATE"
@@ -77,6 +106,9 @@ class FieldConfidenceBreakdown(BaseModel):
     duplicateConfidence: float = 0.70
     systemicConfidence: float = 0.72
 
+ALLOWED_SEVERITIES: Set[str] = {"LOW", "MODERATE", "SEVERE", "CATASTROPHIC"}
+ALLOWED_PRIORITIES: Set[str] = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
+
 class AnalysisResponse(BaseModel):
     # Core domain separation models
     primaryProblem: Optional[PrimaryProblem] = None
@@ -96,8 +128,8 @@ class AnalysisResponse(BaseModel):
     problemType: str = "UNKNOWN"
     normalizedStatement: str = ""
     entities: List[str] = []
-    estimatedSeverity: str
-    preliminaryPriority: str
+    estimatedSeverity: str = Field(..., description="LOW, MODERATE, SEVERE, or CATASTROPHIC")
+    preliminaryPriority: str = Field(..., description="LOW, MEDIUM, HIGH, or CRITICAL")
     priorityScore: float = Field(default=50.0, ge=0.0, le=100.0)
     severityBreakdown: SeverityBreakdown = Field(default_factory=SeverityBreakdown)
     rootCauseHypotheses: List[str] = []
@@ -112,6 +144,29 @@ class AnalysisResponse(BaseModel):
     dataLimitations: str = "Preliminary assessment based solely on citizen-submitted narrative and local context."
     appliedRules: List[str] = []
     aiProvider: str = "GEMINI"
+
+    @field_validator('confidenceScore')
+    @classmethod
+    def validate_confidence(cls, v: float) -> float:
+        if v < 0.0 or v > 1.0:
+            raise ValueError(f"confidenceScore must be between 0.0 and 1.0, got {v}")
+        return float(v)
+
+    @field_validator('estimatedSeverity')
+    @classmethod
+    def validate_severity(cls, v: str) -> str:
+        upper = (v or "").strip().upper()
+        if upper not in ALLOWED_SEVERITIES:
+            raise ValueError(f"Invalid estimatedSeverity: '{v}'. Must be one of {sorted(ALLOWED_SEVERITIES)}")
+        return upper
+
+    @field_validator('preliminaryPriority')
+    @classmethod
+    def validate_priority(cls, v: str) -> str:
+        upper = (v or "").strip().upper()
+        if upper not in ALLOWED_PRIORITIES:
+            raise ValueError(f"Invalid preliminaryPriority: '{v}'. Must be one of {sorted(ALLOWED_PRIORITIES)}")
+        return upper
 
 class TranscriptionRequest(BaseModel):
     audioData: str = Field(..., description="Base64 encoded audio bytes or data URI")

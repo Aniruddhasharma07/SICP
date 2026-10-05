@@ -18,6 +18,9 @@ import { DuplicateClusteringService } from '../src/domain/intelligence/duplicate
 import { RelationshipScoringEngine } from '../src/domain/intelligence/relationship-scoring.engine';
 import { ChallengeIntelligenceOrchestrator } from '../src/domain/intelligence/challenge-intelligence.orchestrator';
 import { GovernmentController } from '../src/modules/government/government.controller';
+import { ChallengeService } from '../src/modules/challenge/challenge.service';
+import { AiServiceClient } from '../src/domain/intelligence/ai-service.client';
+import { AiUnavailableError } from '../src/utils/errors';
 import { prisma } from '../src/database/prisma';
 
 jest.mock('../src/database/prisma', () => ({
@@ -475,4 +478,89 @@ describe('AI Categorization & Governance Regression Suite', () => {
       expect(responseData.data.governmentReview.rootCauseValidations[0].status).toBe('GOVERNMENT_VALIDATED');
     });
   });
+
+  describe('Pre-Submit Interactive Analysis & Input Guard', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('returns isPartial: true and null category for single-character input "N"', async () => {
+      const analyzeSpy = jest.spyOn(AiServiceClient, 'analyzeChallenge');
+      const result = await ChallengeService.analyzeProblemStatement(
+        { title: 'N' },
+        { requestId: 'req-partial-n' }
+      );
+
+      expect(result.isPartial).toBe(true);
+      expect(result.category).toBeNull();
+      expect(result.confidenceScore).toBe(0);
+      expect(analyzeSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns isPartial: true and null category for casual or short word "No"', async () => {
+      const analyzeSpy = jest.spyOn(AiServiceClient, 'analyzeChallenge');
+      const result = await ChallengeService.analyzeProblemStatement(
+        { title: 'No' },
+        { requestId: 'req-partial-no' }
+      );
+
+      expect(result.isPartial).toBe(true);
+      expect(result.category).toBeNull();
+      expect(result.confidenceScore).toBe(0);
+      expect(analyzeSpy).not.toHaveBeenCalled();
+    });
+
+    it('resolves "No healthcare facility in my locality" to canonical Healthcare & Public Health', async () => {
+      const mockAiResponse: any = {
+        category: 'Healthcare Facilities',
+        confidenceScore: 0.95,
+        estimatedSeverity: 'SEVERE',
+        preliminaryPriority: 'HIGH',
+        reasoningSummary: 'Shortage and absence of primary health dispensary or clinic.',
+        primaryProblem: {
+          domain: 'Public Health',
+          category: 'Healthcare Facilities',
+          problemType: 'HEALTHCARE_SERVICE',
+          normalizedStatement: 'Lack of healthcare facility and medical services in locality',
+          confidence: 0.95,
+        },
+      };
+
+      const analyzeSpy = jest.spyOn(AiServiceClient, 'analyzeChallenge').mockResolvedValueOnce(mockAiResponse);
+
+      const result = await ChallengeService.analyzeProblemStatement(
+        {
+          title: 'No healthcare facility in my locality',
+          description: 'Residents have to travel 35km to the nearest primary health center.',
+        },
+        { requestId: 'req-healthcare-test' }
+      );
+
+      expect(result.isPartial).toBeFalsy();
+      expect(result.category).toBe('Healthcare & Public Health');
+      expect(result.confidenceScore).toBe(0.95);
+      expect(analyzeSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns aiUnavailable: true and null category honestly when AI service fails without fake data', async () => {
+      jest.spyOn(AiServiceClient, 'analyzeChallenge').mockRejectedValueOnce(
+        new AiUnavailableError('AI service is currently unavailable or unconfigured.')
+      );
+
+      const result = await ChallengeService.analyzeProblemStatement(
+        {
+          title: 'Water pipeline burst flooding residential sector',
+          description: 'Major potable water supply line burst causing severe street flooding.',
+        },
+        { requestId: 'req-ai-offline' }
+      );
+
+      expect(result.isPartial).toBe(false);
+      expect((result as any).aiUnavailable).toBe(true);
+      expect(result.category).toBeNull();
+      expect(result.confidenceScore).toBe(0);
+      expect(result.message).toContain('AI service is currently unavailable');
+    });
+  });
 });
+

@@ -15,6 +15,7 @@ import { ImpactModelRegistry } from '../../domain/impact/impact-model.registry';
 import { prisma } from '../../database/prisma';
 import { NotFoundError, ValidationError } from '../../utils/errors';
 import { ChallengeIntelligenceService } from '../../domain/intelligence/challenge-intelligence.service';
+import { SelfHealingService } from '../problem/self-healing.service';
 
 export class ChallengeController {
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -52,6 +53,8 @@ export class ChallengeController {
 
   public static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      await SelfHealingService.runOnce().catch(() => {});
+
       const status = req.query.status as ChallengeStatus | undefined;
       const category = req.query.category as string | undefined;
       const district = req.query.district as string | undefined;

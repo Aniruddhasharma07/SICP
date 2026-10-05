@@ -52,19 +52,6 @@ const CITIZEN_CATEGORIES = [
   'General Civic Issue',
 ];
 
-function getInitialCategoryFallback(titleText: string, descText: string): string {
-  const text = `${titleText} ${descText}`.toLowerCase();
-  if (/\b(?:hospital|clinic|phc|chc|healthcare|health|doctor|medical|dispensary|ambulance)\b/i.test(text)) return 'Healthcare & Public Health';
-  if (/\b(?:school|college|education|teacher|student|classroom|university|tuition)\b/i.test(text)) return 'Education & Schools';
-  if (/\b(?:water|drinking|borewell|pipeline|tap|leak|scarcity)\b/i.test(text)) return 'Water Supply';
-  if (/\b(?:washroom|toilet|sewage|sewer|drainage|sanitation|gutter|nallah)\b/i.test(text)) return 'Sanitation & Drainage';
-  if (/\b(?:road|pothole|traffic|highway|bridge|asphalt|flyover|footpath)\b/i.test(text)) return 'Roads & Transport';
-  if (/\b(?:electricity|power|transformer|streetlight|blackout|voltage)\b/i.test(text)) return 'Electricity & Lighting';
-  if (/\b(?:flood|inundat|waterlog|waste|garbage|pollution)\b/i.test(text)) return 'Environment & Waste';
-  if (/\b(?:crop|farmer|irrigation|canal|farm|harvest)\b/i.test(text)) return 'Agriculture & Irrigation';
-  return 'General Civic Issue';
-}
-
 export default function NewChallengePage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -75,7 +62,7 @@ export default function NewChallengePage() {
   // Step 1: Problem
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Sanitation & Drainage');
+  const [category, setCategory] = useState('');
   const [userHasOverriddenCategory, setUserHasOverriddenCategory] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -112,7 +99,9 @@ export default function NewChallengePage() {
   const [submittedChallenge, setSubmittedChallenge] = useState<{ id: string; title: string } | null>(null);
 
   // Real Gemini AI Analysis State
-  const [aiStatus, setAiStatus] = useState<'IDLE' | 'ANALYZING' | 'RESOLVED'>('IDLE');
+  const activeRequestIdRef = useRef<number>(0);
+  const [aiStatus, setAiStatus] = useState<'IDLE' | 'ANALYZING' | 'RESOLVED' | 'UNAVAILABLE'>('IDLE');
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [aiAnalysisResult, setAiAnalysisResult] = useState<{
     category: string;
     confidenceScore: number;
@@ -122,56 +111,89 @@ export default function NewChallengePage() {
   } | null>(null);
   const [showWhyClassification, setShowWhyClassification] = useState(false);
 
-  // Debounced real Gemini AI call
+  // Authoritative Gemini AI Analysis with strict trigger rule (no 1st-letter guessing) and race condition defense
   useEffect(() => {
     const trimmedTitle = title.trim();
     const trimmedDesc = description.trim();
-    if (trimmedTitle.length < 3 && trimmedDesc.length < 5) {
+    const titleWords = trimmedTitle.split(/\s+/).filter(Boolean);
+
+    // AI categorization becomes eligible ONLY when:
+    // (trimmedTitle.length >= 8 AND titleWords.length >= 2) OR trimmedDesc.length >= 15
+    const isEligible =
+      (trimmedTitle.length >= 8 && titleWords.length >= 2) ||
+      trimmedDesc.length >= 15;
+
+    if (!isEligible) {
       setAiStatus('IDLE');
       setAiAnalysisResult(null);
+      setAiMessage(null);
       return;
     }
 
     setAiStatus('ANALYZING');
+    const reqSeq = ++activeRequestIdRef.current;
 
     const timer = setTimeout(async () => {
       try {
         const res = await apiClient.request<any>('/api/v1/challenges/analyze', {
           method: 'POST',
           body: JSON.stringify({
-            title: trimmedTitle || 'Civic Problem',
-            description: trimmedDesc || '',
-            category: 'General',
+            title: trimmedTitle,
+            description: trimmedDesc,
+            category: category || 'General',
           }),
         });
 
+        // Drop stale response if newer request was dispatched while this was in-flight
+        if (reqSeq !== activeRequestIdRef.current) {
+          return;
+        }
+
         if (res.success && res.data) {
-          const canonical = res.data.category || 'General Civic Issue';
-          const conf = typeof res.data.confidenceScore === 'number' ? res.data.confidenceScore : 0.85;
+          const data = res.data;
 
-          setAiAnalysisResult({
-            category: canonical,
-            confidenceScore: conf,
-            normalizedStatement: res.data.normalizedStatement,
-            reasoningSummary: res.data.reasoningSummary,
-            rootCauses: res.data.rootCauseHypotheses || [],
-          });
-          setAiStatus('RESOLVED');
+          if (data.isPartial) {
+            setAiStatus('IDLE');
+            setAiMessage(data.message || null);
+            return;
+          }
 
-          if (!userHasOverriddenCategory && canonical) {
-            setCategory(canonical);
+          if (data.aiUnavailable) {
+            setAiStatus('UNAVAILABLE');
+            setAiMessage(data.message || 'AI categorization is currently unavailable.');
+            return;
+          }
+
+          const canonical = data.category;
+          const conf = typeof data.confidenceScore === 'number' ? data.confidenceScore : 0.85;
+
+          if (canonical && conf >= 0.65) {
+            setAiAnalysisResult({
+              category: canonical,
+              confidenceScore: conf,
+              normalizedStatement: data.normalizedStatement,
+              reasoningSummary: data.reasoningSummary,
+              rootCauses: data.rootCauseHypotheses || [],
+            });
+            setAiStatus('RESOLVED');
+            setAiMessage(null);
+
+            if (!userHasOverriddenCategory) {
+              setCategory(canonical);
+            }
+          } else {
+            setAiStatus('IDLE');
           }
         } else {
-          const fallbackCat = getInitialCategoryFallback(trimmedTitle, trimmedDesc);
-          if (!userHasOverriddenCategory) setCategory(fallbackCat);
-          setAiStatus('IDLE');
+          setAiStatus('UNAVAILABLE');
+          setAiMessage('AI categorization is temporarily unavailable. Please select your sector manually.');
         }
       } catch {
-        const fallbackCat = getInitialCategoryFallback(trimmedTitle, trimmedDesc);
-        if (!userHasOverriddenCategory) setCategory(fallbackCat);
-        setAiStatus('IDLE');
+        if (reqSeq !== activeRequestIdRef.current) return;
+        setAiStatus('UNAVAILABLE');
+        setAiMessage('AI categorization is temporarily unavailable. Please select your sector manually.');
       }
-    }, 500);
+    }, 700);
 
     return () => clearTimeout(timer);
   }, [title, description, userHasOverriddenCategory]);
@@ -656,72 +678,127 @@ export default function NewChallengePage() {
                 </span>
               </div>
 
-              {/* Real-time Gemini AI Categorization Status & Confidence */}
+              {/* Real-time Gemini AI Categorization Status & Intelligence */}
+              {aiStatus === 'IDLE' && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 text-xs text-slate-500 dark:text-slate-400">
+                  <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span>
+                    {aiMessage || 'AI Intelligence: Awaiting problem details (minimum 2 words or 8 characters)...'}
+                  </span>
+                </div>
+              )}
+
               {aiStatus === 'ANALYZING' && (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400 animate-pulse">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-                  <span>Analyzing problem statement with Gemini intelligence...</span>
+                <div className="flex items-center gap-2.5 p-3 rounded-lg border border-blue-200/80 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-700 dark:text-blue-300">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="font-medium animate-pulse">Gemini 3.1 analyzing problem context &amp; societal impact...</span>
+                </div>
+              )}
+
+              {aiStatus === 'UNAVAILABLE' && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 text-xs text-amber-800 dark:text-amber-300">
+                  <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span>{aiMessage || 'AI categorization is currently unavailable. Please select your sector from the dropdown below.'}</span>
                 </div>
               )}
 
               {aiStatus === 'RESOLVED' && aiAnalysisResult && (
-                <div className="rounded-lg border border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 p-3 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/70 bg-gradient-to-br from-blue-50/60 via-slate-50/30 to-emerald-50/30 dark:from-blue-950/30 dark:via-slate-900/20 dark:to-emerald-950/20 p-4 text-xs text-slate-700 dark:text-slate-300 space-y-3 shadow-xs">
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100">
-                        Category: {aiAnalysisResult.category}
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-xs">
+                        <Sparkles className="w-3 h-3" />
+                        {aiAnalysisResult.category}
                       </span>
-                      <span className="text-slate-400">·</span>
-                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
-                        {aiAnalysisResult.confidenceScore >= 0.85 ? 'High confidence' : 'Moderate confidence'} ({Math.round(aiAnalysisResult.confidenceScore * 100)}%)
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        {Math.round(aiAnalysisResult.confidenceScore * 100)}% Match
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setShowWhyClassification(!showWhyClassification)}
-                      className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-[11px] font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex items-center gap-1 text-[11.5px] font-medium"
                     >
                       <span>{showWhyClassification ? 'Hide explanation' : 'Why this classification?'}</span>
-                      <ChevronRight className={`w-3 h-3 transition-transform ${showWhyClassification ? 'rotate-90' : ''}`} />
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${showWhyClassification ? 'rotate-90' : ''}`} />
                     </button>
                   </div>
 
                   {showWhyClassification && (
-                    <div className="pt-2 border-t border-blue-100 dark:border-blue-900/40 text-slate-600 dark:text-slate-400 space-y-1 text-[11.5px] leading-relaxed">
+                    <div className="pt-3 border-t border-slate-200/70 dark:border-slate-800/70 space-y-2 text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
                       {aiAnalysisResult.normalizedStatement && (
-                        <p><strong className="text-slate-700 dark:text-slate-300">Technical definition:</strong> {aiAnalysisResult.normalizedStatement}</p>
+                        <div>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">Problem Definition: </span>
+                          <span>{aiAnalysisResult.normalizedStatement}</span>
+                        </div>
                       )}
                       {aiAnalysisResult.reasoningSummary && (
-                        <p><strong className="text-slate-700 dark:text-slate-300">Reasoning:</strong> {aiAnalysisResult.reasoningSummary}</p>
+                        <div>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">Domain Reasoning: </span>
+                          <span>{aiAnalysisResult.reasoningSummary}</span>
+                        </div>
                       )}
-                      <p className="text-[11px] text-slate-500 dark:text-slate-500 pt-0.5">
-                        Population impact: <em>Unavailable (requires municipal census or citizen report)</em>
-                      </p>
+                      {aiAnalysisResult.rootCauses && aiAnalysisResult.rootCauses.length > 0 && (
+                        <div>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">Preliminary Hypotheses (Not Yet Verified): </span>
+                          <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[11.5px]">
+                            {aiAnalysisResult.rootCauses.map((rc, idx) => (
+                              <li key={idx}>{rc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                        Population Impact: <span className="italic">Unavailable (Requires field census)</span>
+                      </div>
                     </div>
                   )}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Sector Category (AI Auto-Assigned)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Sector Category {category ? '' : '(Auto-assigned by AI or select manually)'}
+                  </label>
+                  {userHasOverriddenCategory && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserHasOverriddenCategory(false);
+                        if (aiAnalysisResult?.category) {
+                          setCategory(aiAnalysisResult.category);
+                        }
+                      }}
+                      className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Reset to AI recommendation
+                    </button>
+                  )}
+                </div>
                 <select
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
                     setUserHasOverriddenCategory(true);
                   }}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-medium"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 >
+                  <option value="" disabled>
+                    Select sector or describe problem above for AI auto-detection...
+                  </option>
                   {CITIZEN_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat} {aiAnalysisResult && cat === aiAnalysisResult.category ? ' (AI Suggested)' : ''}
+                      {cat} {aiAnalysisResult && cat === aiAnalysisResult.category ? ' · Recommended by AI' : ''}
                     </option>
                   ))}
                 </select>
                 <span className="text-xs text-gray-400 mt-1 block">
-                  Automatically classified based on problem description. You can adjust if needed.
+                  {category
+                    ? userHasOverriddenCategory
+                      ? 'Manually selected sector.'
+                      : 'Auto-assigned by Gemini intelligence based on your problem statement.'
+                    : 'Category will be automatically assigned once you enter your problem details above.'}
                 </span>
               </div>
             </CardContent>
@@ -736,6 +813,9 @@ export default function NewChallengePage() {
                   if (!description.trim() || description.length < 15) {
                     setErrorMessage('Please describe the issue in at least 15 characters.');
                     return;
+                  }
+                  if (!category) {
+                    setCategory(aiAnalysisResult?.category || 'General Civic Issue');
                   }
                   setErrorMessage(null);
                   setCurrentStep(2);

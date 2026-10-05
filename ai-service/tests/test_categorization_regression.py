@@ -194,3 +194,33 @@ def test_scenario_8_different_problems_same_location_root_cause_clustering():
     # Both preserve individual problem integrity
     assert "Water" in res_a.category
     assert any(term in res_b.category for term in ["Irrigation", "Agrarian", "Agriculture", "Crop"])
+
+def test_healthcare_facility_shortage_classification():
+    """
+    Mandatory Healthcare Domain Invariant:
+    'No healthcare facility in my locality' and 'Lack of Healthcare Facilities in my locality'
+    MUST be classified under Public Health / Healthcare Facilities (HEALTHCARE_SERVICE),
+    and NEVER as Roads & Transport, Sanitation & Drainage, or General Civic Issue.
+    """
+    for title in [
+        "No healthcare facility in my locality",
+        "Lack of Healthcare Facilities in my locality",
+        "Very less amount of healthcare facilities present",
+        "Primary health centre has no doctors or medicines"
+    ]:
+        req = AnalysisRequest(
+            title=title,
+            description="Residents must travel over 25 kilometers to reach the nearest hospital or doctor for medical emergencies.",
+            category="General",
+            district="Mathura",
+            state="Uttar Pradesh"
+        )
+        res: AnalysisResponse = GeminiAdapter._generate_civic_engine_fallback(req)
+        assert res.primaryProblem is not None
+        assert res.primaryProblem.domain == "Public Health", f"Expected Public Health for '{title}', got {res.primaryProblem.domain}"
+        assert res.primaryProblem.category == "Healthcare Facilities", f"Expected Healthcare Facilities for '{title}', got {res.primaryProblem.category}"
+        assert res.primaryProblem.problemType == "HEALTHCARE_SERVICE", f"Expected HEALTHCARE_SERVICE for '{title}', got {res.primaryProblem.problemType}"
+        assert res.category != "Roads & Transport"
+        assert res.category != "Sanitation & Drainage"
+        assert res.category != "General Civic Issue"
+

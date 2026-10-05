@@ -401,9 +401,93 @@ export class SelfHealingService {
     }
   }
 
+  /**
+   * Synchronizes parent Challenge, ProblemGroup, and child Problem categories,
+   * specifically repairing historical mismatches (e.g. Roads & Transport inside Healthcare challenges).
+   */
+  public static async healParentChildCategoryMismatches(): Promise<void> {
+    try {
+      // 1. Direct heal for specific legacy records identified in Section 12
+      await prisma.problemGroup.updateMany({
+        where: { id: 'd4f9836a-07f1-45e1-8793-7899f693ccf8' },
+        data: {
+          canonicalCategory: 'Healthcare & Public Health',
+          title: 'Healthcare & Public Health Incident Cluster - Regional',
+        },
+      });
+
+      await prisma.problem.updateMany({
+        where: { code: 'PRB-2026-2315' },
+        data: {
+          category: 'Healthcare & Public Health',
+        },
+      });
+
+      // 2. Heal specific #CHAL-F51C29 if its category was legacy
+      const f51Challenge = await prisma.challenge.findFirst({
+        where: {
+          OR: [
+            { id: { startsWith: 'f51c29', mode: 'insensitive' } },
+            { title: { contains: 'Healthcare Facilities in my locality', mode: 'insensitive' } },
+          ],
+          deletedAt: null,
+        },
+      });
+
+      if (f51Challenge) {
+        await prisma.challenge.update({
+          where: { id: f51Challenge.id },
+          data: { category: 'Healthcare & Public Health' },
+        });
+      }
+
+      // 3. General systematic parent-child synchronization across all challenges
+      const allGroups = await prisma.problemGroup.findMany({
+        where: {
+          challengeId: { not: null },
+        },
+        include: {
+          challenge: true,
+          problems: true,
+        },
+      });
+
+      for (const group of allGroups) {
+        if (!group.challenge) continue;
+        const parentCat = group.challenge.category;
+
+        if (group.canonicalCategory !== parentCat || group.title.includes('Roads & Transport') && parentCat.includes('Health')) {
+          logger.info(`[SELF_HEALING] Synchronizing ProblemGroup #${group.id.slice(0, 8)}: "${group.canonicalCategory}" -> "${parentCat}"`);
+          await prisma.problemGroup.update({
+            where: { id: group.id },
+            data: {
+              canonicalCategory: parentCat,
+              title: `${parentCat} Incident Cluster - ${group.challenge.district || 'Regional'}`,
+            },
+          });
+        }
+
+        for (const prob of group.problems) {
+          if (prob.category !== parentCat) {
+            logger.info(`[SELF_HEALING] Synchronizing child Problem #${prob.code}: "${prob.category}" -> "${parentCat}"`);
+            await prisma.problem.update({
+              where: { id: prob.id },
+              data: {
+                category: parentCat,
+              },
+            });
+          }
+        }
+      }
+    } catch (err) {
+      logger.warn(`Parent-child category synchronization skipped: ${(err as Error).message}`);
+    }
+  }
+
   public static async runOnce(): Promise<void> {
     if (!this.hasRunOnce) {
       await this.healOrphanedDraftsAndProblems();
+      await this.healParentChildCategoryMismatches();
     }
   }
 }

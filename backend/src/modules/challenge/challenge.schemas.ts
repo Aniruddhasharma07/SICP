@@ -66,7 +66,7 @@ export const mergeSystemicSchema = z.object({
 });
 
 export const analyzeChallengeSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters').max(200),
+  title: z.string().min(1, 'Title cannot be empty').max(200),
   description: z.string().optional().default(''),
   category: z.string().optional().default('General'),
   district: z.string().optional().nullable(),

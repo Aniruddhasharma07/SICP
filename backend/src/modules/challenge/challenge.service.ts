@@ -16,6 +16,7 @@ import {
   AdaptiveQuestionDto,
   ImpactMetricDto,
   IntentNextAction,
+  ProblemIntentClassification,
   ContextAwareDuplicateCheckResultDto,
 } from '@sicp/shared';
 import { NotFoundError, AiUnavailableError, ValidationError } from '../../utils/errors';
@@ -1279,7 +1280,7 @@ export class ChallengeService {
   }
 
   public static async analyzeProblemStatement(
-    data: z.infer<typeof analyzeChallengeSchema>,
+    data: z.input<typeof analyzeChallengeSchema>,
     context: { requestId: string }
   ) {
     logger.info(`[AI_REQUEST_STARTED] Direct analysis requested for: "${data.title}"`, { requestId: context.requestId });
@@ -1288,28 +1289,36 @@ export class ChallengeService {
     const intentValidation = await ProblemIntentGateService.validate(
       {
         title: data.title,
-        description: data.description,
-        category: data.category,
+        description: data.description || '',
+        category: data.category || 'General',
       },
       context.requestId
     );
 
-    if (intentValidation.nextAction === IntentNextAction.BLOCKED) {
-      logger.warn(`[AI_ANALYSIS_BLOCKED_BY_INTENT] Intent validation blocked input: ${intentValidation.classification}`, {
+    // For interactive pre-submit analysis: if intent indicates partial or unclear typing, return structured non-error response
+    if (
+      intentValidation.nextAction === IntentNextAction.BLOCKED ||
+      intentValidation.nextAction === IntentNextAction.IMPROVE_SUBMISSION ||
+      intentValidation.classification === ProblemIntentClassification.UNCLEAR_PROBLEM
+    ) {
+      logger.info(`[AI_ANALYSIS_PRE_SUBMIT_PARTIAL] Intent is intermediate or unclear: ${intentValidation.classification}`, {
         requestId: context.requestId,
       });
-      throw new ValidationError(
-        intentValidation.reason || 'The problem statement does not qualify as an actionable societal challenge.',
-        { intent: intentValidation }
-      );
+      return {
+        isPartial: true,
+        category: null,
+        message: intentValidation.suggestedClarification || intentValidation.reason || 'Enter more details for AI analysis',
+        confidenceScore: 0,
+        intentValidation,
+      };
     }
 
     try {
       const result = await AiServiceClient.analyzeChallenge(
         {
           title: data.title,
-          description: data.description,
-          category: data.category,
+          description: data.description || '',
+          category: data.category || 'General',
           district: data.district,
           state: data.state,
           affectedPopulation: data.affectedPopulation,
@@ -1342,73 +1351,17 @@ export class ChallengeService {
       if (err instanceof ValidationError) {
         throw err;
       }
-      logger.warn(`[AI_REQUEST_DEGRADED] AI service rate-limited or unreachable: ${(err as Error).message}. Applying Civic Knowledge Engine fallback.`);
+      logger.warn(`[AI_REQUEST_DEGRADED] AI service rate-limited or unreachable: ${(err as Error).message}. Returning honest status.`);
 
-      const fallbackRes = CategoryResolutionEngine.resolve(
-        data.title,
-        data.description || '',
-        data.category,
-        data.affectedPopulation
-      );
-
-      const pop = data.affectedPopulation || null;
-      const isUrgent = fallbackRes.priority === PriorityLevel.CRITICAL || fallbackRes.priority === PriorityLevel.HIGH;
-      const sev = fallbackRes.severity;
-      const prio = fallbackRes.priority;
-      const score = isUrgent ? 85.0 : 55.0;
-
-      const modalities = data.modalitiesProvided && data.modalitiesProvided.length > 0
-        ? data.modalitiesProvided
-        : ['TEXT'];
-
-      const fallbackResult = {
-        category: fallbackRes.canonicalCategory,
-        domainKey: fallbackRes.domainKey,
-        subcategory: `${fallbackRes.canonicalCategory} Infrastructure`,
-        problemUnderstanding: `Civic issue regarding ${data.title}. Evaluated with multimodal citizen evidence.`,
-        problemType: data.category.toUpperCase().replace(/\s+/g, '_'),
-        normalizedStatement: `Reported civic deficiency: ${data.title}`,
-        entities: ['Municipal Public Infrastructure', 'Distribution Assets'],
-        estimatedSeverity: sev,
-        preliminaryPriority: prio,
-        priorityScore: score,
-        severityBreakdown: {
-          riskLevel: sev,
-          urgencyLevel: prio,
-          serviceDisruption: 'Public infrastructure impacted. Field review required.',
-          environmentalImpact: 'Localized environmental or health risk.',
-          vulnerabilityScore: isUrgent ? 0.7 : 0.4,
-        },
-        rootCauseHypotheses: [
-          'Infrastructural wear and material fatigue along primary network',
-          'Capacity bottleneck during peak utilization periods'
-        ],
-        systemicIndicators: [
-          'Localized public complaints and repeated service disruption'
-        ],
-        duplicateKeywords: data.title.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3).slice(0, 5),
-        confidenceScore: 0.80,
-        reasoningSummary: 'Automated civic assessment applied via SICP Engineering Engine (Gemini free-tier rate-limit zero-interruption mode).',
-        evidenceSummary: {
-          textObservation: data.description ? 'Narrative details civic failure points.' : null,
-          voiceObservation: data.transcribedAudio ? 'Citizen audio testimony matches problem description.' : null,
-          visualObservation: (data.images && data.images.length > 0) ? `${data.images.length} photographic evidence item(s) logged.` : null,
-          documentObservation: (data.documents && data.documents.length > 0) ? `${data.documents.length} civic document(s) referenced.` : null,
-        },
-        modalitiesAnalyzed: modalities,
-        impactEstimate: {
-          affectedEstimate: pop,
-          unit: 'residents',
-          basis: 'Civic engineering model',
-        },
-        requiresHumanReview: true,
-        dataLimitations: 'Preliminary assessment based on citizen narrative and multimodal evidence. Requires municipal field verification.',
-        appliedRules: ['CIVIC_ENGINE_SOCIETAL_MODEL', 'RATE_LIMIT_PROTECTION'],
-        aiProvider: 'GEMINI_FALLBACK',
+      // Section 16 & Section 4 Rule: Do NOT fabricate fake AI confidence, category or regex guessing on failure
+      return {
+        isPartial: false,
+        aiUnavailable: true,
+        category: null,
+        message: 'AI service is currently unavailable. Please select your sector manually.',
+        confidenceScore: 0,
         intentValidation,
       };
-
-      return fallbackResult;
     }
   }
 
@@ -1464,24 +1417,25 @@ export class ChallengeService {
         context
       );
 
+      const analysisResult = result as any;
       const record = await prisma.aIAnalysis.upsert({
         where: { challengeId },
         create: {
           challengeId,
           status: 'COMPLETED' as unknown as import('@prisma/client').$Enums.AIAnalysisStatus,
           rawResponse: result as any,
-          confidenceScore: result.confidenceScore,
-          reasoningSummary: result.reasoningSummary,
-          requiresHumanReview: result.requiresHumanReview,
-          appliedRules: result.appliedRules || [],
+          confidenceScore: analysisResult.confidenceScore || 0,
+          reasoningSummary: analysisResult.reasoningSummary || analysisResult.message || 'AI assessment completed.',
+          requiresHumanReview: analysisResult.requiresHumanReview ?? true,
+          appliedRules: analysisResult.appliedRules || [],
         },
         update: {
           status: 'COMPLETED' as unknown as import('@prisma/client').$Enums.AIAnalysisStatus,
           rawResponse: result as any,
-          confidenceScore: result.confidenceScore,
-          reasoningSummary: result.reasoningSummary,
-          requiresHumanReview: result.requiresHumanReview,
-          appliedRules: result.appliedRules || [],
+          confidenceScore: analysisResult.confidenceScore || 0,
+          reasoningSummary: analysisResult.reasoningSummary || analysisResult.message || 'AI assessment completed.',
+          requiresHumanReview: analysisResult.requiresHumanReview ?? true,
+          appliedRules: analysisResult.appliedRules || [],
         },
       });
 
