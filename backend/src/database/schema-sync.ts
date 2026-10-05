@@ -56,13 +56,13 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
 
     // Migrate any legacy status records to canonical statuses
     try {
-      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'GOVERNMENT_VERIFIED' WHERE "status"::text = 'GOVERNMENT_APPROVED';`);
-      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'UNDER_GOV_REVIEW' WHERE "status"::text = 'GOVERNMENT_REVIEW';`);
-      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'OUTCOME_VERIFIED' WHERE "status"::text = 'PEOPLE_VERIFIED';`);
-      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'GOVERNMENT_VERIFIED' WHERE "fromStatus"::text = 'GOVERNMENT_APPROVED';`);
-      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'GOVERNMENT_VERIFIED' WHERE "toStatus"::text = 'GOVERNMENT_APPROVED';`);
-      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'UNDER_GOV_REVIEW' WHERE "fromStatus"::text = 'GOVERNMENT_REVIEW';`);
-      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'UNDER_GOV_REVIEW' WHERE "toStatus"::text = 'GOVERNMENT_REVIEW';`);
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'GOVERNMENT_VERIFIED' WHERE CAST("status" AS text) = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'UNDER_GOV_REVIEW' WHERE CAST("status" AS text) = 'GOVERNMENT_REVIEW';`);
+      await prisma.$executeRawUnsafe(`UPDATE "Challenge" SET "status" = 'OUTCOME_VERIFIED' WHERE CAST("status" AS text) = 'PEOPLE_VERIFIED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'GOVERNMENT_VERIFIED' WHERE CAST("fromStatus" AS text) = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'GOVERNMENT_VERIFIED' WHERE CAST("toStatus" AS text) = 'GOVERNMENT_APPROVED';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "fromStatus" = 'UNDER_GOV_REVIEW' WHERE CAST("fromStatus" AS text) = 'GOVERNMENT_REVIEW';`);
+      await prisma.$executeRawUnsafe(`UPDATE "ChallengeTimeline" SET "toStatus" = 'UNDER_GOV_REVIEW' WHERE CAST("toStatus" AS text) = 'GOVERNMENT_REVIEW';`);
     } catch (migErr: any) {
       logger.debug(`[SCHEMA_SYNC] ChallengeStatus migration notice: ${migErr.message}`);
     }

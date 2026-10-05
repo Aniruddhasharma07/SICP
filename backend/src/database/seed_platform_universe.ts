@@ -693,6 +693,110 @@ export async function seedPlatformUniverse() {
   // --------------------------------------------------------------------------
   console.log('\n[3/10] Seeding Master Challenges & Governed Problem Hierarchy...');
 
+  const problemIdMap = new Map<string, string>();
+
+  async function upsertProblemSafely(p: {
+    id: string;
+    code: string;
+    title: string;
+    description: string;
+    category: string;
+    status: string;
+    aiSeverity: any;
+    govSeverity: any;
+    aiPriority: any;
+    govPriority: any;
+    aiAffectedPopulation: number;
+    populationStatus: any;
+    populationProvenance: string;
+    latitude?: number;
+    longitude?: number;
+    locationName?: string;
+    district?: string;
+    state?: string;
+    wardNumber?: string;
+    submitterId: string;
+    groupId: string;
+    challengeId: string;
+  }) {
+    const existing = await prisma.problem.findFirst({
+      where: {
+        OR: [{ id: p.id }, { code: p.code }],
+      },
+    });
+
+    let problemId = p.id;
+    if (existing) {
+      problemId = existing.id;
+      await prisma.problem.update({
+        where: { id: existing.id },
+        data: {
+          code: p.code,
+          title: p.title,
+          description: p.description,
+          category: p.category,
+          status: p.status as any,
+          aiSeverity: p.aiSeverity,
+          govSeverity: p.govSeverity,
+          aiPriority: p.aiPriority,
+          govPriority: p.govPriority,
+          aiAffectedPopulation: p.aiAffectedPopulation,
+          populationStatus: p.populationStatus,
+          populationProvenance: p.populationProvenance,
+          latitude: p.latitude,
+          longitude: p.longitude,
+          locationName: p.locationName,
+          district: p.district,
+          state: p.state,
+          wardNumber: p.wardNumber,
+          submitterId: p.submitterId,
+          groupId: p.groupId,
+        },
+      });
+    } else {
+      await prisma.problem.create({
+        data: {
+          id: p.id,
+          code: p.code,
+          title: p.title,
+          description: p.description,
+          category: p.category,
+          status: p.status as any,
+          aiSeverity: p.aiSeverity,
+          govSeverity: p.govSeverity,
+          aiPriority: p.aiPriority,
+          govPriority: p.govPriority,
+          aiAffectedPopulation: p.aiAffectedPopulation,
+          populationStatus: p.populationStatus,
+          populationProvenance: p.populationProvenance,
+          latitude: p.latitude,
+          longitude: p.longitude,
+          locationName: p.locationName,
+          district: p.district,
+          state: p.state,
+          wardNumber: p.wardNumber,
+          submitterId: p.submitterId,
+          groupId: p.groupId,
+        },
+      });
+    }
+
+    await prisma.problemGroupMember.upsert({
+      where: { groupId_problemId: { groupId: p.groupId, problemId } },
+      create: { groupId: p.groupId, problemId },
+      update: {},
+    });
+
+    await prisma.challengeProblem.upsert({
+      where: { challengeId_problemId: { challengeId: p.challengeId, problemId } },
+      create: { challengeId: p.challengeId, problemId },
+      update: {},
+    });
+
+    problemIdMap.set(p.id, problemId);
+    return problemId;
+  }
+
   // ==========================================================================
   // CHALLENGE 1: Urban Drainage Stagnation in Mathura Western Sector
   // ==========================================================================
@@ -831,44 +935,29 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of mathuraProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'SANITATION',
-        status: p.status as any,
-        aiSeverity: 'SEVERE',
-        govSeverity: 'SEVERE',
-        aiPriority: 'HIGH',
-        govPriority: 'HIGH',
-        aiAffectedPopulation: 2500,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Ward 18 Household Census & Municipal Voter Records',
-        latitude: p.lat,
-        longitude: p.lon,
-        locationName: p.loc,
-        district: 'Mathura',
-        state: 'Uttar Pradesh',
-        wardNumber: 'Ward 18',
-        submitterId: p.submitterId,
-        groupId: p.groupId,
-      },
-      update: { groupId: p.groupId },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.groupId, problemId: p.id } },
-      create: { groupId: p.groupId, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalMathura.id, problemId: p.id } },
-      create: { challengeId: chalMathura.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'SANITATION',
+      status: p.status as any,
+      aiSeverity: 'SEVERE',
+      govSeverity: 'SEVERE',
+      aiPriority: 'HIGH',
+      govPriority: 'HIGH',
+      aiAffectedPopulation: 2500,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'Ward 18 Household Census & Municipal Voter Records',
+      latitude: p.lat,
+      longitude: p.lon,
+      locationName: p.loc,
+      district: 'Mathura',
+      state: 'Uttar Pradesh',
+      wardNumber: 'Ward 18',
+      submitterId: p.submitterId,
+      groupId: p.groupId,
+      challengeId: chalMathura.id,
     });
   }
 
@@ -950,43 +1039,28 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of bhopalProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'ROAD_TRANSPORT',
-        status: 'GROUPED',
-        aiSeverity: 'SEVERE',
-        govSeverity: 'SEVERE',
-        aiPriority: 'CRITICAL',
-        govPriority: 'CRITICAL',
-        aiAffectedPopulation: 12000,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Bhopal Transport Department Daily Traffic Census',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: 'Bhopal',
-        state: 'Madhya Pradesh',
-        wardNumber: 'Ward 82',
-        submitterId: p.sub,
-        groupId: p.grp,
-      },
-      update: { groupId: p.grp },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.grp, problemId: p.id } },
-      create: { groupId: p.grp, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalBhopal.id, problemId: p.id } },
-      create: { challengeId: chalBhopal.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'ROAD_TRANSPORT',
+      status: 'GROUPED',
+      aiSeverity: 'SEVERE',
+      govSeverity: 'SEVERE',
+      aiPriority: 'CRITICAL',
+      govPriority: 'CRITICAL',
+      aiAffectedPopulation: 12000,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'Bhopal Transport Department Daily Traffic Census',
+      latitude: p.lat,
+      longitude: p.lon,
+      district: 'Bhopal',
+      state: 'Madhya Pradesh',
+      wardNumber: 'Ward 82',
+      submitterId: p.sub,
+      groupId: p.grp,
+      challengeId: chalBhopal.id,
     });
   }
 
@@ -1068,42 +1142,27 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of indrayaniProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'WATER_SUPPLY',
-        status: 'RESOLVED',
-        aiSeverity: 'CATASTROPHIC',
-        govSeverity: 'CATASTROPHIC',
-        aiPriority: 'CRITICAL',
-        govPriority: 'CRITICAL',
-        aiAffectedPopulation: 25000,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'PCMC & Alandi Municipal Public Health Records',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: 'Pune',
-        state: 'Maharashtra',
-        submitterId: p.sub,
-        groupId: p.grp,
-      },
-      update: { groupId: p.grp },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.grp, problemId: p.id } },
-      create: { groupId: p.grp, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalIndrayani.id, problemId: p.id } },
-      create: { challengeId: chalIndrayani.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'WATER_SUPPLY',
+      status: 'RESOLVED',
+      aiSeverity: 'CATASTROPHIC',
+      govSeverity: 'CATASTROPHIC',
+      aiPriority: 'CRITICAL',
+      govPriority: 'CRITICAL',
+      aiAffectedPopulation: 25000,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'PCMC & Alandi Municipal Public Health Records',
+      latitude: p.lat,
+      longitude: p.lon,
+      district: 'Pune',
+      state: 'Maharashtra',
+      submitterId: p.sub,
+      groupId: p.grp,
+      challengeId: chalIndrayani.id,
     });
   }
 
@@ -1185,42 +1244,27 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of delhiNajafgarhProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'FLOOD_ENVIRONMENT',
-        status: 'GROUPED',
-        aiSeverity: 'SEVERE',
-        govSeverity: 'SEVERE',
-        aiPriority: 'HIGH',
-        govPriority: 'HIGH',
-        aiAffectedPopulation: 35000,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Delhi Disaster Management Authority Hazard Atlas',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: 'South West Delhi',
-        state: 'Delhi',
-        submitterId: p.sub,
-        groupId: p.grp,
-      },
-      update: { groupId: p.grp },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.grp, problemId: p.id } },
-      create: { groupId: p.grp, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalNajafgarh.id, problemId: p.id } },
-      create: { challengeId: chalNajafgarh.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'FLOOD_ENVIRONMENT',
+      status: 'GROUPED',
+      aiSeverity: 'SEVERE',
+      govSeverity: 'SEVERE',
+      aiPriority: 'HIGH',
+      govPriority: 'HIGH',
+      aiAffectedPopulation: 35000,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'Delhi Disaster Management Authority Hazard Atlas',
+      latitude: p.lat,
+      longitude: p.lon,
+      district: 'South West Delhi',
+      state: 'Delhi',
+      submitterId: p.sub,
+      groupId: p.grp,
+      challengeId: chalNajafgarh.id,
     });
   }
 
@@ -1302,42 +1346,27 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of anandViharProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'ENVIRONMENT',
-        status: 'GROUPED',
-        aiSeverity: 'SEVERE',
-        govSeverity: 'SEVERE',
-        aiPriority: 'HIGH',
-        govPriority: 'HIGH',
-        aiAffectedPopulation: 40000,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Delhi Pollution Control Committee Monitoring Data',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: 'East Delhi',
-        state: 'Delhi',
-        submitterId: p.sub,
-        groupId: p.grp,
-      },
-      update: { groupId: p.grp },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.grp, problemId: p.id } },
-      create: { groupId: p.grp, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalAnandVihar.id, problemId: p.id } },
-      create: { challengeId: chalAnandVihar.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'ENVIRONMENT',
+      status: 'GROUPED',
+      aiSeverity: 'SEVERE',
+      govSeverity: 'SEVERE',
+      aiPriority: 'HIGH',
+      govPriority: 'HIGH',
+      aiAffectedPopulation: 40000,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'Delhi Pollution Control Committee Monitoring Data',
+      latitude: p.lat,
+      longitude: p.lon,
+      district: 'East Delhi',
+      state: 'Delhi',
+      submitterId: p.sub,
+      groupId: p.grp,
+      challengeId: chalAnandVihar.id,
     });
   }
 
@@ -1419,43 +1448,28 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of mathuraWaterProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: 'WATER_SUPPLY',
-        status: 'GROUPED',
-        aiSeverity: 'SEVERE',
-        govSeverity: 'SEVERE',
-        aiPriority: 'CRITICAL',
-        govPriority: 'CRITICAL',
-        aiAffectedPopulation: 18000,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Mathura Jal Sansthan Public Health Surveillance',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: 'Mathura',
-        state: 'Uttar Pradesh',
-        wardNumber: 'Ward 4',
-        submitterId: p.sub,
-        groupId: p.grp,
-      },
-      update: { groupId: p.grp },
-    });
-
-    await prisma.problemGroupMember.upsert({
-      where: { groupId_problemId: { groupId: p.grp, problemId: p.id } },
-      create: { groupId: p.grp, problemId: p.id },
-      update: {},
-    });
-
-    await prisma.challengeProblem.upsert({
-      where: { challengeId_problemId: { challengeId: chalMathuraWater.id, problemId: p.id } },
-      create: { challengeId: chalMathuraWater.id, problemId: p.id },
-      update: {},
+    await upsertProblemSafely({
+      id: p.id,
+      code: p.code,
+      title: p.title,
+      description: p.desc,
+      category: 'WATER_SUPPLY',
+      status: 'GROUPED',
+      aiSeverity: 'SEVERE',
+      govSeverity: 'SEVERE',
+      aiPriority: 'CRITICAL',
+      govPriority: 'CRITICAL',
+      aiAffectedPopulation: 18000,
+      populationStatus: 'KNOWN',
+      populationProvenance: 'Mathura Jal Sansthan Public Health Surveillance',
+      latitude: p.lat,
+      longitude: p.lon,
+      district: 'Mathura',
+      state: 'Uttar Pradesh',
+      wardNumber: 'Ward 4',
+      submitterId: p.sub,
+      groupId: p.grp,
+      challengeId: chalMathuraWater.id,
     });
   }
 
@@ -1516,30 +1530,59 @@ export async function seedPlatformUniverse() {
   ];
 
   for (const p of isolatedProblems) {
-    await prisma.problem.upsert({
-      where: { id: p.id },
-      create: {
-        id: p.id,
-        code: p.code,
-        title: p.title,
-        description: p.desc,
-        category: p.cat,
-        status: 'SUBMITTED',
-        aiSeverity: 'MODERATE',
-        govSeverity: 'MODERATE',
-        aiPriority: 'LOW',
-        govPriority: 'LOW',
-        aiAffectedPopulation: 45,
-        populationStatus: 'KNOWN',
-        populationProvenance: 'Direct Citizen Observation',
-        latitude: p.lat,
-        longitude: p.lon,
-        district: p.district,
-        state: p.state,
-        submitterId: p.sub,
+    const existing = await prisma.problem.findFirst({
+      where: {
+        OR: [{ id: p.id }, { code: p.code }],
       },
-      update: {},
     });
+
+    if (existing) {
+      await prisma.problem.update({
+        where: { id: existing.id },
+        data: {
+          code: p.code,
+          title: p.title,
+          description: p.desc,
+          category: p.cat,
+          status: 'SUBMITTED',
+          aiSeverity: 'MODERATE',
+          govSeverity: 'MODERATE',
+          aiPriority: 'LOW',
+          govPriority: 'LOW',
+          aiAffectedPopulation: 45,
+          populationStatus: 'KNOWN',
+          populationProvenance: 'Direct Citizen Observation',
+          latitude: p.lat,
+          longitude: p.lon,
+          district: p.district,
+          state: p.state,
+          submitterId: p.sub,
+        },
+      });
+    } else {
+      await prisma.problem.create({
+        data: {
+          id: p.id,
+          code: p.code,
+          title: p.title,
+          description: p.desc,
+          category: p.cat,
+          status: 'SUBMITTED',
+          aiSeverity: 'MODERATE',
+          govSeverity: 'MODERATE',
+          aiPriority: 'LOW',
+          govPriority: 'LOW',
+          aiAffectedPopulation: 45,
+          populationStatus: 'KNOWN',
+          populationProvenance: 'Direct Citizen Observation',
+          latitude: p.lat,
+          longitude: p.lon,
+          district: p.district,
+          state: p.state,
+          submitterId: p.sub,
+        },
+      });
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -1965,7 +2008,7 @@ export async function seedPlatformUniverse() {
     create: {
       id: 'resp-mathura-cit01',
       requestId: reqGroupMathura.id,
-      problemId: 'prb-mathura-01',
+      problemId: problemIdMap.get('prb-mathura-01') || 'prb-mathura-01',
       citizenId: 'usr-cit-01',
       response: 'Peak overflow occurs every morning between 7:00 AM and 9:30 AM, and again around 7:00 PM when residential households discharge domestic water. It overflows heavily even on completely dry sunny days.',
     },
@@ -1977,7 +2020,7 @@ export async function seedPlatformUniverse() {
     create: {
       id: 'resp-mathura-cit02',
       requestId: reqGroupMathura.id,
-      problemId: 'prb-mathura-02',
+      problemId: problemIdMap.get('prb-mathura-02') || 'prb-mathura-02',
       citizenId: 'usr-cit-02',
       response: 'The gutter overflows continuously without stopping. During dry weather it forms a 2-inch deep stream across the road; during rain it completely drowns the sidewalk within 10 minutes.',
     },
@@ -1991,7 +2034,7 @@ export async function seedPlatformUniverse() {
       id: 'clar-prb-bhopal-01',
       challengeId: chalBhopal.id,
       groupId: grpBhopal1.id,
-      problemId: 'prb-bhopal-02',
+      problemId: problemIdMap.get('prb-bhopal-02') || 'prb-bhopal-02',
       targetScope: 'PROBLEM',
       requestedById: officerBhopal.id,
       question: 'Can you confirm which gas utility contractor excavated the trench, and whether any temporary barricading or warning signage was provided before the monsoon?',
@@ -2005,7 +2048,7 @@ export async function seedPlatformUniverse() {
     create: {
       id: 'resp-bhopal-cit06',
       requestId: reqProbBhopal.id,
-      problemId: 'prb-bhopal-02',
+      problemId: problemIdMap.get('prb-bhopal-02') || 'prb-bhopal-02',
       citizenId: 'usr-cit-06',
       response: 'The trench was dug by Avantika Gas Limited sub-contractor in mid-March. No danger boards or yellow tapes were placed. They simply dumped loose soil and left before rain started.',
     },
