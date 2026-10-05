@@ -100,11 +100,6 @@ export function ProgressiveIntelligenceDossier({
                 <Sparkles className="w-3 h-3 mr-1 text-blue-400" />
                 {intelligence.summary.epistemicBadge}
               </Badge>
-              {intelligence.topology.status === 'CONTROLLED_DEMO' && (
-                <Badge className="bg-amber-950 text-amber-300 border-amber-800 font-mono text-[10px]">
-                  CONTROLLED SIH DEMO
-                </Badge>
-              )}
               {intelligence.governance.validated && (
                 <Badge className="bg-emerald-950 text-emerald-300 border-emerald-800 font-mono text-[10px]">
                   <Check className="w-3 h-3 mr-1" /> STATUTORY VALIDATED

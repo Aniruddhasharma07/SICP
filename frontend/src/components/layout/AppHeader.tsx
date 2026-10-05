@@ -155,11 +155,11 @@ export function AppHeader() {
               <Search className="w-4 h-4 text-slate-600" />
             </Button>
 
-            {/* My Problems Link */}
+            {/* My Challenges Link */}
             {user && (
-              <Link href="/my-problems">
+              <Link href="/my-challenges">
                 <Button variant="outline" size="sm" className="hidden sm:flex text-xs h-8 font-semibold">
-                  <span>My Problems</span>
+                  <span>My Challenges</span>
                 </Button>
               </Link>
             )}
@@ -270,9 +270,9 @@ export function AppHeader() {
 
                 <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
                   <Link
-                    href="/my-problems"
+                    href="/my-challenges"
                     className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs hover:ring-2 hover:ring-blue-300 transition-all"
-                    title="My Reported Problems"
+                    title="My Challenges"
                   >
                     {user.fullName.charAt(0).toUpperCase()}
                   </Link>

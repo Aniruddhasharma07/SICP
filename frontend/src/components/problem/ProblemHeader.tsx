@@ -135,11 +135,6 @@ export function ProblemHeader({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {isDemoScenario && (
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-600/70">
-                CONTROLLED SIH DEMO
-              </span>
-            )}
             {challenge.isSystemic && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-950/80 text-purple-300 border border-purple-700/60">
                 <Layers className="w-3.5 h-3.5 text-purple-400" />

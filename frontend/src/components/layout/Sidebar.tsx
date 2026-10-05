@@ -66,7 +66,7 @@ export function Sidebar({ portal = 'citizen' }: { portal?: PortalType }) {
     {
       title: 'Civic Grievances & Intake',
       items: [
-        { label: 'My Problems', href: '/my-problems', icon: FileCheck, badge: 'Track', color: 'text-blue-600' },
+        { label: 'My Challenges', href: '/my-challenges', icon: Layers, badge: 'Track', color: 'text-blue-600' },
         { label: 'Challenges Registry', href: '/challenges', icon: Layers, color: 'text-blue-600' },
         { label: 'Report New Problem', href: '/challenges/new', icon: PlusCircle, isPrimary: true, color: 'text-blue-600' },
         { label: 'Community Heatmap', href: '/map', icon: Compass, color: 'text-blue-600' },

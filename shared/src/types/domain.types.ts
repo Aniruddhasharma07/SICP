@@ -66,6 +66,7 @@ export interface UserDto {
   organizationId?: string | null;
   organization?: OrganizationDto | null;
   isActive: boolean;
+  approvalStatus?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1897,5 +1898,47 @@ export interface ChallengeInvestigationDto {
   topologyAvailable: boolean;
   topologyData?: any;
 }
+
+export interface StudentProfileDto {
+  id: string;
+  userId: string;
+  department: string;
+  program: string;
+  yearOrSemester: string;
+  rollNumber?: string | null;
+  gpa?: number | null;
+  skills: string[];
+  interests: string[];
+  bio?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClarificationRequestDto {
+  id: string;
+  challengeId?: string | null;
+  groupId?: string | null;
+  problemId?: string | null;
+  targetScope: 'GROUP' | 'PROBLEM';
+  requestedById: string;
+  question: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  requestedBy?: { id: string; fullName: string; role: string };
+  responses?: ClarificationResponseDto[];
+}
+
+export interface ClarificationResponseDto {
+  id: string;
+  requestId: string;
+  problemId?: string | null;
+  citizenId: string;
+  response: string;
+  evidenceFileKey?: string | null;
+  createdAt: string;
+  citizen?: { id: string; fullName: string; role: string };
+}
+
 
 

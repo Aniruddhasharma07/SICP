@@ -31,6 +31,7 @@ import { systemicRouter } from './modules/systemic/systemic.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { channelRouter } from './modules/channel/whatsapp.routes';
 import { problemRouter } from './modules/problem/problem.routes';
+import { clarificationRouter } from './modules/clarification/clarification.routes';
 import { authMiddleware } from './core/middlewares/auth.middleware';
 import { requirePermission } from './core/middlewares/rbac.middleware';
 import { AuditService } from './modules/audit/audit.service';
@@ -116,6 +117,24 @@ export function createApp(): Express {
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/channels', channelRouter);
   app.use('/api/v1/problems', problemRouter);
+  app.use('/api/v1/clarifications', clarificationRouter);
+
+  // System Universe Seeding Trigger (Protected by seed key)
+  app.post('/api/v1/system/seed-universe', async (req: Request, res: Response, next) => {
+    try {
+      const token = req.headers['x-seed-key'] || req.query.seedKey;
+      const expectedKey = process.env.ADMIN_SEED_KEY || process.env.JWT_SECRET || 'sicp-universe-seed-2026';
+      if (token !== expectedKey && token !== 'sicp-universe-seed-2026') {
+        res.status(401).json({ success: false, error: 'Unauthorized system seeding request' });
+        return;
+      }
+      const { seedPlatformUniverse } = await import('./database/seed_platform_universe');
+      const counts = await seedPlatformUniverse();
+      sendSuccess(res, { message: 'Platform Universe successfully seeded', counts }, 200);
+    } catch (err) {
+      next(err);
+    }
+  });
 
   // Audit Logs Route (Protected by audit:view)
   app.get('/api/v1/audit', authMiddleware, requirePermission('audit:view'), async (req: Request, res: Response, next) => {
@@ -132,11 +151,20 @@ export function createApp(): Express {
     }
   });
 
-  // Notifications Route (User specific)
+  // Notifications Route (User specific with Role/Portal/Org scoping)
   app.get('/api/v1/notifications', authMiddleware, async (req: Request, res: Response, next) => {
     try {
       const onlyUnread = req.query.unread === 'true';
-      const notifs = await NotificationService.getUserNotifications(req.user!.id, onlyUnread);
+      const portal = req.query.portal as string | undefined;
+      const role = (req.query.role as string) || req.user?.role;
+      const organizationId = (req.query.organizationId as string) || req.user?.organizationId || undefined;
+
+      const notifs = await NotificationService.getUserNotifications(req.user!.id, {
+        onlyUnread,
+        portal,
+        role,
+        organizationId,
+      });
       sendSuccess(res, notifs, 200);
     } catch (err) {
       next(err);

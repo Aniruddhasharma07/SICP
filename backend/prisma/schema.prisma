@@ -459,6 +459,7 @@ model User {
   organization         Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   isActive             Boolean                @default(true)
   emailVerified        Boolean                @default(false)
+  approvalStatus       String                 @default("APPROVED")
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   deletedAt            DateTime?
@@ -476,6 +477,7 @@ model User {
   citizenVerifications CitizenVerification[]
   testExecutions       ProjectTestExecution[]
   facultyProfile       FacultyProfile?
+  studentProfile       StudentProfile?
   authoredProposals    ProjectProposal[]       @relation("ProposalAuthor")
   conductedReviews     ProposalReview[]        @relation("Reviewer")
   prototypesCreated    ProjectPrototype[]      @relation("PrototypeAuthor")
@@ -484,10 +486,13 @@ model User {
   deployedProjects     ProjectDeployment[]     @relation("ProjectDeployer")
   testCasesTested      ProjectTestCase[]       @relation("TestCaseTester")
   reviewedMemories     SolutionMemory[]        @relation("MemoryReviewer")
+  clarificationRequests ClarificationRequest[] @relation("ClarificationRequester")
+  clarificationResponses ClarificationResponse[] @relation("ClarificationRespondent")
 
   @@index([email])
   @@index([role])
   @@index([organizationId])
+  @@index([approvalStatus])
 }
 
 model RefreshSession {
@@ -586,6 +591,15 @@ model Challenge {
   updatedAt            DateTime               @updatedAt
   deletedAt            DateTime?
 
+  govSeverity          SeverityLevel?
+  govPriority          PriorityLevel?
+  govOverrideReason    String?
+  govOverriddenAt      DateTime?
+  govOverriddenById    String?
+  verifiedAt           DateTime?
+  verifiedById         String?
+  verificationNotes    String?
+
   timelines            ChallengeTimeline[]
   aiAnalysis           AIAnalysis?
   evidence             ChallengeEvidence[]
@@ -609,12 +623,14 @@ model Challenge {
   problemGroups        ProblemGroup[]
   challengeProblems    ChallengeProblem[]
   challengeGroups      ChallengeGroup[]
+  clarificationRequests ClarificationRequest[]
 
   @@index([status])
   @@index([submitterId])
   @@index([category])
   @@index([district, state])
   @@index([priorityScore])
+  @@index([govPriority])
 }
 
 model ChallengeEvidence {
@@ -1366,19 +1382,28 @@ model AuditLog {
 }
 
 model Notification {
-  id          String   @id @default(uuid())
-  recipientId String
-  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-  title       String
-  message     String
-  type        String
-  actionUrl   String?
-  isRead      Boolean  @default(false)
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  id             String   @id @default(uuid())
+  recipientId    String
+  recipient      User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientRole  String?
+  portal         String?
+  organizationId String?
+  eventType      String?
+  entityType     String?
+  entityId       String?
+  title          String
+  message        String
+  type           String
+  actionUrl      String?
+  isRead         Boolean  @default(false)
+  metadata       Json?
+  createdAt      DateTime @default(now())
 
   @@index([recipientId])
   @@index([isRead])
+  @@index([recipientRole])
+  @@index([portal])
+  @@index([organizationId])
 }
 
 model IdempotencyRecord {
@@ -1762,6 +1787,8 @@ model Problem {
   groupMemberships      ProblemGroupMember[]
   challengeLinks        ChallengeProblem[]
   overrideLogs          GovernmentOverrideLog[]
+  clarificationRequests ClarificationRequest[]
+  clarificationResponses ClarificationResponse[]
   createdAt             DateTime                   @default(now())
   updatedAt             DateTime                   @updatedAt
 
@@ -1783,6 +1810,7 @@ model ProblemGroup {
   members              ProblemGroupMember[]
   challengeLinks       ChallengeGroup[]
   solutionMemories     GroupSolutionMemory[]
+  clarificationRequests ClarificationRequest[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
@@ -1873,4 +1901,65 @@ model GroupSolutionMemory {
   @@index([groupId])
   @@index([classification])
 }
+
+model StudentProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department     String
+  program        String   @default("B.Tech")
+  yearOrSemester String   @default("3rd Year")
+  rollNumber     String?
+  gpa            Float?
+  skills         String[]
+  interests      String[]
+  bio            String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([department])
+}
+
+model ClarificationRequest {
+  id            String                  @id @default(uuid())
+  challengeId   String?
+  challenge     Challenge?              @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  groupId       String?
+  group         ProblemGroup?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  problemId     String?
+  problem       Problem?                @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  targetScope   String                  @default("PROBLEM") // "GROUP" | "PROBLEM"
+  requestedById String
+  requestedBy   User                    @relation("ClarificationRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  question      String
+  status        String                  @default("PENDING") // "PENDING" | "RESPONDED" | "CLOSED"
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  responses     ClarificationResponse[]
+
+  @@index([challengeId])
+  @@index([groupId])
+  @@index([problemId])
+  @@index([requestedById])
+  @@index([status])
+}
+
+model ClarificationResponse {
+  id              String               @id @default(uuid())
+  requestId       String
+  request         ClarificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  problemId       String?
+  problem         Problem?             @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  citizenId       String
+  citizen         User                 @relation("ClarificationRespondent", fields: [citizenId], references: [id], onDelete: Restrict)
+  response        String
+  evidenceFileKey String?
+  createdAt       DateTime             @default(now())
+
+  @@index([requestId])
+  @@index([problemId])
+  @@index([citizenId])
+}
+
 

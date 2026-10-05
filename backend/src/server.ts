@@ -12,6 +12,22 @@ async function bootstrap() {
     logger.warn('Startup self-healing skipped: ' + (err as Error).message);
   });
 
+  // Automatically ensure the platform universe is populated on startup
+  try {
+    const existingChallenges = await prisma.challenge.count();
+    const existingStudents = await prisma.user.count({ where: { role: 'STUDENT' } });
+    if (existingChallenges < 6 || existingStudents < 10) {
+      logger.info(`[BOOTSTRAP] Platform universe check: ${existingChallenges} challenges, ${existingStudents} students. Running seedPlatformUniverse()...`);
+      const { seedPlatformUniverse } = await import('./database/seed_platform_universe');
+      const counts = await seedPlatformUniverse();
+      logger.info(`[BOOTSTRAP] Platform universe successfully seeded: ${JSON.stringify(counts)}`);
+    } else {
+      logger.info(`[BOOTSTRAP] Platform universe fully populated (${existingChallenges} challenges, ${existingStudents} students).`);
+    }
+  } catch (seedErr: any) {
+    logger.warn('[BOOTSTRAP] Platform universe auto-seeding notice: ' + seedErr.message);
+  }
+
   const app = createApp();
 
   QueueManager.initialize();

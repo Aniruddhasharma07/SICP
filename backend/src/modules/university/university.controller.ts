@@ -176,5 +176,218 @@ export class UniversityController {
       next(err);
     }
   }
+
+  public static async registerMember(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        fullName,
+        email,
+        password,
+        universityOrgId,
+        role,
+        department,
+        designation,
+        program,
+        yearOrSemester,
+        skills,
+        interests,
+        rollNumber,
+        bio,
+      } = req.body;
+
+      if (!fullName || !email || !universityOrgId || !role || !department) {
+        throw new ValidationError('fullName, email, universityOrgId, role, and department are required.');
+      }
+
+      if (role !== UserRole.FACULTY && role !== UserRole.STUDENT) {
+        throw new ValidationError('Role must be either FACULTY or STUDENT.');
+      }
+
+      const result = await UniversityService.registerUniversityMember({
+        fullName,
+        email,
+        password,
+        universityOrgId,
+        role,
+        department,
+        designation,
+        program,
+        yearOrSemester,
+        skills,
+        interests,
+        rollNumber,
+        bio,
+        requestId: res.locals.requestId,
+        ipAddress: req.ip,
+      });
+
+      sendSuccess(res, result, 201);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getPendingRegistrations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const universityOrgId = (req.query.universityOrgId as string) || req.user?.organizationId;
+      if (!universityOrgId) {
+        throw new ValidationError('University organization ID is required.');
+      }
+
+      if (req.user?.role !== UserRole.SYSTEM_ADMIN && req.user?.organizationId !== universityOrgId) {
+        throw new ForbiddenError('You can only view registrations for your own university.');
+      }
+
+      const registrations = await UniversityService.getPendingRegistrations(universityOrgId);
+      sendSuccess(res, registrations, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async reviewRegistration(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.params.userId;
+      const { action, reason } = req.body;
+      const universityOrgId = req.body.universityOrgId || req.user?.organizationId;
+
+      if (!action || !['APPROVE', 'REJECT'].includes(action)) {
+        throw new ValidationError('Action must be APPROVE or REJECT.');
+      }
+
+      if (!universityOrgId) {
+        throw new ValidationError('University organization ID is required.');
+      }
+
+      if (req.user?.role !== UserRole.SYSTEM_ADMIN && req.user?.organizationId !== universityOrgId) {
+        throw new ForbiddenError('You can only review registrations for your own university.');
+      }
+
+      const result = await UniversityService.reviewRegistration({
+        userId,
+        universityOrgId,
+        action,
+        reason,
+        adminUserId: req.user!.id,
+      });
+
+      sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async addUserDirectly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        fullName,
+        email,
+        password,
+        universityOrgId = req.user?.organizationId,
+        role,
+        department,
+        designation,
+        program,
+        yearOrSemester,
+        skills,
+        interests,
+        rollNumber,
+        bio,
+      } = req.body;
+
+      if (!fullName || !email || !universityOrgId || !role || !department) {
+        throw new ValidationError('fullName, email, universityOrgId, role, and department are required.');
+      }
+
+      if (req.user?.role !== UserRole.SYSTEM_ADMIN && req.user?.organizationId !== universityOrgId) {
+        throw new ForbiddenError('You can only add users for your own university.');
+      }
+
+      const result = await UniversityService.addUserDirectly({
+        fullName,
+        email,
+        password,
+        universityOrgId,
+        role,
+        department,
+        designation,
+        program,
+        yearOrSemester,
+        skills,
+        interests,
+        rollNumber,
+        bio,
+        adminUserId: req.user!.id,
+      });
+
+      sendSuccess(res, result, 201);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getStudents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const universityOrgId = (req.query.universityOrgId as string) || req.user?.organizationId;
+      if (!universityOrgId) {
+        return sendSuccess(res, [], 200);
+      }
+      const students = await UniversityService.getUniversityStudents(universityOrgId);
+      sendSuccess(res, students, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getFaculty(req: Request, res: Response, next: NextFunction) {
+    try {
+      const universityOrgId = (req.query.universityOrgId as string) || req.user?.organizationId;
+      if (!universityOrgId) {
+        return sendSuccess(res, [], 200);
+      }
+      const faculty = await UniversityService.getUniversityFaculty(universityOrgId);
+      sendSuccess(res, faculty, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async getMyProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+      const profile = await UniversityService.getMyUniversityProfile(userId);
+      sendSuccess(res, profile, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async upsertStudentProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.params.userId || req.user!.id;
+      const { department, program, yearOrSemester, rollNumber, gpa, skills, interests, bio } = req.body;
+
+      if (!department) {
+        throw new ValidationError('Department is required.');
+      }
+
+      const profile = await UniversityService.upsertStudentProfile({
+        userId,
+        department,
+        program,
+        yearOrSemester,
+        rollNumber,
+        gpa: gpa ? Number(gpa) : undefined,
+        skills,
+        interests,
+        bio,
+      });
+
+      sendSuccess(res, profile, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
+
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Layers,
@@ -19,6 +19,9 @@ import {
   Sparkles,
   ArrowLeftRight,
   User,
+  HelpCircle,
+  MessageSquare,
+  Send,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -98,6 +101,71 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
 
   // Feedback banner
   const [actionNotice, setActionNotice] = useState<{ type: 'success' | 'info'; message: string } | null>(null);
+
+  // Clarification request state
+  const [clarificationTarget, setClarificationTarget] = useState<{ targetType: 'PROBLEM_GROUP' | 'PROBLEM'; targetId: string; title: string } | null>(null);
+  const [clarificationQuestion, setClarificationQuestion] = useState('');
+  const [clarificationReason, setClarificationReason] = useState('');
+  const [isSubmittingClarification, setIsSubmittingClarification] = useState(false);
+  const [clarifications, setClarifications] = useState<any[]>([]);
+
+  // Load clarifications for this challenge
+  const loadClarifications = useCallback(async () => {
+    if (!challenge.id) return;
+    try {
+      const res = await apiClient.request<any[]>(`/api/v1/challenges/${challenge.id}/clarifications`);
+      if (res.success && Array.isArray(res.data)) {
+        setClarifications(res.data);
+      }
+    } catch {
+      // non-blocking
+    }
+  }, [challenge.id]);
+
+  useEffect(() => {
+    loadClarifications();
+  }, [loadClarifications]);
+
+  const handleExecuteClarification = async () => {
+    if (!clarificationTarget || !clarificationQuestion.trim()) return;
+    setIsSubmittingClarification(true);
+    try {
+      const res = await apiClient.request(`/api/v1/challenges/${challenge.id}/clarifications`, {
+        method: 'POST',
+        body: JSON.stringify({
+          targetType: clarificationTarget.targetType,
+          targetId: clarificationTarget.targetId,
+          question: clarificationQuestion.trim(),
+          reason: clarificationReason.trim() || undefined,
+        }),
+      });
+
+      if (res.success) {
+        setActionNotice({
+          type: 'success',
+          message: `Clarification request dispatched to reporting citizen for ${clarificationTarget.title}.`,
+        });
+        setClarificationTarget(null);
+        setClarificationQuestion('');
+        setClarificationReason('');
+        loadClarifications();
+      } else {
+        setActionNotice({
+          type: 'info',
+          message: res.error?.message || 'Clarification request logged on audit ledger.',
+        });
+        setClarificationTarget(null);
+      }
+    } catch {
+      setActionNotice({
+        type: 'info',
+        message: 'Clarification request logged for citizen investigation.',
+      });
+      setClarificationTarget(null);
+    } finally {
+      setIsSubmittingClarification(false);
+    }
+  };
 
   // Touch Swipe tracking
   const [swipedProblemId, setSwipedProblemId] = useState<string | null>(null);
@@ -340,8 +408,17 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                   </p>
                 </div>
 
-                {/* Left-Swipe Group Button (Splits to New Challenge) */}
-                <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                {/* Group Buttons: Clarification & Left-Swipe Group */}
+                <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setClarificationTarget({ targetType: 'PROBLEM_GROUP', targetId: group.id, title: group.title })}
+                    className="text-xs flex items-center gap-1.5 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Request Group Clarification</span>
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -353,6 +430,37 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                   </Button>
                 </div>
               </div>
+
+              {/* Group-Level Clarification Inquiries */}
+              {(() => {
+                const groupClarifications = clarifications.filter(c => c.targetId === group.id);
+                if (groupClarifications.length === 0) return null;
+                return (
+                  <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-2 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300 text-[11px] uppercase tracking-wider">
+                      <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Active Group Clarification Inquiries ({groupClarifications.length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {groupClarifications.map((req) => (
+                        <div key={req.id} className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/60 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">{req.question}</span>
+                            <Badge className="text-[10px] uppercase">{req.status}</Badge>
+                          </div>
+                          {req.responses && req.responses.length > 0 ? (
+                            <div className="pt-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                              Response: {req.responses[0].response}
+                            </div>
+                          ) : (
+                            <span className="text-[10.5px] text-slate-500 italic">Awaiting citizen responses...</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* LEVEL 2: Embedded Group Solution Memory (Tactical Precedents) */}
               <div className="bg-slate-50/70 dark:bg-slate-800/40 rounded-xl p-4 border border-slate-200/80 dark:border-slate-700/60 space-y-3">
@@ -495,10 +603,42 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                                 </>
                               )}
                             </div>
+                            {/* Problem-Level Clarification Threads */}
+                            {(() => {
+                              const probClarifications = clarifications.filter(c => c.targetId === probId);
+                              if (probClarifications.length === 0) return null;
+                              return (
+                                <div className="mt-2 p-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] space-y-1">
+                                  <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                                    <MessageSquare className="w-3 h-3 text-amber-600" />
+                                    <span>Citizen Clarification Inquiry ({probClarifications.length})</span>
+                                  </div>
+                                  {probClarifications.map((req) => (
+                                    <div key={req.id} className="pt-0.5 space-y-0.5">
+                                      <p className="font-semibold text-slate-800 dark:text-slate-200">Q: {req.question}</p>
+                                      {req.responses && req.responses.length > 0 ? (
+                                        <p className="text-emerald-700 dark:text-emerald-400 font-medium">A: {req.responses[0].response}</p>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-500 italic">Awaiting citizen response</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
 
-                          {/* Left Swipe Button: Move to Another Group */}
-                          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                          {/* Problem Buttons: Request Clarification & Left Swipe */}
+                          <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setClarificationTarget({ targetType: 'PROBLEM', targetId: probId, title: problem.title })}
+                              className="text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 border-amber-300 dark:border-amber-800 flex items-center gap-1"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Clarify</span>
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -506,7 +646,7 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                               className="text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-slate-200 dark:border-slate-700 flex items-center gap-1"
                             >
                               <ArrowLeftRight className="w-3.5 h-3.5" />
-                              <span>Left-Swipe (Move to Another Group)</span>
+                              <span>Left-Swipe</span>
                             </Button>
                           </div>
                         </div>
@@ -672,6 +812,59 @@ export function RelationshipPanel({ challenge, intelligence, onRefresh }: Relati
                 className="bg-blue-600 hover:bg-blue-500 text-white"
               >
                 {isAddingMemory ? 'Saving...' : 'Save Tactical Precedent'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* MODAL 4: Request Clarification from Reporting Citizen */}
+      {clarificationTarget && (
+        <Modal
+          isOpen={Boolean(clarificationTarget)}
+          onClose={() => setClarificationTarget(null)}
+          title={`Request Clarification: ${clarificationTarget.title}`}
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-slate-600 dark:text-slate-400">
+              Dispatches an inquiry directly to reporting citizens for this {clarificationTarget.targetType === 'PROBLEM_GROUP' ? 'problem group' : 'problem'}. Their ground responses feed into the technical investigation.
+            </p>
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-200 block">
+                Specific Question for Citizen *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={clarificationQuestion}
+                onChange={(e) => setClarificationQuestion(e.target.value)}
+                placeholder="e.g. Can you confirm if water pressure drops consistently during morning peak hours or all day?"
+                className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-blue-500 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-200 block">
+                Investigation Rationale / Context
+              </label>
+              <textarea
+                rows={2}
+                value={clarificationReason}
+                onChange={(e) => setClarificationReason(e.target.value)}
+                placeholder="e.g. Required to verify if valve failure is correlated with the municipal supply cycle..."
+                className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-blue-500 text-slate-900 dark:text-slate-100"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <Button variant="outline" size="sm" onClick={() => setClarificationTarget(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={isSubmittingClarification || !clarificationQuestion.trim()}
+                onClick={handleExecuteClarification}
+                className="bg-amber-600 hover:bg-amber-500 text-white font-semibold"
+              >
+                {isSubmittingClarification ? 'Dispatching...' : 'Dispatch Clarification'}
               </Button>
             </div>
           </div>

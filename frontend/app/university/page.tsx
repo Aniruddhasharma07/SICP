@@ -134,7 +134,7 @@ export default function UniversityPortalPage() {
     ].includes(user.role as UserRole)
   );
 
-  const [activeTab, setActiveTab] = useState<'assigned' | 'teams' | 'proposals' | 'faculty' | 'partnerships'>('assigned');
+  const [activeTab, setActiveTab] = useState<'assigned' | 'teams' | 'proposals' | 'faculty' | 'partnerships' | 'registrations' | 'student-cockpit'>('assigned');
   const [registeredUnis, setRegisteredUnis] = useState<any[]>([]);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [switchSearch, setSwitchSearch] = useState('');
@@ -177,6 +177,10 @@ export default function UniversityPortalPage() {
         setActiveTab('faculty');
       } else if (tabParam === 'partnerships' || hash === '#partnerships') {
         setActiveTab('partnerships');
+      } else if (tabParam === 'registrations' || hash === '#registrations') {
+        setActiveTab('registrations');
+      } else if (tabParam === 'student-cockpit' || hash === '#student-cockpit') {
+        setActiveTab('student-cockpit');
       } else if (tabParam === 'assigned' || hash === '#opportunities' || hash === '#assigned') {
         setActiveTab('assigned');
       }
@@ -209,6 +213,28 @@ export default function UniversityPortalPage() {
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [teamChallengeId, setTeamChallengeId] = useState('');
+  const [leadFacultyId, setLeadFacultyId] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+
+  // Ecosystem Directories & Registrations Queue
+  const [pendingRegistrations, setPendingRegistrations] = useState<any[]>([]);
+  const [activeStudents, setActiveStudents] = useState<any[]>([]);
+  const [activeFaculty, setActiveFaculty] = useState<any[]>([]);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+  const [regReviewLoading, setRegReviewLoading] = useState<string | null>(null);
+
+  // Direct User Provisioning Modal
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    fullName: '',
+    email: '',
+    password: 'University@2026',
+    role: 'STUDENT',
+    department: 'Computer Science & Engineering',
+    studentId: '',
+    yearOfStudy: 3,
+    degreeProgram: 'B.Tech',
+  });
 
   // Team Invite Modal
   const [inviteTargetTeamId, setInviteTargetTeamId] = useState<string | null>(null);
@@ -432,6 +458,23 @@ export default function UniversityPortalPage() {
           }
         }
       }
+
+      // Load university ecosystem directories and registrations
+      try {
+        const [regRes, stuRes, facRes, profRes] = await Promise.all([
+          apiClient.request<any[]>('/api/v1/university/registrations').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any[]>('/api/v1/university/students').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any[]>('/api/v1/university/faculty').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any>('/api/v1/university/my-profile').catch(() => ({ success: false, data: null })),
+        ]);
+
+        if (regRes.success && Array.isArray(regRes.data)) setPendingRegistrations(regRes.data);
+        if (stuRes.success && Array.isArray(stuRes.data)) setActiveStudents(stuRes.data);
+        if (facRes.success && Array.isArray(facRes.data)) setActiveFaculty(facRes.data);
+        if (profRes.success && profRes.data) setStudentProfile(profRes.data);
+      } catch {
+        // non-blocking
+      }
     } catch {
       // Handled by api client
     } finally {
@@ -609,16 +652,97 @@ export default function UniversityPortalPage() {
         body: JSON.stringify({
           name: teamName.trim(),
           challengeId: teamChallengeId,
-          leadFacultyId: user?.id,
+          leadFacultyId: leadFacultyId || user?.id,
         }),
       });
-      if (res.success) {
+      if (res.success && res.data?.id) {
+        const teamId = res.data.id;
+        if (selectedStudentIds.length > 0) {
+          for (const sId of selectedStudentIds) {
+            await apiClient.request(`/api/v1/teams/${teamId}/invite`, {
+              method: 'POST',
+              body: JSON.stringify({
+                userId: sId,
+                roleInTeam: TeamRole.STUDENT_RESEARCHER,
+              }),
+            }).catch(() => {});
+          }
+        }
         setShowTeamModal(false);
         setTeamName('');
-        setStatusMessage({ type: 'success', text: 'Team created successfully with Lead Faculty assigned!' });
+        setSelectedStudentIds([]);
+        setLeadFacultyId('');
+        setStatusMessage({ type: 'success', text: `Multidisciplinary team "${teamName}" created with confirmed Lead Faculty and ${selectedStudentIds.length} student researchers!` });
         fetchData();
       } else {
         setStatusMessage({ type: 'error', text: res.error?.message || 'Failed to create team.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReviewRegistration = async (userId: string, decision: 'APPROVE' | 'REJECT', reason?: string) => {
+    setRegReviewLoading(userId);
+    try {
+      const res = await apiClient.request(`/api/v1/university/registrations/${userId}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ decision, rejectionReason: reason }),
+      });
+      if (res.success) {
+        setStatusMessage({
+          type: 'success',
+          text: decision === 'APPROVE' ? 'Membership approved! User is now active.' : 'Registration rejected.',
+        });
+        const [regRes, stuRes, facRes] = await Promise.all([
+          apiClient.request<any[]>('/api/v1/university/registrations').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any[]>('/api/v1/university/students').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any[]>('/api/v1/university/faculty').catch(() => ({ success: false, data: [] })),
+        ]);
+        if (regRes.success && Array.isArray(regRes.data)) setPendingRegistrations(regRes.data);
+        if (stuRes.success && Array.isArray(stuRes.data)) setActiveStudents(stuRes.data);
+        if (facRes.success && Array.isArray(facRes.data)) setActiveFaculty(facRes.data);
+      } else {
+        setStatusMessage({ type: 'error', text: res.error?.message || 'Action failed.' });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message });
+    } finally {
+      setRegReviewLoading(null);
+    }
+  };
+
+  const handleDirectAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      const res = await apiClient.request('/api/v1/university/users', {
+        method: 'POST',
+        body: JSON.stringify(newUserData),
+      });
+      if (res.success) {
+        setShowAddUserModal(false);
+        setNewUserData({
+          fullName: '',
+          email: '',
+          password: 'University@2026',
+          role: 'STUDENT',
+          department: 'Computer Science & Engineering',
+          studentId: '',
+          yearOfStudy: 3,
+          degreeProgram: 'B.Tech',
+        });
+        setStatusMessage({ type: 'success', text: `Provisioned ${newUserData.role.toLowerCase()} member "${newUserData.fullName}" into institutional roster!` });
+        const [stuRes, facRes] = await Promise.all([
+          apiClient.request<any[]>('/api/v1/university/students').catch(() => ({ success: false, data: [] })),
+          apiClient.request<any[]>('/api/v1/university/faculty').catch(() => ({ success: false, data: [] })),
+        ]);
+        if (stuRes.success && Array.isArray(stuRes.data)) setActiveStudents(stuRes.data);
+        if (facRes.success && Array.isArray(facRes.data)) setActiveFaculty(facRes.data);
+      } else {
+        setStatusMessage({ type: 'error', text: res.error?.message || 'Failed to add user.' });
       }
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message });
@@ -1432,6 +1556,39 @@ export default function UniversityPortalPage() {
             <Building2 className="h-4 w-4" />
             Industry & CSR Matching
           </button>
+
+          {isUniversityAdmin && (
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+                activeTab === 'registrations'
+                  ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>Registrations Queue</span>
+              {pendingRegistrations.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-slate-950">
+                  {pendingRegistrations.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {(isStudent || activeTab === 'student-cockpit') && (
+            <button
+              onClick={() => setActiveTab('student-cockpit')}
+              className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+                activeTab === 'student-cockpit'
+                  ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 font-bold'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <GraduationCap className="h-4 w-4" />
+              <span>Student Research Cockpit</span>
+            </button>
+          )}
         </div>
 
         {/* TAB 1: Incoming Assignments */}
@@ -2109,6 +2266,260 @@ export default function UniversityPortalPage() {
           </div>
         )}
 
+        {/* TAB 6: Registrations Review Queue (University Admin) */}
+        {activeTab === 'registrations' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Membership Review Queue & Institutional Roster</h2>
+                <p className="text-sm text-slate-500">
+                  Review pending student and faculty affiliation applications, or directly provision researchers into the academic roster.
+                </p>
+              </div>
+
+              {isUniversityAdmin && (
+                <Button
+                  onClick={() => setShowAddUserModal(true)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Provision Member Directly</span>
+                </Button>
+              )}
+            </div>
+
+            {/* Pending Applicants Section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-amber-500" />
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 uppercase tracking-wider text-xs">
+                  Pending Applications ({pendingRegistrations.length})
+                </h3>
+              </div>
+
+              {pendingRegistrations.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-slate-500">
+                    <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2 opacity-80" />
+                    <p className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Review Queue Empty</p>
+                    <p className="text-xs text-slate-500 mt-0.5">All student and faculty registration requests have been approved or processed.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pendingRegistrations.map((applicant) => (
+                    <Card key={applicant.id} className="border-l-4 border-l-amber-500 shadow-xs">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-mono text-[10px]">
+                                {applicant.role}
+                              </Badge>
+                              <Badge variant="outline" className="text-[10px]">
+                                {applicant.studentProfile?.department || applicant.department || 'Academic Department'}
+                              </Badge>
+                            </div>
+                            <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                              {applicant.fullName}
+                            </CardTitle>
+                            <CardDescription className="text-xs text-slate-500 font-mono">
+                              {applicant.email}
+                            </CardDescription>
+                          </div>
+                          <span className="text-[10px] text-slate-400">
+                            {new Date(applicant.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0 space-y-3 text-xs">
+                        {applicant.studentProfile && (
+                          <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 grid grid-cols-3 gap-2 text-[11px]">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">ID / Roll</span>
+                              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                                {applicant.studentProfile.studentId || 'N/A'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Program</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-300">
+                                {applicant.studentProfile.degreeProgram} (Yr {applicant.studentProfile.yearOfStudy})
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">CGPA</span>
+                              <span className="font-mono font-bold text-emerald-600">
+                                {applicant.studentProfile.cgpa || '8.5'} / 10
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={regReviewLoading === applicant.id}
+                            onClick={() => handleReviewRegistration(applicant.id, 'REJECT', 'Application does not meet institutional verification criteria.')}
+                            className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          >
+                            <XCircle className="w-3.5 h-3.5 mr-1" />
+                            <span>Reject</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={regReviewLoading === applicant.id}
+                            onClick={() => handleReviewRegistration(applicant.id, 'APPROVE')}
+                            className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                            <span>Approve & Activate</span>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Active Faculty & Student Roster */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+              {/* Approved Faculty */}
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-indigo-600" />
+                  <span>Approved Faculty Leads ({activeFaculty.length})</span>
+                </h3>
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {activeFaculty.map((f) => (
+                    <div key={f.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between text-xs">
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200">{f.fullName}</div>
+                        <div className="text-[11px] text-slate-500">{f.department || 'Faculty'} • {f.email}</div>
+                      </div>
+                      <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-[10px]">
+                        Active Lead
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Approved Students */}
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <GraduationCap className="w-4 h-4 text-emerald-600" />
+                  <span>Approved Student Researchers ({activeStudents.length})</span>
+                </h3>
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {activeStudents.map((s) => (
+                    <div key={s.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between text-xs">
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200">{s.fullName}</div>
+                        <div className="text-[11px] text-slate-500">
+                          {s.studentProfile?.department || 'Student'} • {s.studentProfile?.degreeProgram || 'B.Tech'} (Yr {s.studentProfile?.yearOfStudy || 3})
+                        </div>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-emerald-600">
+                        CGPA {s.studentProfile?.cgpa || '8.5'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: Student Research Cockpit */}
+        {activeTab === 'student-cockpit' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Student Researcher Workspace</h2>
+              <p className="text-sm text-slate-500">
+                Track assigned problem investigations, multidisciplinary team tasks, project deliverables, and academic credentials.
+              </p>
+            </div>
+
+            {/* Student Profile Card */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-900 via-blue-900 to-slate-900 text-white border border-indigo-700/40 shadow-lg space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-bold text-base">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-white">{user?.fullName || 'Student Researcher'}</span>
+                      <Badge className="bg-emerald-500 text-slate-950 font-bold text-[10px]">APPROVED STUDENT</Badge>
+                    </div>
+                    <p className="text-xs text-indigo-200">
+                      {institution?.name || 'GLA University Mathura'} • {studentProfile?.studentProfile?.department || 'Computer Science & Engineering'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-indigo-300 block">Cumulative GPA</span>
+                    <span className="text-xl font-black text-white font-mono">{studentProfile?.studentProfile?.cgpa || '8.75'} / 10.0</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Skills Tags */}
+              <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-indigo-300 font-semibold mr-1">Research Competencies:</span>
+                {(studentProfile?.studentProfile?.skills || ['IoT Sensing', 'Hydrological Modeling', 'React/Next.js', 'Python Data Science']).map((skill: string, idx: number) => (
+                  <span key={idx} className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white border border-white/10">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Assigned Project Teams */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-600" />
+                <span>My Active Multidisciplinary Teams & Projects</span>
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activeResearchChallenges.map((item) => (
+                  <Card key={item.id} className="border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-[10px]">{item.challenge.category}</Badge>
+                        <Badge className="bg-blue-100 text-blue-800 text-[10px]">STUDENT RESEARCHER</Badge>
+                      </div>
+                      <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        {item.challenge.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-xs">
+                      <p className="text-slate-600 dark:text-slate-400 line-clamp-2">
+                        {item.challenge.description}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-[11px] text-slate-500">Status: {item.challenge.status}</span>
+                        <Link href={`/challenges/${item.challengeId}`}>
+                          <Button size="sm" variant="outline" className="text-xs">
+                            <span>Open Dossier</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* MODAL: Decline Assignment with Mandatory Reason */}
         {declineTarget && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -2192,26 +2603,26 @@ export default function UniversityPortalPage() {
         {/* MODAL: Create Multidisciplinary Team */}
         {showTeamModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <form onSubmit={handleCreateTeam} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <form onSubmit={handleCreateTeam} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <Users className="h-6 w-6" />
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Form Multidisciplinary Team</h3>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                Establish an official multidisciplinary project team. You will be assigned as Lead Faculty.
+                Establish an official multidisciplinary project team combining Lead Faculty and cross-departmental student researchers.
               </p>
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Team Name</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Team Name *</label>
                   <Input
-                    placeholder="e.g. Advanced Water Filtration Research Group"
+                    placeholder="e.g. GLA Smart Drainage & Water Analytics Consortium"
                     value={teamName}
                     onChange={e => setTeamName(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Challenge</label>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Challenge *</label>
                   <select
                     className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                     value={teamChallengeId}
@@ -2226,13 +2637,185 @@ export default function UniversityPortalPage() {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Lead Faculty Lead</label>
+                  <select
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    value={leadFacultyId}
+                    onChange={e => setLeadFacultyId(e.target.value)}
+                  >
+                    <option value="">{user?.fullName || 'Current User'} (Lead Faculty)</option>
+                    {activeFaculty.map(fac => (
+                      <option key={fac.id} value={fac.id}>
+                        {fac.fullName} ({fac.department || 'Faculty Lead'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">
+                    Select Multidisciplinary Student Researchers ({selectedStudentIds.length} selected)
+                  </label>
+                  <div className="max-h-36 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded p-2 space-y-1.5 bg-slate-50 dark:bg-slate-800">
+                    {activeStudents.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 italic">No approved students enrolled yet.</p>
+                    ) : (
+                      activeStudents.map(stu => {
+                        const isSel = selectedStudentIds.includes(stu.id);
+                        return (
+                          <label key={stu.id} className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={isSel}
+                              onChange={() => {
+                                setSelectedStudentIds(prev =>
+                                  isSel ? prev.filter(id => id !== stu.id) : [...prev, stu.id]
+                                );
+                              }}
+                              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="font-medium text-slate-800 dark:text-slate-200">{stu.fullName}</span>
+                            <span className="text-[10px] text-slate-500">
+                              ({stu.studentProfile?.department || 'Student'} • Yr {stu.studentProfile?.yearOfStudy || 3})
+                            </span>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Button variant="outline" size="sm" type="button" onClick={() => setShowTeamModal(false)}>
                   Cancel
                 </Button>
-                <Button size="sm" type="submit" disabled={actionLoading || !teamName}>
-                  Create Team
+                <Button size="sm" type="submit" disabled={actionLoading || !teamName} className="bg-blue-600 hover:bg-blue-500 text-white font-bold">
+                  {actionLoading ? 'Creating...' : 'Form Team'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* MODAL: Direct Add User / Provision Member */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <form onSubmit={handleDirectAddUser} className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                <Users className="h-6 w-6" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Provision Academic Member Directly</h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Directly add an accredited student or faculty member into your institution's active roster with pre-approved credentials.
+              </p>
+
+              <div className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
+                    <Input
+                      placeholder="e.g. Dr. Rajesh Sharma"
+                      value={newUserData.fullName}
+                      onChange={e => setNewUserData(prev => ({ ...prev, fullName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Role *</label>
+                    <select
+                      className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                      value={newUserData.role}
+                      onChange={e => setNewUserData(prev => ({ ...prev, role: e.target.value }))}
+                    >
+                      <option value="STUDENT">Student Researcher</option>
+                      <option value="FACULTY">Faculty Member</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Email *</label>
+                    <Input
+                      type="email"
+                      placeholder="e.g. rajesh.sharma@gla.ac.in"
+                      value={newUserData.email}
+                      onChange={e => setNewUserData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Temporary Password</label>
+                    <Input
+                      type="password"
+                      value={newUserData.password}
+                      onChange={e => setNewUserData(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold block text-slate-700 dark:text-slate-300 mb-1">Academic Department *</label>
+                  <select
+                    className="w-full border border-slate-300 dark:border-slate-700 rounded p-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    value={newUserData.department}
+                    onChange={e => setNewUserData(prev => ({ ...prev, department: e.target.value }))}
+                  >
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                    <option value="Environmental Engineering">Environmental Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Water Resource Engineering">Water Resource Engineering</option>
+                  </select>
+                </div>
+
+                {newUserData.role === 'STUDENT' && (
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div>
+                      <label className="font-semibold block text-[11px] text-slate-700 dark:text-slate-300 mb-1">Student ID / Roll</label>
+                      <Input
+                        placeholder="GLA-2023-CS-088"
+                        value={newUserData.studentId}
+                        onChange={e => setNewUserData(prev => ({ ...prev, studentId: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold block text-[11px] text-slate-700 dark:text-slate-300 mb-1">Degree Program</label>
+                      <select
+                        className="w-full border border-slate-300 dark:border-slate-700 rounded p-1.5 bg-white dark:bg-slate-800 text-xs"
+                        value={newUserData.degreeProgram}
+                        onChange={e => setNewUserData(prev => ({ ...prev, degreeProgram: e.target.value }))}
+                      >
+                        <option value="B.Tech">B.Tech</option>
+                        <option value="M.Tech">M.Tech</option>
+                        <option value="Ph.D">Ph.D</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="font-semibold block text-[11px] text-slate-700 dark:text-slate-300 mb-1">Year of Study</label>
+                      <select
+                        className="w-full border border-slate-300 dark:border-slate-700 rounded p-1.5 bg-white dark:bg-slate-800 text-xs"
+                        value={newUserData.yearOfStudy}
+                        onChange={e => setNewUserData(prev => ({ ...prev, yearOfStudy: Number(e.target.value) }))}
+                      >
+                        <option value={1}>Year 1</option>
+                        <option value={2}>Year 2</option>
+                        <option value={3}>Year 3</option>
+                        <option value={4}>Year 4</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <Button variant="outline" size="sm" type="button" onClick={() => setShowAddUserModal(false)}>
+                  Cancel
+                </Button>
+                <Button size="sm" type="submit" disabled={actionLoading || !newUserData.fullName || !newUserData.email} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold">
+                  {actionLoading ? 'Provisioning...' : 'Provision Member'}
                 </Button>
               </div>
             </form>

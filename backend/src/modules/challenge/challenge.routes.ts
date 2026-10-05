@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { ChallengeController } from './challenge.controller';
 import { VoteController } from '../vote/vote.controller';
+import { ClarificationController } from '../clarification/clarification.controller';
+import { GovernmentController } from '../government/government.controller';
 import { authMiddleware, optionalAuthMiddleware } from '../../core/middlewares/auth.middleware';
 import { requirePermission } from '../../core/middlewares/rbac.middleware';
 import { idempotencyMiddleware } from '../../core/middlewares/idempotency.middleware';
@@ -47,5 +49,13 @@ challengeRouter.post(
   ChallengeController.validateInvestigation
 );
 challengeRouter.post('/:id/override', optionalAuthMiddleware, idempotencyMiddleware, ChallengeController.override);
+
+// Clarifications inside Challenge
+challengeRouter.post('/:id/clarifications', authMiddleware, mutationRateLimiter, idempotencyMiddleware, ClarificationController.requestClarification);
+challengeRouter.get('/:id/clarifications', optionalAuthMiddleware, ClarificationController.getForChallenge);
+
+// Direct Challenge Verification & University Routing Aliases
+challengeRouter.post('/:id/verify', authMiddleware, requirePermission('challenge:review'), idempotencyMiddleware, ChallengeController.validateInvestigation);
+challengeRouter.post('/:id/route-university', authMiddleware, requirePermission('challenge:review'), idempotencyMiddleware, GovernmentController.assignUniversity);
 
 

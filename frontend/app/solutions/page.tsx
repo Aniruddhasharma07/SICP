@@ -514,11 +514,6 @@ export default function SolutionsRepositoryPage() {
                             <Badge variant="outline" className="text-[10px]">
                               {sol.evidenceLevel}
                             </Badge>
-                            {(sol.id.startsWith('mem-') || sol.id.includes('demo') || (sol as any).isControlledDemo) && (
-                              <Badge className="bg-amber-950 text-amber-300 border-amber-800 text-[10px] font-mono">
-                                CONTROLLED SIH DEMO
-                              </Badge>
-                            )}
                           </div>
                           <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                             <Link href={`/solutions/${sol.id}`}>{sol.title}</Link>

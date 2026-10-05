@@ -80,4 +80,14 @@ export class AdminController {
       next(err);
     }
   }
+
+  public static async seedUniverse(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { seedPlatformUniverse } = await import('../../database/seed_platform_universe');
+      const counts = await seedPlatformUniverse();
+      sendSuccess(res, { message: 'SICP Platform Universe populated successfully', counts }, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

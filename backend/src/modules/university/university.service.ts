@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { prisma } from '../../database/prisma';
 import {
   ChallengeStatus,
@@ -6,10 +7,12 @@ import {
   AuditAction,
   ProjectStatus,
 } from '@sicp/shared';
-import { NotFoundError, ValidationError, ForbiddenError } from '../../utils/errors';
+import { NotFoundError, ValidationError, ForbiddenError, ConflictError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { FacultyMatchingEngine } from '../../domain/matching/faculty-matching.engine';
 import { UniversityMatchingEngine } from '../../domain/matching/university-matching.engine';
+import { NotificationService } from '../notification/notification.service';
+import { AuditService } from '../audit/audit.service';
 
 export interface UniversityAcceptParams {
   challengeId: string;
@@ -524,5 +527,404 @@ export class UniversityService {
       };
     });
   }
+
+  /**
+   * Register a new Faculty or Student under an existing verified university (status: PENDING)
+   */
+  public static async registerUniversityMember(params: {
+    fullName: string;
+    email: string;
+    password?: string;
+    universityOrgId: string;
+    role: UserRole.FACULTY | UserRole.STUDENT;
+    department: string;
+    designation?: string;
+    program?: string;
+    yearOrSemester?: string;
+    skills?: string[];
+    interests?: string[];
+    rollNumber?: string;
+    bio?: string;
+    requestId?: string;
+    ipAddress?: string;
+  }) {
+    const existing = await prisma.user.findUnique({
+      where: { email: params.email.toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictError('A user with this email address already exists.');
+    }
+
+    const org = await prisma.organization.findUnique({
+      where: { id: params.universityOrgId },
+    });
+    if (!org || org.type !== 'UNIVERSITY') {
+      throw new NotFoundError('University organization not found.');
+    }
+
+    const rawPassword = params.password || 'University@2026';
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        fullName: params.fullName.trim(),
+        email: params.email.toLowerCase().trim(),
+        passwordHash,
+        role: params.role as unknown as import('@prisma/client').$Enums.UserRole,
+        organizationId: params.universityOrgId,
+        approvalStatus: 'PENDING',
+        isActive: true,
+      },
+    });
+
+    if (params.role === UserRole.FACULTY) {
+      await prisma.facultyProfile.create({
+        data: {
+          userId: user.id,
+          department: params.department,
+          designation: params.designation || 'Assistant Professor',
+          expertiseTags: params.skills || [],
+          researchInterests: params.interests || [],
+          bio: params.bio || null,
+        },
+      });
+    } else {
+      await prisma.studentProfile.create({
+        data: {
+          userId: user.id,
+          department: params.department,
+          program: params.program || 'B.Tech',
+          yearOrSemester: params.yearOrSemester || '3rd Year',
+          rollNumber: params.rollNumber || null,
+          skills: params.skills || [],
+          interests: params.interests || [],
+          bio: params.bio || null,
+        },
+      });
+    }
+
+    // Notify University Admins
+    const admins = await prisma.user.findMany({
+      where: {
+        organizationId: params.universityOrgId,
+        role: { in: [UserRole.UNIVERSITY_ADMIN, UserRole.SYSTEM_ADMIN] },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await NotificationService.create({
+        recipientId: admin.id,
+        recipientRole: 'UNIVERSITY_ADMIN',
+        portal: 'university',
+        organizationId: params.universityOrgId,
+        title: 'New Member Registration Awaiting Approval',
+        message: `${params.fullName} has registered as ${params.role} for ${params.department}. Review registration to grant access.`,
+        type: 'REGISTRATION_PENDING',
+        actionUrl: '/university?tab=registrations',
+        metadata: { applicantId: user.id, role: params.role, department: params.department },
+      });
+    }
+
+    return {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId,
+      approvalStatus: user.approvalStatus,
+      department: params.department,
+    };
+  }
+
+  /**
+   * Get pending registrations for a university
+   */
+  public static async getPendingRegistrations(universityOrgId: string) {
+    return prisma.user.findMany({
+      where: {
+        organizationId: universityOrgId,
+        approvalStatus: 'PENDING',
+      },
+      include: {
+        facultyProfile: true,
+        studentProfile: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Review pending registration (Approve or Reject)
+   */
+  public static async reviewRegistration(params: {
+    userId: string;
+    universityOrgId: string;
+    action: 'APPROVE' | 'REJECT';
+    reason?: string;
+    adminUserId: string;
+  }) {
+    const user = await prisma.user.findUnique({
+      where: { id: params.userId },
+    });
+
+    if (!user) throw new NotFoundError('User not found.');
+    if (user.organizationId !== params.universityOrgId) {
+      throw new ForbiddenError('You can only review registrations for your own university.');
+    }
+
+    const newStatus = params.action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+
+    const updated = await prisma.user.update({
+      where: { id: params.userId },
+      data: { approvalStatus: newStatus },
+      include: { facultyProfile: true, studentProfile: true },
+    });
+
+    if (params.action === 'APPROVE') {
+      await prisma.organizationMember.upsert({
+        where: {
+          organizationId_userId: {
+            organizationId: params.universityOrgId,
+            userId: params.userId,
+          },
+        },
+        create: {
+          organizationId: params.universityOrgId,
+          userId: params.userId,
+          role: user.role === UserRole.FACULTY ? 'FACULTY' : 'STUDENT',
+        },
+        update: {
+          role: user.role === UserRole.FACULTY ? 'FACULTY' : 'STUDENT',
+        },
+      });
+
+      await NotificationService.create({
+        recipientId: user.id,
+        recipientRole: user.role,
+        portal: 'university',
+        organizationId: params.universityOrgId,
+        title: 'University Registration Approved',
+        message: 'Your institutional registration has been approved. You now have full access to university challenges and research workspaces.',
+        type: 'REGISTRATION_APPROVED',
+        actionUrl: user.role === UserRole.FACULTY ? '/university?tab=assigned' : '/university?tab=teams',
+      });
+    } else {
+      await NotificationService.create({
+        recipientId: user.id,
+        recipientRole: user.role,
+        portal: 'university',
+        organizationId: params.universityOrgId,
+        title: 'University Registration Not Approved',
+        message: params.reason || 'Your registration request was not approved by the university administrator.',
+        type: 'REGISTRATION_REJECTED',
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Directly add a student or faculty member by University Admin (APPROVED by default)
+   */
+  public static async addUserDirectly(params: {
+    fullName: string;
+    email: string;
+    password?: string;
+    universityOrgId: string;
+    role: UserRole.FACULTY | UserRole.STUDENT;
+    department: string;
+    designation?: string;
+    program?: string;
+    yearOrSemester?: string;
+    skills?: string[];
+    interests?: string[];
+    rollNumber?: string;
+    bio?: string;
+    adminUserId: string;
+  }) {
+    const existing = await prisma.user.findUnique({
+      where: { email: params.email.toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictError('A user with this email address already exists.');
+    }
+
+    const rawPassword = params.password || 'University@2026';
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        fullName: params.fullName.trim(),
+        email: params.email.toLowerCase().trim(),
+        passwordHash,
+        role: params.role as unknown as import('@prisma/client').$Enums.UserRole,
+        organizationId: params.universityOrgId,
+        approvalStatus: 'APPROVED',
+        isActive: true,
+      },
+    });
+
+    await prisma.organizationMember.create({
+      data: {
+        organizationId: params.universityOrgId,
+        userId: user.id,
+        role: params.role === UserRole.FACULTY ? 'FACULTY' : 'STUDENT',
+      },
+    });
+
+    if (params.role === UserRole.FACULTY) {
+      await prisma.facultyProfile.create({
+        data: {
+          userId: user.id,
+          department: params.department,
+          designation: params.designation || 'Assistant Professor',
+          expertiseTags: params.skills || [],
+          researchInterests: params.interests || [],
+          bio: params.bio || null,
+        },
+      });
+    } else {
+      await prisma.studentProfile.create({
+        data: {
+          userId: user.id,
+          department: params.department,
+          program: params.program || 'B.Tech',
+          yearOrSemester: params.yearOrSemester || '3rd Year',
+          rollNumber: params.rollNumber || null,
+          skills: params.skills || [],
+          interests: params.interests || [],
+          bio: params.bio || null,
+        },
+      });
+    }
+
+    return user;
+  }
+
+  /**
+   * List approved students for a university
+   */
+  public static async getUniversityStudents(universityOrgId: string) {
+    return prisma.user.findMany({
+      where: {
+        organizationId: universityOrgId,
+        role: { in: [UserRole.STUDENT, UserRole.RESEARCH_ASSISTANT] },
+        approvalStatus: 'APPROVED',
+      },
+      include: {
+        studentProfile: true,
+        teamMemberships: {
+          include: {
+            team: {
+              include: {
+                challenge: { select: { id: true, title: true, status: true, category: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { fullName: 'asc' },
+    });
+  }
+
+  /**
+   * List approved faculty members for a university
+   */
+  public static async getUniversityFaculty(universityOrgId: string) {
+    return prisma.user.findMany({
+      where: {
+        organizationId: universityOrgId,
+        role: UserRole.FACULTY,
+        approvalStatus: 'APPROVED',
+      },
+      include: {
+        facultyProfile: true,
+        teamsLed: {
+          include: {
+            challenge: { select: { id: true, title: true, status: true, category: true } },
+            members: { include: { user: { select: { id: true, fullName: true, role: true } } } },
+          },
+        },
+      },
+      orderBy: { fullName: 'asc' },
+    });
+  }
+
+  /**
+   * Get user's own profile and associated university data
+   */
+  public static async getMyUniversityProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        organization: true,
+        facultyProfile: true,
+        studentProfile: true,
+        teamsLed: {
+          include: {
+            challenge: true,
+            members: { include: { user: { select: { id: true, fullName: true, role: true } } } },
+            projects: true,
+          },
+        },
+        teamMemberships: {
+          include: {
+            team: {
+              include: {
+                challenge: true,
+                leadFaculty: { select: { id: true, fullName: true, email: true } },
+                projects: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundError('User not found.');
+    return user;
+  }
+
+  /**
+   * Upsert student profile
+   */
+  public static async upsertStudentProfile(params: {
+    userId: string;
+    department: string;
+    program?: string;
+    yearOrSemester?: string;
+    rollNumber?: string;
+    gpa?: number;
+    skills?: string[];
+    interests?: string[];
+    bio?: string;
+  }) {
+    return prisma.studentProfile.upsert({
+      where: { userId: params.userId },
+      create: {
+        userId: params.userId,
+        department: params.department,
+        program: params.program || 'B.Tech',
+        yearOrSemester: params.yearOrSemester || '3rd Year',
+        rollNumber: params.rollNumber || null,
+        gpa: params.gpa || null,
+        skills: params.skills || [],
+        interests: params.interests || [],
+        bio: params.bio || null,
+      },
+      update: {
+        department: params.department,
+        program: params.program,
+        yearOrSemester: params.yearOrSemester,
+        rollNumber: params.rollNumber,
+        gpa: params.gpa,
+        skills: params.skills,
+        interests: params.interests,
+        bio: params.bio,
+      },
+    });
+  }
 }
+
 

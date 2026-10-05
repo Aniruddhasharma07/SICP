@@ -67,6 +67,33 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       logger.debug(`[SCHEMA_SYNC] ChallengeStatus migration notice: ${migErr.message}`);
     }
 
+    // 2b. Add columns if not exists
+    const alterColumnStatements = [
+      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "approvalStatus" TEXT NOT NULL DEFAULT 'APPROVED';`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "recipientRole" TEXT;`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "portal" TEXT;`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "organizationId" TEXT;`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "eventType" TEXT;`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "entityType" TEXT;`,
+      `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "entityId" TEXT;`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "govSeverity" "SeverityLevel";`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "govPriority" "PriorityLevel";`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "govOverrideReason" TEXT;`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "govOverriddenAt" TIMESTAMP(3);`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "govOverriddenById" TEXT;`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "verifiedAt" TIMESTAMP(3);`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "verifiedById" TEXT;`,
+      `ALTER TABLE "Challenge" ADD COLUMN IF NOT EXISTS "verificationNotes" TEXT;`,
+    ];
+
+    for (const stmt of alterColumnStatements) {
+      try {
+        await prisma.$executeRawUnsafe(stmt);
+      } catch (colErr: any) {
+        logger.debug(`[SCHEMA_SYNC] Column statement notice: ${colErr.message}`);
+      }
+    }
+
     // 3. Tables (Each as a separate statement)
     const tableStatements = [
       `CREATE TABLE IF NOT EXISTS "Problem" (
@@ -166,6 +193,44 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "GroupSolutionMemory_pkey" PRIMARY KEY ("id")
       );`,
+      `CREATE TABLE IF NOT EXISTS "StudentProfile" (
+          "id" TEXT NOT NULL,
+          "userId" TEXT NOT NULL,
+          "department" TEXT NOT NULL,
+          "program" TEXT NOT NULL DEFAULT 'B.Tech',
+          "yearOrSemester" TEXT NOT NULL DEFAULT '3rd Year',
+          "rollNumber" TEXT,
+          "gpa" DOUBLE PRECISION,
+          "skills" TEXT[],
+          "interests" TEXT[],
+          "bio" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL,
+          CONSTRAINT "StudentProfile_pkey" PRIMARY KEY ("id")
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ClarificationRequest" (
+          "id" TEXT NOT NULL,
+          "challengeId" TEXT,
+          "groupId" TEXT,
+          "problemId" TEXT,
+          "targetScope" TEXT NOT NULL DEFAULT 'PROBLEM',
+          "requestedById" TEXT NOT NULL,
+          "question" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'PENDING',
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL,
+          CONSTRAINT "ClarificationRequest_pkey" PRIMARY KEY ("id")
+      );`,
+      `CREATE TABLE IF NOT EXISTS "ClarificationResponse" (
+          "id" TEXT NOT NULL,
+          "requestId" TEXT NOT NULL,
+          "problemId" TEXT,
+          "citizenId" TEXT NOT NULL,
+          "response" TEXT NOT NULL,
+          "evidenceFileKey" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "ClarificationResponse_pkey" PRIMARY KEY ("id")
+      );`,
     ];
 
     for (const stmt of tableStatements) {
@@ -197,6 +262,21 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_groupId_idx" ON "GroupSolutionMemory"("groupId");`,
       `CREATE INDEX IF NOT EXISTS "GroupSolutionMemory_classification_idx" ON "GroupSolutionMemory"("classification");`,
       `CREATE INDEX IF NOT EXISTS "idx_challenge_geography_gist" ON "Challenge" USING GIST (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography);`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "StudentProfile_userId_key" ON "StudentProfile"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "StudentProfile_department_idx" ON "StudentProfile"("department");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationRequest_challengeId_idx" ON "ClarificationRequest"("challengeId");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationRequest_groupId_idx" ON "ClarificationRequest"("groupId");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationRequest_problemId_idx" ON "ClarificationRequest"("problemId");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationRequest_requestedById_idx" ON "ClarificationRequest"("requestedById");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationRequest_status_idx" ON "ClarificationRequest"("status");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationResponse_requestId_idx" ON "ClarificationResponse"("requestId");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationResponse_problemId_idx" ON "ClarificationResponse"("problemId");`,
+      `CREATE INDEX IF NOT EXISTS "ClarificationResponse_citizenId_idx" ON "ClarificationResponse"("citizenId");`,
+      `CREATE INDEX IF NOT EXISTS "Notification_recipientRole_idx" ON "Notification"("recipientRole");`,
+      `CREATE INDEX IF NOT EXISTS "Notification_portal_idx" ON "Notification"("portal");`,
+      `CREATE INDEX IF NOT EXISTS "Notification_organizationId_idx" ON "Notification"("organizationId");`,
+      `CREATE INDEX IF NOT EXISTS "Challenge_govPriority_idx" ON "Challenge"("govPriority");`,
+      `CREATE INDEX IF NOT EXISTS "User_approvalStatus_idx" ON "User"("approvalStatus");`,
     ];
 
     for (const stmt of indexStatements) {
@@ -239,6 +319,30 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'GroupSolutionMemory_groupId_fkey') THEN
           ALTER TABLE "GroupSolutionMemory" ADD CONSTRAINT "GroupSolutionMemory_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "ProblemGroup"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StudentProfile_userId_fkey') THEN
+          ALTER TABLE "StudentProfile" ADD CONSTRAINT "StudentProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationRequest_challengeId_fkey') THEN
+          ALTER TABLE "ClarificationRequest" ADD CONSTRAINT "ClarificationRequest_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "Challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationRequest_groupId_fkey') THEN
+          ALTER TABLE "ClarificationRequest" ADD CONSTRAINT "ClarificationRequest_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "ProblemGroup"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationRequest_problemId_fkey') THEN
+          ALTER TABLE "ClarificationRequest" ADD CONSTRAINT "ClarificationRequest_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "Problem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationRequest_requestedById_fkey') THEN
+          ALTER TABLE "ClarificationRequest" ADD CONSTRAINT "ClarificationRequest_requestedById_fkey" FOREIGN KEY ("requestedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationResponse_requestId_fkey') THEN
+          ALTER TABLE "ClarificationResponse" ADD CONSTRAINT "ClarificationResponse_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "ClarificationRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationResponse_problemId_fkey') THEN
+          ALTER TABLE "ClarificationResponse" ADD CONSTRAINT "ClarificationResponse_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "Problem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ClarificationResponse_citizenId_fkey') THEN
+          ALTER TABLE "ClarificationResponse" ADD CONSTRAINT "ClarificationResponse_citizenId_fkey" FOREIGN KEY ("citizenId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
         END IF;
       END $$;
     `);

@@ -14,3 +14,4 @@ adminRouter.get('/users', AdminController.getUsers);
 adminRouter.patch('/users/:id/status', AdminController.updateUserStatus);
 adminRouter.get('/organizations', AdminController.getOrganizations);
 adminRouter.patch('/organizations/:id/status', AdminController.updateOrganizationStatus);
+adminRouter.post('/seed-universe', AdminController.seedUniverse);

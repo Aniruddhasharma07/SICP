@@ -24,7 +24,7 @@ export const PORTAL_DEFINITIONS: PortalDef[] = [
     id: 'citizen',
     name: 'Citizen Hub',
     shortName: 'Citizen',
-    path: '/my-problems',
+    path: '/my-challenges',
     icon: '📋',
     description: 'Citizens & Community: report problems, track challenges & verify deployed solutions',
     accentColor: 'blue',
