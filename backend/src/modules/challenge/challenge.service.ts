@@ -45,6 +45,8 @@ import { SpatialPolicyEngine } from '../../domain/intelligence/spatial-policy.en
 import { ProblemGroupingService } from '../../domain/intelligence/problem-grouping.service';
 import { CategoryResolutionEngine } from '../../domain/intelligence/category-resolution.engine';
 import { GeospatialService } from '../geospatial/geospatial.service';
+import { SpatialQueryEngine } from '../../domain/intelligence/spatial-query.engine';
+import { RelationshipScoringEngine } from '../../domain/intelligence/relationship-scoring.engine';
 
 export class ChallengeService {
   public static async create(
@@ -140,13 +142,24 @@ export class ChallengeService {
 
       if (!isDomainMatch) continue;
 
-      // Geospatial proximity
-      const distKm = DuplicateClusteringService.calculateDistanceKm(
+      // Governance memory check: if candidate challenge has active rejected relationship, skip
+      const isBlockedByGovernance = await prisma.relationshipGovernanceMemory.findFirst({
+        where: {
+          targetEntityId: cand.id,
+          active: true,
+        },
+      });
+      if (isBlockedByGovernance) continue;
+
+      // Exact geospatial proximity in meters via SpatialQueryEngine
+      const distanceMeters = SpatialQueryEngine.calculateDistanceMeters(
         data.latitude,
         data.longitude,
         cand.latitude,
         cand.longitude
       );
+
+      const spatialPolicy = SpatialQueryEngine.getPolicy(canonicalCategory);
 
       const hasSameDistrict = Boolean(
         data.district &&
@@ -166,26 +179,32 @@ export class ChallengeService {
         t => t.length > 3 && addrTokensB.includes(t)
       );
 
+      const isImmediateRadius = distanceMeters !== null && distanceMeters <= spatialPolicy.immediateRadiusMeters;
+      const isWithinDomainRadius = distanceMeters !== null && distanceMeters <= spatialPolicy.maxBoundaryMeters;
+
       const isGeoMatch =
-        (distKm !== null && distKm <= 2.5) ||
-        (hasSameDistrict && (hasSameState || !data.state || !cand.state)) ||
+        isWithinDomainRadius ||
+        (distanceMeters === null && hasSameDistrict && (hasSameState || !data.state || !cand.state)) ||
         hasSharedLocality;
 
       if (!isGeoMatch) continue;
 
-      // Semantic Similarity
-      const titleSim = DuplicateClusteringService.calculateTokenSimilarity(data.title, cand.title);
-      const textSim = DuplicateClusteringService.calculateTokenSimilarity(
+      // Semantic Similarity with civic concept expansion
+      const titleSim = RelationshipScoringEngine.calculateTokenSimilarity(data.title, cand.title);
+      const textSim = RelationshipScoringEngine.calculateTokenSimilarity(
         `${data.title} ${data.description}`,
         `${cand.title} ${cand.description}`
       );
-      const semanticScore = Math.max(titleSim, textSim);
+      const semanticScore = Math.max(titleSim, textSim) / 100;
 
-      const combinedScore = (distKm !== null && distKm <= 1.0 ? 0.35 : 0.2) + semanticScore * 0.8;
+      const distBonus = isImmediateRadius ? 0.45 : isWithinDomainRadius ? 0.30 : 0.15;
+      const combinedScore = distBonus + semanticScore * 0.7;
+
       if (
-        semanticScore >= 0.38 ||
-        (semanticScore >= 0.25 && distKm !== null && distKm <= 1.0) ||
-        (semanticScore >= 0.28 && hasSharedLocality)
+        (isImmediateRadius && (semanticScore >= 0.15 || (distanceMeters !== null && distanceMeters <= 50))) ||
+        (semanticScore >= 0.30 && isWithinDomainRadius) ||
+        (semanticScore >= 0.38) ||
+        (semanticScore >= 0.25 && hasSharedLocality)
       ) {
         if (combinedScore > highestMatchScore) {
           highestMatchScore = combinedScore;
@@ -269,71 +288,20 @@ export class ChallengeService {
           data: { groupId: targetGroup.id },
         });
 
-        // Multi-Root-Cause Hypothesis: 1 Group -> N Challenges (Supported >= 0.65)
-        if (resolution.rootCauses && resolution.rootCauses.length > 0) {
-          for (const rootHyp of resolution.rootCauses.slice(0, 2)) {
-            if (!rootHyp.hypothesis || rootHyp.hypothesis.length < 10) continue;
-            const existingRootChallenge = await tx.challenge.findFirst({
-              where: {
-                category: canonicalCategory,
-                isSystemic: true,
-                deletedAt: null,
-                OR: [
-                  { title: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
-                  { systemicSummary: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
-                ],
-              },
-            });
-
-            if (existingRootChallenge) {
-              await tx.challengeGroup.upsert({
-                where: {
-                  challengeId_groupId: {
-                    challengeId: existingRootChallenge.id,
-                    groupId: targetGroup.id,
-                  },
-                },
-                update: {},
-                create: {
-                  challengeId: existingRootChallenge.id,
-                  groupId: targetGroup.id,
-                },
-              });
-            } else {
-              const systemicTitle = rootHyp.hypothesis.length > 95
-                ? `${rootHyp.hypothesis.slice(0, 92)}...`
-                : rootHyp.hypothesis;
-
-              const systemicChal = await tx.challenge.create({
-                data: {
-                  title: `[Possible Root Cause] ${systemicTitle}`,
-                  description: `Possible systemic root cause hypothesis derived from citizen reports in ${matchedChallenge.district || 'the area'}:\n\n${rootHyp.hypothesis}\n\nEvidence base: Incident cluster "${data.title}". Requires municipal engineering audit and field verification.`,
-                  category: canonicalCategory,
-                  severity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
-                  priority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
-                  priorityScore: 60.0,
-                  status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
-                  submitterId,
-                  district: matchedChallenge.district || null,
-                  state: matchedChallenge.state || null,
-                  latitude: matchedChallenge.latitude || null,
-                  longitude: matchedChallenge.longitude || null,
-                  address: matchedChallenge.address || null,
-                  isSystemic: true,
-                  systemicSummary: `Possible Root Cause: ${rootHyp.hypothesis} (Not Yet Government Verified)`,
-                  version: 1,
-                },
-              });
-
-              await tx.challengeGroup.create({
-                data: {
-                  challengeId: systemicChal.id,
-                  groupId: targetGroup.id,
-                },
-              });
-            }
-          }
-        }
+        // Ensure ChallengeGroup link exists for targetChallenge
+        await tx.challengeGroup.upsert({
+          where: {
+            challengeId_groupId: {
+              challengeId: targetChallengeId,
+              groupId: targetGroup.id,
+            },
+          },
+          update: {},
+          create: {
+            challengeId: targetChallengeId,
+            groupId: targetGroup.id,
+          },
+        });
 
         // 4. Save any evidence submitted with this report
         if (data.evidence && data.evidence.length > 0) {
@@ -473,6 +441,8 @@ export class ChallengeService {
           state: data.state || null,
           affectedPopulation: resolvedPopulation,
           durationMonths: data.durationMonths || null,
+          isSystemic: true,
+          systemicSummary: `Possible Root Cause: ${resolution.rootCauses?.[0]?.hypothesis || 'Infrastructure capacity deficit or network blockage'} (Not Yet Government Verified)`,
           version: 1,
         },
       });
@@ -540,71 +510,13 @@ export class ChallengeService {
         },
       });
 
-      // Multi-Root-Cause Hypothesis: 1 Group -> N Challenges (Supported >= 0.65)
-      if (resolution.rootCauses && resolution.rootCauses.length > 0) {
-        for (const rootHyp of resolution.rootCauses.slice(0, 2)) {
-          if (!rootHyp.hypothesis || rootHyp.hypothesis.length < 10) continue;
-          const existingRootChallenge = await tx.challenge.findFirst({
-            where: {
-              category: canonicalCategory,
-              isSystemic: true,
-              deletedAt: null,
-              OR: [
-                { title: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
-                { systemicSummary: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
-              ],
-            },
-          });
-
-          if (existingRootChallenge) {
-            await tx.challengeGroup.upsert({
-              where: {
-                challengeId_groupId: {
-                  challengeId: existingRootChallenge.id,
-                  groupId: group.id,
-                },
-              },
-              update: {},
-              create: {
-                challengeId: existingRootChallenge.id,
-                groupId: group.id,
-              },
-            });
-          } else {
-            const systemicTitle = rootHyp.hypothesis.length > 95
-              ? `${rootHyp.hypothesis.slice(0, 92)}...`
-              : rootHyp.hypothesis;
-
-            const systemicChal = await tx.challenge.create({
-              data: {
-                title: `[Possible Root Cause] ${systemicTitle}`,
-                description: `Possible systemic root cause hypothesis derived from citizen reports in ${data.district || 'the area'}:\n\n${rootHyp.hypothesis}\n\nEvidence base: Incident cluster "${data.title}". Requires municipal engineering audit and field verification.`,
-                category: canonicalCategory,
-                severity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
-                priority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
-                priorityScore: 60.0,
-                status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
-                submitterId,
-                district: data.district || null,
-                state: data.state || null,
-                latitude: data.latitude || null,
-                longitude: data.longitude || null,
-                address: data.address || null,
-                isSystemic: true,
-                systemicSummary: `Possible Root Cause: ${rootHyp.hypothesis} (Not Yet Government Verified)`,
-                version: 1,
-              },
-            });
-
-            await tx.challengeGroup.create({
-              data: {
-                challengeId: systemicChal.id,
-                groupId: group.id,
-              },
-            });
-          }
-        }
-      }
+      // Link ProblemGroup to the newly created Challenge
+      await tx.challengeGroup.create({
+        data: {
+          challengeId: created.id,
+          groupId: group.id,
+        },
+      });
 
       if (data.evidence && data.evidence.length > 0) {
         for (const ev of data.evidence) {

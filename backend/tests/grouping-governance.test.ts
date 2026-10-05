@@ -21,6 +21,7 @@ jest.mock('../src/database/prisma', () => ({
       create: jest.fn(),
       count: jest.fn(),
       deleteMany: jest.fn(),
+      findFirst: jest.fn(),
     },
     challenge: {
       create: jest.fn(),
@@ -163,6 +164,16 @@ describe('Problem Grouping & Governance Memory Test Suite', () => {
       return { count: 1 };
     });
 
+    (prisma.problemGroupMember.findFirst as jest.Mock).mockImplementation(async ({ where }: any) => {
+      for (const m of store.members.values()) {
+        if (where?.problemId && m.problemId !== where.problemId) continue;
+        if (where?.groupId?.not && m.groupId === where.groupId.not) continue;
+        if (where?.groupId && typeof where.groupId === 'string' && m.groupId !== where.groupId) continue;
+        return m;
+      }
+      return null;
+    });
+
     (prisma.challenge.create as jest.Mock).mockImplementation(async ({ data }: any) => {
       const id = data.id || `chal-${Date.now()}-${Math.random()}`;
       const record = { ...data, id, createdAt: new Date(), updatedAt: new Date() };
@@ -224,7 +235,19 @@ describe('Problem Grouping & Governance Memory Test Suite', () => {
 
     (prisma.relationshipGovernanceMemory.findFirst as jest.Mock).mockImplementation(async ({ where }: any) => {
       for (const m of store.governanceMemory.values()) {
-        if (where.sourceEntityId === m.sourceEntityId && where.targetEntityId === m.targetEntityId) {
+        if (where.active !== undefined && m.active !== where.active) continue;
+        if (where.scope && m.scope !== where.scope) continue;
+        if (where.OR) {
+          const matches = where.OR.some(
+            (cond: any) =>
+              (!cond.sourceEntityId || cond.sourceEntityId === m.sourceEntityId) &&
+              (!cond.targetEntityId || cond.targetEntityId === m.targetEntityId)
+          );
+          if (matches) return m;
+        } else if (
+          (!where.sourceEntityId || where.sourceEntityId === m.sourceEntityId) &&
+          (!where.targetEntityId || where.targetEntityId === m.targetEntityId)
+        ) {
           return m;
         }
       }
@@ -232,9 +255,20 @@ describe('Problem Grouping & Governance Memory Test Suite', () => {
     });
 
     (prisma.relationshipGovernanceMemory.findMany as jest.Mock).mockImplementation(async ({ where }: any) => {
-      return Array.from(store.governanceMemory.values()).filter(
-        (m) => m.sourceEntityId === where.sourceEntityId && m.active === where.active
-      );
+      return Array.from(store.governanceMemory.values()).filter((m) => {
+        if (where.active !== undefined && m.active !== where.active) return false;
+        if (where.scope && m.scope !== where.scope) return false;
+        if (where.OR) {
+          return where.OR.some(
+            (cond: any) =>
+              (!cond.sourceEntityId || cond.sourceEntityId === m.sourceEntityId) &&
+              (!cond.targetEntityId || cond.targetEntityId === m.targetEntityId)
+          );
+        }
+        if (where.sourceEntityId && m.sourceEntityId !== where.sourceEntityId) return false;
+        if (where.targetEntityId && m.targetEntityId !== where.targetEntityId) return false;
+        return true;
+      });
     });
 
     (prisma.governmentOverrideLog.create as jest.Mock).mockImplementation(async ({ data }: any) => {
@@ -369,5 +403,74 @@ describe('Problem Grouping & Governance Memory Test Suite', () => {
     );
     expect(memory).toBeDefined();
     expect(memory?.reason).toContain('Separate municipal jurisdiction');
+  });
+
+  it('Anti-Remerge: prevents automated re-attachment of swiped problem to rejected group', async () => {
+    const p1Id = createdProblemIds[0];
+    const originalProblem = store.problems.get(p1Id);
+    expect(originalProblem).toBeDefined();
+
+    // Detach problem from its current group to simulate a re-clustering attempt
+    const currentGroupId = originalProblem.groupId;
+    store.problems.set(p1Id, { ...originalProblem, groupId: null, status: 'SUBMITTED' });
+
+    // Ensure governance memory is active for p1Id <-> createdGroupId
+    const memory = Array.from(store.governanceMemory.values()).find(
+      (m: any) => m.sourceEntityId === p1Id && m.targetEntityId === createdGroupId
+    );
+    expect(memory).toBeDefined();
+    expect(memory?.active).toBe(true);
+
+    // Run automated re-clustering
+    await ProblemGroupingService.evaluateProblemClustering(p1Id);
+
+    // Problem MUST NOT be attached back to createdGroupId
+    const recheckedProblem = store.problems.get(p1Id);
+    expect(recheckedProblem.groupId).not.toBe(createdGroupId);
+  });
+
+  it('Civic Concept Synonyms & Immediate Proximity: merges "drainage issue in my locality" and "gutter overflow"', async () => {
+    // Mathura Problem A
+    const drainageProb = await ProblemGroupingService.submitProblem({
+      title: 'drainage issue in my locality',
+      description: 'Severe water accumulation due to blocked municipal conduit near highway crossing.',
+      category: 'Sanitation & Drainage',
+      district: 'Mathura',
+      latitude: 27.7925414,
+      longitude: 77.4367904,
+      locationName: 'Mathura Bypass',
+      wardNumber: '12',
+    });
+
+    expect(drainageProb).toBeDefined();
+    expect(drainageProb?.groupId).toBeTruthy();
+
+    const groupAId = drainageProb!.groupId!;
+    const groupA = store.groups.get(groupAId);
+    expect(groupA).toBeDefined();
+    expect(groupA?.challengeId).toBeTruthy();
+
+    // Mathura Problem B: nearby (<10m) with different civic phrasing ("gutter overflow")
+    const gutterProb = await ProblemGroupingService.submitProblem({
+      title: 'gutter overflow',
+      description: 'Open sewer water spilling across road from overflowing drain.',
+      category: 'Sanitation & Drainage',
+      district: 'Mathura',
+      latitude: 27.7926000,
+      longitude: 77.4368500,
+      locationName: 'Mathura Bypass',
+      wardNumber: '12',
+    });
+
+    expect(gutterProb).toBeDefined();
+
+    // Because of civic concept synonyms (concept_drainage_conduit, concept_drainage_overflow)
+    // and immediate spatial proximity, gutterProb MUST join groupA and its Challenge!
+    expect(gutterProb?.groupId).toBe(groupAId);
+
+    const challenge = store.challenges.get(groupA.challengeId);
+    expect(challenge).toBeDefined();
+    // Clean civic title, never starting with [Possible Root Cause]
+    expect(challenge?.title).not.toMatch(/^\[Possible Root Cause\]/i);
   });
 });

@@ -379,6 +379,7 @@ export default function ChallengesExplorerPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredChallenges.map((c) => {
               const totalProblems = c.totalCitizenProblems || (c.challengeProblems?.length || 1);
+              const groupCount = (c as any).problemGroups?.length || (c as any).challengeGroups?.length || 1;
               const verified = c.verifiedCount || 0;
               const denied = c.deniedCount || 0;
               const distanceKm =
@@ -386,6 +387,14 @@ export default function ChallengesExplorerPage() {
                 (userCoords && c.latitude != null && c.longitude != null
                   ? computeHaversineKm(userCoords.lat, userCoords.lon, c.latitude, c.longitude)
                   : null);
+
+              const cleanTitle = c.title
+                ? c.title.replace(/^\[Possible Root Cause\]\s*/i, '').replace(/^Alternative Group:\s*/i, '').trim()
+                : 'Civic Investigation';
+
+              const rootCauseText = c.systemicSummary
+                ? c.systemicSummary.replace(/^Possible Root Cause:\s*/i, '').replace(/\s*\(Not Yet Government Verified\)$/i, '').trim()
+                : (c as any).aiAnalysis?.rootCauses?.[0]?.hypothesis || 'Pending investigation';
 
               return (
                 <div
@@ -411,12 +420,22 @@ export default function ChallengesExplorerPage() {
                       </div>
                     </div>
 
-                    {/* AI Title (Prominent Visual Anchor) */}
+                    {/* Civic Investigation Title */}
                     <Link href={`/challenges/${c.id}`} className="block focus:outline-none">
                       <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
-                        {c.title}
+                        {cleanTitle}
                       </h3>
                     </Link>
+
+                    {/* Possible Root Cause Inside Challenge */}
+                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs">
+                      <span className="font-semibold text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
+                        Possible Root Cause
+                      </span>
+                      <p className="line-clamp-2 mt-0.5 font-medium text-slate-800 dark:text-slate-200">
+                        "{rootCauseText}"
+                      </p>
+                    </div>
 
                     {/* Outer Details: Place & Date Submitted */}
                     <div className="space-y-1 text-xs text-slate-500 dark:text-slate-400">
@@ -455,12 +474,18 @@ export default function ChallengesExplorerPage() {
                     </div>
                   </div>
 
-                  {/* Bottom Strip: Grouped Problems Count & Workspace Link */}
+                  {/* Bottom Strip: Groups Count & Citizen Problems Count & Workspace Link */}
                   <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-slate-400" />
-                      {totalProblems} {totalProblems === 1 ? 'citizen problem' : 'citizen problems'}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1">
+                        <Layers className="w-3.5 h-3.5 text-slate-400" />
+                        {groupCount} {groupCount === 1 ? 'group' : 'groups'}
+                      </span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5 text-slate-400" />
+                        {totalProblems} {totalProblems === 1 ? 'citizen problem' : 'citizen problems'}
+                      </span>
+                    </div>
 
                     <Link
                       href={`/challenges/${c.id}`}

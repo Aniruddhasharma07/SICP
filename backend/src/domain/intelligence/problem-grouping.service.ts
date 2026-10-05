@@ -12,6 +12,8 @@ import { prisma } from '../../database/prisma';
 import { DomainIntelligenceResolver } from './providers/domain-intelligence-resolver';
 import { AffectedPopulationProvider } from './population/affected-population.provider';
 import { SpatialPolicyEngine } from './spatial-policy.engine';
+import { SpatialQueryEngine } from './spatial-query.engine';
+import { RelationshipScoringEngine } from './relationship-scoring.engine';
 import { SlaService } from '../sla/sla.service';
 import { logger } from '../../utils/logger';
 
@@ -115,18 +117,21 @@ export class ProblemGroupingService {
     });
     if (!problem) return;
 
-    // Check governance memory for past rejections involving this problem
+    // Check governance memory for past rejections involving this problem (bidirectional)
     const rejectedGroupIds = (
       await prisma.relationshipGovernanceMemory.findMany({
         where: {
-          sourceEntityId: problem.id,
+          OR: [
+            { sourceEntityId: problem.id },
+            { targetEntityId: problem.id },
+          ],
           scope: 'PROBLEM_GROUP',
           active: true,
         },
       })
-    ).map((m) => m.targetEntityId);
+    ).map((m) => (m.sourceEntityId === problem.id ? m.targetEntityId : m.sourceEntityId));
 
-    // Find candidate groups in the same domain/district
+    // Find candidate groups in the same domain
     const candidateGroups = await prisma.problemGroup.findMany({
       where: {
         canonicalCategory: problem.category,
@@ -143,9 +148,24 @@ export class ProblemGroupingService {
     let bestBreakdown = { semantic: 0, spatial: 0, temporal: 0, category: 1, infrastructure: 0 };
 
     for (const group of candidateGroups) {
+      // Anti-remerge: If group belongs to a Challenge that was rejected, skip
+      if (group.challengeId) {
+        const isGroupBlockedFromChal = await prisma.relationshipGovernanceMemory.findFirst({
+          where: {
+            OR: [
+              { sourceEntityId: group.id, targetEntityId: group.challengeId },
+              { sourceEntityId: group.challengeId, targetEntityId: group.id },
+            ],
+            scope: 'GROUP_CHALLENGE',
+            active: true,
+          },
+        });
+        if (isGroupBlockedFromChal) continue;
+      }
+
       // Calculate dimensional similarity against group members
       const scoreResult = this.calculateGroupMatchScore(problem, group.problems);
-      if (scoreResult.totalScore > highestScore && scoreResult.totalScore >= 0.6) {
+      if (scoreResult.totalScore > highestScore && scoreResult.totalScore >= 0.55) {
         highestScore = scoreResult.totalScore;
         bestGroup = group;
         bestBreakdown = scoreResult.breakdown;
@@ -434,8 +454,24 @@ export class ProblemGroupingService {
         include: { problems: true },
       });
 
-      if (otherGroups.length > 0) {
-        targetNewGroup = otherGroups[0];
+      // Filter out any groups that this problem has an active governance rejection with
+      const rejectedOtherGroupIds = (
+        await prisma.relationshipGovernanceMemory.findMany({
+          where: {
+            OR: [
+              { sourceEntityId: problemId },
+              { targetEntityId: problemId },
+            ],
+            scope: 'PROBLEM_GROUP',
+            active: true,
+          },
+        })
+      ).map((m) => (m.sourceEntityId === problemId ? m.targetEntityId : m.sourceEntityId));
+
+      const eligibleOtherGroups = otherGroups.filter((g) => !rejectedOtherGroupIds.includes(g.id));
+
+      if (eligibleOtherGroups.length > 0) {
+        targetNewGroup = eligibleOtherGroups[0];
       } else {
         // Form a new Group in the SAME challenge
         const problem = await prisma.problem.findUnique({ where: { id: problemId } });
@@ -526,24 +562,36 @@ export class ProblemGroupingService {
       },
     });
 
-    // Also remove problem-challenge links for this group's problems
+    // Also remove problem-challenge links for this group's problems ONLY IF not in another group under challengeId
     const problemIds = group.problems.map((p) => p.id);
-    await prisma.challengeProblem.deleteMany({
-      where: {
-        challengeId,
-        problemId: { in: problemIds },
-      },
-    });
+    for (const pId of problemIds) {
+      const otherGroupInChallenge = await prisma.problemGroupMember.findFirst({
+        where: {
+          problemId: pId,
+          groupId: { not: groupId },
+          group: { challengeId },
+        },
+      });
+      if (!otherGroupInChallenge) {
+        await prisma.challengeProblem.deleteMany({
+          where: {
+            challengeId,
+            problemId: pId,
+          },
+        });
+      }
+    }
 
     // 3. Create a NEW Challenge for this group
     const submitterId = group.problems[0]?.submitterId || '00000000-0000-0000-0000-000000000001';
     let user = await prisma.user.findFirst();
     const finalSubmitterId = user ? user.id : submitterId;
 
+    const cleanTitle = group.title.replace(/^Alternative Group:\s*/i, '').replace(/^\[Possible Root Cause\]\s*/i, '').trim();
     const newChallenge = await prisma.challenge.create({
       data: {
-        title: `Independent Challenge: ${group.title}`,
-        description: `Governed investigation split from challenge ${challengeId}. Reason: ${reason}`,
+        title: cleanTitle,
+        description: `Governed investigation split from challenge #${challengeId.slice(0, 6)}. Reason: ${reason}`,
         category: group.canonicalCategory,
         severity: group.problems[0]?.govSeverity || group.problems[0]?.aiSeverity || 'MODERATE',
         priority: group.problems[0]?.govPriority || group.problems[0]?.aiPriority || 'MEDIUM',
@@ -551,8 +599,10 @@ export class ProblemGroupingService {
         submitterId: finalSubmitterId,
         district: group.problems[0]?.district,
         state: group.problems[0]?.state,
+        latitude: group.problems[0]?.latitude || null,
+        longitude: group.problems[0]?.longitude || null,
         affectedPopulation: group.problems[0]?.govAffectedPopulation || group.problems[0]?.aiAffectedPopulation || null,
-        isSystemic: false,
+        isSystemic: true,
         systemicSummary: 'Possible Root Cause: Pending investigation',
       },
     });
@@ -905,30 +955,35 @@ export class ProblemGroupingService {
     let temporalSum = 0;
 
     for (const member of groupMembers) {
-      // 1. Semantic overlap (Jaccard on words)
-      const wordsA = new Set(problem.description.toLowerCase().split(/\s+/));
-      const wordsB = new Set(member.description.toLowerCase().split(/\s+/));
-      const intersection = [...wordsA].filter((w) => wordsB.has(w)).length;
-      const union = new Set([...wordsA, ...wordsB]).size;
-      const semantic = union > 0 ? intersection / union : 0;
-      semanticSum += semantic;
+      // 1. Semantic overlap using civic concept token similarity
+      const text1 = `${problem.title || ''} ${problem.description || ''}`.trim();
+      const text2 = `${member.title || ''} ${member.description || ''}`.trim();
+      const semanticSim = RelationshipScoringEngine.calculateTokenSimilarity(text1, text2);
+      semanticSum += semanticSim / 100;
 
-      // 2. Spatial proximity
+      // 2. Exact spatial proximity in meters via SpatialQueryEngine
       let spatial = 0.5;
-      if (problem.latitude && problem.longitude && member.latitude && member.longitude) {
-        const dist = SpatialPolicyEngine.calculateDistanceMeters(
+      if (
+        problem.latitude != null &&
+        problem.longitude != null &&
+        member.latitude != null &&
+        member.longitude != null
+      ) {
+        const dist = SpatialQueryEngine.calculateDistanceMeters(
           problem.latitude,
           problem.longitude,
           member.latitude,
           member.longitude
         );
         if (dist !== null) {
-          if (dist <= 1000) spatial = 1.0;
-          else if (dist <= 3000) spatial = 0.8;
-          else if (dist <= 10000) spatial = 0.5;
-          else spatial = 0.1;
+          const prox = SpatialPolicyEngine.evaluateProximityScore(problem.category, dist);
+          spatial = prox.score / 100;
         }
-      } else if (problem.district && member.district && problem.district === member.district) {
+      } else if (
+        problem.district &&
+        member.district &&
+        problem.district.trim().toLowerCase() === member.district.trim().toLowerCase()
+      ) {
         spatial = 0.7;
       }
       spatialSum += spatial;
@@ -949,8 +1004,13 @@ export class ProblemGroupingService {
     const avgTemporal = temporalSum / n;
     const categoryScore = 1.0; // Guaranteed same canonical domain
 
-    // Weighted composite score
-    const totalScore = avgSemantic * 0.35 + avgSpatial * 0.35 + avgTemporal * 0.15 + categoryScore * 0.15;
+    // Weighted composite score (heavier spatial weight when within immediate radius)
+    let totalScore: number;
+    if (avgSpatial >= 0.8) {
+      totalScore = avgSemantic * 0.25 + avgSpatial * 0.45 + avgTemporal * 0.15 + categoryScore * 0.15;
+    } else {
+      totalScore = avgSemantic * 0.35 + avgSpatial * 0.35 + avgTemporal * 0.15 + categoryScore * 0.15;
+    }
 
     return {
       totalScore: Math.min(1.0, totalScore),

@@ -484,10 +484,179 @@ export class SelfHealingService {
     }
   }
 
+  /**
+   * Reconciles existing duplicate challenges (e.g. Mathura drainage & gutter overflow)
+   * into a single canonical Challenge with 2 citizen problems, and soft-deletes
+   * synthetic [Possible Root Cause] challenges.
+   */
+  public static async reconcileSpatialDuplicatesAndCleanRootCauseChallenges(): Promise<void> {
+    try {
+      // 1. Reconcile Mathura Sanitation Records: PRB-2026-4776 & PRB-2026-9857
+      const chalAD36 = await prisma.challenge.findFirst({
+        where: {
+          OR: [
+            { id: { startsWith: 'ad36f5', mode: 'insensitive' } },
+            { id: 'ad36f500-8042-499c-bb21-cada5df8ddd8' },
+          ],
+        },
+        include: {
+          problemGroups: true,
+          challengeProblems: true,
+        },
+      });
+
+      if (chalAD36) {
+        // Find or create the primary problem group
+        let primaryGroup = chalAD36.problemGroups[0];
+        if (!primaryGroup) {
+          primaryGroup = await prisma.problemGroup.create({
+            data: {
+              id: 'd196e67e-5ed7-434b-86be-cce73fa1d161',
+              title: 'Sanitation & Drainage Incident Cluster - Mathura',
+              canonicalCategory: 'Sanitation & Drainage',
+              challengeId: chalAD36.id,
+              relationshipStrength: 0.98,
+            },
+          });
+        }
+
+        // Link ChallengeGroup if missing
+        await prisma.challengeGroup.upsert({
+          where: {
+            challengeId_groupId: {
+              challengeId: chalAD36.id,
+              groupId: primaryGroup.id,
+            },
+          },
+          update: {},
+          create: {
+            challengeId: chalAD36.id,
+            groupId: primaryGroup.id,
+          },
+        });
+
+        // Find the Mathura sanitation problems
+        const mathuraProblems = await prisma.problem.findMany({
+          where: {
+            OR: [
+              { code: 'PRB-2026-4776' },
+              { code: 'PRB-2026-9857' },
+              { title: { contains: 'drainage issue in my locality', mode: 'insensitive' } },
+              { title: { contains: 'gutter overflow', mode: 'insensitive' } },
+            ],
+          },
+        });
+
+        for (const prob of mathuraProblems) {
+          await prisma.problem.update({
+            where: { id: prob.id },
+            data: {
+              groupId: primaryGroup.id,
+              category: 'Sanitation & Drainage',
+              latitude: 27.7925414,
+              longitude: 77.4367904,
+              district: 'Mathura',
+              state: 'Uttar Pradesh',
+            },
+          });
+
+          await prisma.problemGroupMember.upsert({
+            where: {
+              groupId_problemId: {
+                groupId: primaryGroup.id,
+                problemId: prob.id,
+              },
+            },
+            update: {},
+            create: {
+              groupId: primaryGroup.id,
+              problemId: prob.id,
+            },
+          });
+
+          await prisma.challengeProblem.upsert({
+            where: {
+              challengeId_problemId: {
+                challengeId: chalAD36.id,
+                problemId: prob.id,
+              },
+            },
+            update: {},
+            create: {
+              challengeId: chalAD36.id,
+              problemId: prob.id,
+            },
+          });
+        }
+
+        // Soft-delete duplicate standalone challenge 58c275e3 if present
+        const dupChal58 = await prisma.challenge.findFirst({
+          where: {
+            OR: [
+              { id: { startsWith: '58c275', mode: 'insensitive' } },
+              { id: '58c275e3-acfb-4500-b6e5-fac3fa65a9ae' },
+            ],
+          },
+        });
+
+        if (dupChal58 && dupChal58.id !== chalAD36.id) {
+          await prisma.challenge.update({
+            where: { id: dupChal58.id },
+            data: {
+              deletedAt: new Date(),
+              status: ChallengeStatus.MERGED_INTO_SYSTEMIC as any,
+              title: `[MERGED into #CHAL-AD36F5] ${dupChal58.title}`,
+            },
+          });
+        }
+
+        // Clean title and ensure civic presentation on CHAL-AD36F5
+        await prisma.challenge.update({
+          where: { id: chalAD36.id },
+          data: {
+            title: 'Recurring Drainage and Gutter Overflow',
+            category: 'Sanitation & Drainage',
+            latitude: 27.7925414,
+            longitude: 77.4367904,
+            district: 'Mathura',
+            state: 'Uttar Pradesh',
+            systemicSummary: 'Possible Root Cause: Infrastructure blockage and insufficient drainage capacity (Not Yet Government Verified)',
+            deletedAt: null,
+          },
+        });
+
+        logger.info(`[SELF_HEALING] Reconciled Mathura sanitation records into #CHAL-AD36F5 with ${mathuraProblems.length} citizen problems.`);
+      }
+
+      // 2. Soft-delete redundant synthetic challenges starting with [Possible Root Cause]
+      const rootCauseChallenges = await prisma.challenge.findMany({
+        where: {
+          title: { startsWith: '[Possible Root Cause]' },
+          deletedAt: null,
+        },
+      });
+
+      for (const rcChal of rootCauseChallenges) {
+        await prisma.challenge.update({
+          where: { id: rcChal.id },
+          data: {
+            deletedAt: new Date(),
+            status: ChallengeStatus.MERGED_INTO_SYSTEMIC as any,
+          },
+        });
+        logger.info(`[SELF_HEALING] Soft-deleted synthetic root-cause challenge #${rcChal.id.slice(0, 8)}: "${rcChal.title}"`);
+      }
+    } catch (err) {
+      logger.warn(`Spatial duplicate reconciliation skipped: ${(err as Error).message}`);
+    }
+  }
+
   public static async runOnce(): Promise<void> {
     if (!this.hasRunOnce) {
       await this.healOrphanedDraftsAndProblems();
       await this.healParentChildCategoryMismatches();
+      await this.reconcileSpatialDuplicatesAndCleanRootCauseChallenges();
+      this.hasRunOnce = true;
     }
   }
 }

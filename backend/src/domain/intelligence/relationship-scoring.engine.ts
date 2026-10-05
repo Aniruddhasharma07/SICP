@@ -46,8 +46,71 @@ export class RelationshipScoringEngine {
     new Set(['HEALTH', 'SANITATION', 'SEWAGE', 'POLLUTION', 'HOSPITAL']),
   ];
 
+  private static readonly CIVIC_CONCEPT_SYNONYMS: Record<string, string> = {
+    // Drainage / Sanitation conduits & networks
+    drain: 'concept_drainage_conduit',
+    drains: 'concept_drainage_conduit',
+    drainage: 'concept_drainage_conduit',
+    gutter: 'concept_drainage_conduit',
+    gutters: 'concept_drainage_conduit',
+    sewer: 'concept_drainage_conduit',
+    sewers: 'concept_drainage_conduit',
+    sewage: 'concept_drainage_conduit',
+    wastewater: 'concept_drainage_conduit',
+    nullah: 'concept_drainage_conduit',
+    nala: 'concept_drainage_conduit',
+    manhole: 'concept_drainage_conduit',
+    culvert: 'concept_drainage_conduit',
+    // Drainage overflow / waterlogging / blockage symptoms
+    overflow: 'concept_drainage_overflow',
+    overflowing: 'concept_drainage_overflow',
+    choked: 'concept_drainage_overflow',
+    clogged: 'concept_drainage_overflow',
+    blocked: 'concept_drainage_overflow',
+    blockage: 'concept_drainage_overflow',
+    waterlogging: 'concept_drainage_overflow',
+    waterlog: 'concept_drainage_overflow',
+    flooding: 'concept_drainage_overflow',
+    inundation: 'concept_drainage_overflow',
+    stagnant: 'concept_drainage_overflow',
+    pooling: 'concept_drainage_overflow',
+    // Road defects & surface
+    pothole: 'concept_road_defect',
+    potholes: 'concept_road_defect',
+    crater: 'concept_road_defect',
+    craters: 'concept_road_defect',
+    broken: 'concept_road_defect',
+    damaged: 'concept_road_defect',
+    subsidence: 'concept_road_defect',
+    rutting: 'concept_road_defect',
+    asphalt: 'concept_road_surface',
+    tar: 'concept_road_surface',
+    pavement: 'concept_road_surface',
+    road: 'concept_road_surface',
+    roads: 'concept_road_surface',
+    street: 'concept_road_surface',
+    // Water supply & scarcity
+    pipeline: 'concept_water_supply',
+    pipe: 'concept_water_supply',
+    tap: 'concept_water_supply',
+    borewell: 'concept_water_supply',
+    tanker: 'concept_water_supply',
+    scarcity: 'concept_water_scarcity',
+    shortage: 'concept_water_scarcity',
+    dry: 'concept_water_scarcity',
+    // Electricity
+    transformer: 'concept_electricity',
+    substation: 'concept_electricity',
+    feeder: 'concept_electricity',
+    pole: 'concept_electricity',
+    wire: 'concept_electricity',
+    blackout: 'concept_power_outage',
+    outage: 'concept_power_outage',
+    spark: 'concept_power_hazard',
+  };
+
   /**
-   * Tokenize text into n-grams (unigrams + bigrams)
+   * Tokenize text into n-grams (unigrams + bigrams) with civic concept expansion
    */
   public static extractTokens(text: string): { unigrams: Set<string>; bigrams: Set<string> } {
     const words = text
@@ -57,6 +120,11 @@ export class RelationshipScoringEngine {
       .filter(w => w.length > 2 && !this.STOP_WORDS.has(w));
 
     const unigrams = new Set(words);
+    for (const w of words) {
+      if (this.CIVIC_CONCEPT_SYNONYMS[w]) {
+        unigrams.add(this.CIVIC_CONCEPT_SYNONYMS[w]);
+      }
+    }
     const bigrams = new Set<string>();
 
     for (let i = 0; i < words.length - 1; i++) {
@@ -391,7 +459,10 @@ export class RelationshipScoringEngine {
     else if (
       locationSimilarity >= 65 &&
       categoryCompatibility >= 70 &&
-      (problemSimilarity >= 60 || (locationSimilarity >= 90 && problemSimilarity >= 45)) &&
+      (problemSimilarity >= 55 ||
+        (locationSimilarity >= 90 && problemSimilarity >= 30) ||
+        (locationSimilarity >= 80 && problemSimilarity >= 40) ||
+        (categoryCompatibility === 100 && locationSimilarity >= 95)) &&
       rootCauseSimilarity >= 25 // Enforce that root causes do not sharply conflict
     ) {
       relationType = RelationshipType.DUPLICATE;
