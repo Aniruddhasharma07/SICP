@@ -641,7 +641,7 @@ export class UniversityService {
    * Get pending registrations for a university
    */
   public static async getPendingRegistrations(universityOrgId: string) {
-    return prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         organizationId: universityOrgId,
         approvalStatus: 'PENDING',
@@ -652,6 +652,7 @@ export class UniversityService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    return users.map(({ passwordHash, ...safeUser }) => safeUser);
   }
 
   /**
