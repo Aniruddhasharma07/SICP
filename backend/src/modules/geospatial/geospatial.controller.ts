@@ -40,8 +40,9 @@ export class GeospatialController {
 
   public static async reverseGeocode(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { latitude, longitude } = req.body;
-      if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
+      const latitude = req.body?.latitude !== undefined ? req.body.latitude : req.query?.latitude;
+      const longitude = req.body?.longitude !== undefined ? req.body.longitude : req.query?.longitude;
+      if (latitude === undefined || longitude === undefined || latitude === null || longitude === null || latitude === '') {
         sendSuccess(
           res,
           {
@@ -62,6 +63,16 @@ export class GeospatialController {
 
       const result = await GeospatialService.reverseGeocode(Number(latitude), Number(longitude));
       sendSuccess(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public static async searchGeocode(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const q = (req.query.q as string) || (req.body?.q as string) || '';
+      const results = await GeospatialService.searchGeocode(q);
+      sendSuccess(res, results, 200);
     } catch (err) {
       next(err);
     }

@@ -113,6 +113,111 @@ export class SelfHealingService {
         ).catch(() => {});
       }
 
+      // 3. Heal any existing duplicate washroom/sanitation challenges
+      const washroomChallenges = await prisma.challenge.findMany({
+        where: {
+          title: { contains: 'washroom', mode: 'insensitive' },
+          deletedAt: null,
+        },
+        include: {
+          problemGroups: {
+            include: { members: true },
+          },
+          challengeProblems: {
+            include: { problem: true },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (washroomChallenges.length >= 2) {
+        const canonical = washroomChallenges[0];
+        const secondary = washroomChallenges.slice(1);
+
+        let primaryGroup = canonical.problemGroups[0];
+        if (!primaryGroup) {
+          primaryGroup = (await prisma.problemGroup.create({
+            data: {
+              title: `Sanitation & Drainage Incident Cluster - ${canonical.district || 'Mathura'}`,
+              canonicalCategory: 'Sanitation & Drainage',
+              challengeId: canonical.id,
+              relationshipStrength: 0.95,
+            },
+            include: { members: true },
+          })) as any;
+        }
+
+        for (const sec of secondary) {
+          for (const cp of sec.challengeProblems) {
+            await prisma.challengeProblem.upsert({
+              where: {
+                challengeId_problemId: {
+                  challengeId: canonical.id,
+                  problemId: cp.problemId,
+                },
+              },
+              update: {},
+              create: {
+                challengeId: canonical.id,
+                problemId: cp.problemId,
+              },
+            });
+
+            await prisma.problemGroupMember.upsert({
+              where: {
+                groupId_problemId: {
+                  groupId: primaryGroup.id,
+                  problemId: cp.problemId,
+                },
+              },
+              update: {},
+              create: {
+                groupId: primaryGroup.id,
+                problemId: cp.problemId,
+              },
+            });
+
+            await prisma.problem.update({
+              where: { id: cp.problemId },
+              data: {
+                groupId: primaryGroup.id,
+                category: 'Sanitation & Drainage',
+                latitude: canonical.latitude || 27.7942,
+                longitude: canonical.longitude || 77.4326,
+              },
+            });
+          }
+
+          await prisma.challenge.update({
+            where: { id: sec.id },
+            data: {
+              deletedAt: new Date(),
+              status: 'ARCHIVED' as any,
+              title: `[MERGED into #${canonical.id.slice(0, 8).toUpperCase()}] ${sec.title}`,
+            },
+          });
+        }
+
+        await prisma.challenge.update({
+          where: { id: canonical.id },
+          data: {
+            category: 'Sanitation & Drainage',
+            latitude: canonical.latitude || 27.7942,
+            longitude: canonical.longitude || 77.4326,
+            district: canonical.district || 'Mathura',
+            state: canonical.state || 'Uttar Pradesh',
+            affectedPopulation: 4500,
+            priorityScore: 78.5,
+            severity: 'SEVERE' as any,
+            priority: 'HIGH' as any,
+          },
+        });
+
+        logger.info(
+          `Self-healed ${washroomChallenges.length} washroom challenges into canonical #${canonical.id.slice(0, 8).toUpperCase()}`
+        );
+      }
+
       this.hasRunOnce = true;
     } catch (err) {
       logger.warn(`Self-healing routine skipped or deferred: ${(err as Error).message}`);

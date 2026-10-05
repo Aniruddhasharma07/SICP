@@ -305,4 +305,64 @@ export class GeospatialService {
       };
     }
   }
+
+  /**
+   * Forward-geocodes search queries (e.g. "Kosi, Mathura", "Kolar Road, Bhopal")
+   * into precise latitude/longitude coordinates with administrative boundary details.
+   */
+  public static async searchGeocode(query: string): Promise<Array<{
+    displayName: string;
+    latitude: number;
+    longitude: number;
+    district: string | null;
+    state: string | null;
+    locality: string | null;
+    postcode: string | null;
+  }>> {
+    const trimmed = (query || '').trim();
+    if (!trimmed || trimmed.length < 2) return [];
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(trimmed)}&addressdetails=1&countrycodes=in&limit=6`;
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'SICP-Civic-Platform/1.0 (civic-support@sicp.gov.in)',
+          'Accept': 'application/json',
+          'Accept-Language': 'en',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) return [];
+
+      const results = (await response.json()) as any[];
+      if (!Array.isArray(results)) return [];
+
+      return results.map((item) => {
+        const addr = item.address || {};
+        const district = addr.state_district || addr.district || addr.county || addr.city || addr.town || null;
+        const state = addr.state || null;
+        const locality = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district || addr.hamlet || null;
+        const postcode = addr.postcode || null;
+
+        return {
+          displayName: item.display_name,
+          latitude: parseFloat(item.lat),
+          longitude: parseFloat(item.lon),
+          district: district ? district.replace(/\s+District$/i, '').trim() : null,
+          state: state ? state.trim() : null,
+          locality: locality ? locality.trim() : null,
+          postcode: postcode ? postcode.trim() : null,
+        };
+      }).filter((item) => !isNaN(item.latitude) && !isNaN(item.longitude));
+    } catch {
+      clearTimeout(timeoutId);
+      return [];
+    }
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AppLayout } from '../../../src/components/layout/AppLayout';
@@ -27,6 +27,7 @@ import {
   Sparkles,
   UploadCloud,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 import { LocationMapPicker } from '../../../src/components/common/LocationMapPicker';
 
@@ -51,6 +52,109 @@ const CITIZEN_CATEGORIES = [
   'General Civic Issue',
 ];
 
+function detectCategoryFromText(titleText: string, descText: string) {
+  const text = `${titleText} ${descText}`.toLowerCase();
+
+  if (
+    /\b(?:public\s+)?(?:washroom|toilet|urinal|latrine|restroom)s?\b/i.test(text) ||
+    /\b(?:sewer|drainage|sewage|open\s+defecation|nallah|gutter|manhole|foul\s+smell)\b/i.test(text)
+  ) {
+    return {
+      category: 'Sanitation & Drainage',
+      extentType: 'PUBLIC_FOOTFALL',
+      estimatedPopulation: 4500,
+      badgeText: '✨ AI Detected: Sanitation & Drainage',
+      reason: 'Public sanitation / washroom facilities — public footfall & locality extent',
+    };
+  }
+  if (
+    /\b(?:drinking\s+)?water\s+(?:supply|shortage|scarcity|pipeline|leak|tanker)\b/i.test(text) ||
+    /\b(?:borewell|handpump|tap\s+water)\b/i.test(text)
+  ) {
+    return {
+      category: 'Water Supply',
+      extentType: 'LOCALITY_RESIDENTS',
+      estimatedPopulation: 3500,
+      badgeText: '✨ AI Detected: Water Supply',
+      reason: 'Water scarcity / distribution — locality households extent',
+    };
+  }
+  if (
+    /\b(?:flood|inundat|waterlogg|submerg)\w*\b/i.test(text) ||
+    /\bwater\s+logged\b/i.test(text)
+  ) {
+    return {
+      category: 'Environment & Waste',
+      extentType: 'VILLAGE_FLOOD_EXPOSED',
+      estimatedPopulation: 1850,
+      badgeText: '✨ AI Detected: Flood & Environment',
+      reason: 'Inundation / flood risk — village & settlement extent',
+    };
+  }
+  if (
+    /\b(?:pothole|road\s+damage|asphalt|highway|flyover|bridge|traffic\s+jam|culvert|divider|footpath)\b/i.test(text)
+  ) {
+    return {
+      category: 'Roads & Transport',
+      extentType: 'ROAD_COMMUTERS',
+      estimatedPopulation: 12500,
+      badgeText: '✨ AI Detected: Roads & Transport',
+      reason: 'Road transit disruption — daily commuter corridor flow',
+    };
+  }
+  if (
+    /\b(?:street\s*light|power\s+cut|transformer|blackout|electric\s+pole)\b/i.test(text)
+  ) {
+    return {
+      category: 'Electricity & Lighting',
+      extentType: 'LOCALITY_RESIDENTS',
+      estimatedPopulation: 2800,
+      badgeText: '✨ AI Detected: Electricity & Lighting',
+      reason: 'Power / lighting outage — locality grid extent',
+    };
+  }
+  if (
+    /\b(?:hospital|health\s+centre|phc|chc|doctor|dengue|malaria)\b/i.test(text)
+  ) {
+    return {
+      category: 'Healthcare & Public Health',
+      extentType: 'LOCALITY_RESIDENTS',
+      estimatedPopulation: 6200,
+      badgeText: '✨ AI Detected: Healthcare & Public Health',
+      reason: 'Healthcare facility / vector outbreak — community extent',
+    };
+  }
+  if (
+    /\b(?:school|classroom|college|student)\b/i.test(text)
+  ) {
+    return {
+      category: 'Education & Schools',
+      extentType: 'LOCALITY_RESIDENTS',
+      estimatedPopulation: 1400,
+      badgeText: '✨ AI Detected: Education & Schools',
+      reason: 'Education facility deficit — student & family extent',
+    };
+  }
+  if (
+    /\b(?:crop|farmer|irrigation|canal)\b/i.test(text)
+  ) {
+    return {
+      category: 'Agriculture & Irrigation',
+      extentType: 'VILLAGE_FLOOD_EXPOSED',
+      estimatedPopulation: 2100,
+      badgeText: '✨ AI Detected: Agriculture & Irrigation',
+      reason: 'Agrarian / canal irrigation deficit — farming community extent',
+    };
+  }
+  return {
+    category: 'General Civic Issue',
+    extentType: 'GENERAL_CIVIC',
+    estimatedPopulation: 1500,
+    badgeText: '✨ AI Classification: General Civic',
+    reason: 'Civic facility issue — local municipal benchmark',
+  };
+}
+
 export default function NewChallengePage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -61,7 +165,8 @@ export default function NewChallengePage() {
   // Step 1: Problem
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Roads & Transport');
+  const [category, setCategory] = useState('Sanitation & Drainage');
+  const [userHasOverriddenCategory, setUserHasOverriddenCategory] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
 
@@ -74,6 +179,19 @@ export default function NewChallengePage() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
+  // Precise Location Search Autocomplete
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{
+    displayName: string;
+    latitude: number;
+    longitude: number;
+    district: string | null;
+    state: string | null;
+    locality: string | null;
+  }>>([]);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+
   // Step 3: Evidence
   const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -82,6 +200,55 @@ export default function NewChallengePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submittedChallenge, setSubmittedChallenge] = useState<{ id: string; title: string } | null>(null);
+
+  // Live AI Category & Population Extent Detection
+  const detectedMeta = useMemo(() => {
+    return detectCategoryFromText(title, description);
+  }, [title, description]);
+
+  useEffect(() => {
+    if (!userHasOverriddenCategory && (title.trim().length >= 3 || description.trim().length >= 5)) {
+      setCategory(detectedMeta.category);
+    }
+  }, [detectedMeta, userHasOverriddenCategory, title, description]);
+
+  // Debounced forward geocoding search for precise manual location
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingLocation(true);
+      try {
+        const res = await apiClient.request<any[]>(`/api/v1/geospatial/search?q=${encodeURIComponent(trimmed)}`);
+        if (res.success && Array.isArray(res.data)) {
+          setSearchResults(res.data);
+          setShowSearchDropdown(res.data.length > 0);
+        }
+      } catch {
+        // Non-fatal
+      } finally {
+        setIsSearchingLocation(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSelectLocationResult = (item: any) => {
+    setLatitude(item.latitude);
+    setLongitude(item.longitude);
+    if (item.district) setDistrict(item.district);
+    if (item.state) setState(item.state);
+    setAddress(item.displayName);
+    setSearchQuery(item.displayName);
+    setShowSearchDropdown(false);
+    setGpsError(null);
+  };
 
   // Speech Recognition (Voice Dictation)
   const toggleRecording = () => {
@@ -226,15 +393,38 @@ export default function NewChallengePage() {
     setIsSubmitting(true);
 
     try {
+      let finalLat = latitude;
+      let finalLng = longitude;
+      let finalDistrict = district.trim() || null;
+      let finalState = state.trim() || null;
+
+      // Ensure coordinates are never null if address/district is present
+      if ((finalLat === null || finalLng === null) && (address.trim() || district.trim())) {
+        const geoQuery = [address.trim(), district.trim(), state.trim(), 'India'].filter(Boolean).join(', ');
+        try {
+          const geoRes = await apiClient.request<any[]>(`/api/v1/geospatial/search?q=${encodeURIComponent(geoQuery)}`);
+          if (geoRes.success && Array.isArray(geoRes.data) && geoRes.data.length > 0) {
+            finalLat = geoRes.data[0].latitude;
+            finalLng = geoRes.data[0].longitude;
+            if (!finalDistrict && geoRes.data[0].district) finalDistrict = geoRes.data[0].district;
+            if (!finalState && geoRes.data[0].state) finalState = geoRes.data[0].state;
+            setLatitude(finalLat);
+            setLongitude(finalLng);
+          }
+        } catch {
+          // non-fatal
+        }
+      }
+
       const payload = {
         title: title.trim(),
         description: description.trim(),
         category,
-        latitude: latitude || null,
-        longitude: longitude || null,
+        latitude: finalLat || null,
+        longitude: finalLng || null,
         address: address.trim() || null,
-        district: district.trim() || null,
-        state: state.trim() || null,
+        district: finalDistrict,
+        state: finalState,
         evidence: evidenceList.map((e) => ({
           originalName: e.name,
           mimeType: e.mimeType,
@@ -489,23 +679,42 @@ export default function NewChallengePage() {
                 </span>
               </div>
 
+              {/* Live AI Category & Population Intelligence Pill */}
+              {detectedMeta && (title.trim().length >= 3 || description.trim().length >= 5) && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 shadow-sm">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                    <span className="font-semibold text-blue-700 dark:text-blue-300">{detectedMeta.badgeText}</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-[11px] truncate">
+                      — {detectedMeta.reason}
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-[11px] bg-blue-100/70 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-mono w-fit">
+                    ~{detectedMeta.estimatedPopulation.toLocaleString()} people benchmark
+                  </Badge>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Sector Category (Optional)
+                  Sector Category (AI Auto-Assigned)
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setUserHasOverriddenCategory(true);
+                  }}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-medium"
                 >
                   {CITIZEN_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat}
+                      {cat} {cat === detectedMeta.category ? '✨ (AI Verified Domain)' : ''}
                     </option>
                   ))}
                 </select>
                 <span className="text-xs text-gray-400 mt-1 block">
-                  Pick the closest area, or leave as default — our AI confirms domain classification automatically.
+                  Automatically classified based on problem description. You can adjust if needed.
                 </span>
               </div>
             </CardContent>
@@ -538,10 +747,66 @@ export default function NewChallengePage() {
             <CardHeader>
               <CardTitle className="text-xl">Where is the problem located?</CardTitle>
               <CardDescription>
-                Provide the location so local authorities and field teams can find it.
+                Provide the precise location so local authorities and field teams can find it.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* Location Autocomplete Search */}
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Search className="w-4 h-4 text-blue-600" />
+                    Search Location (Town, City, Locality, Landmark)
+                  </span>
+                  <span className="text-xs font-normal text-gray-400">
+                    Auto-fills coordinates & administrative boundary
+                  </span>
+                </label>
+                <div className="relative">
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSearchDropdown(true);
+                    }}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setShowSearchDropdown(true);
+                    }}
+                    placeholder="e.g., Kosi, Mathura, Uttar Pradesh or Kolar Road, Bhopal"
+                    className="w-full pl-9 pr-10 text-sm"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  {isSearchingLocation && (
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
+                  )}
+                </div>
+
+                {/* Autocomplete Dropdown */}
+                {showSearchDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-60 overflow-y-auto">
+                    {searchResults.map((item, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectLocationResult(item)}
+                        className="px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer border-b border-gray-100 dark:border-gray-700/60 last:border-b-0 transition-colors"
+                      >
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                          <span className="truncate">{item.displayName}</span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex gap-2">
+                          {item.district && <span>District: {item.district}</span>}
+                          {item.state && <span>• State: {item.state}</span>}
+                          <span className="font-mono text-blue-600 dark:text-blue-400">
+                            ({item.latitude.toFixed(4)}, {item.longitude.toFixed(4)})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   type="button"
@@ -551,7 +816,7 @@ export default function NewChallengePage() {
                 >
                   {gpsLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Locating via GPS...
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Auto-Detecting GPS Location...
                     </>
                   ) : (
                     <>
@@ -560,10 +825,15 @@ export default function NewChallengePage() {
                   )}
                 </Button>
 
-                {latitude && longitude && (
-                  <Badge variant="secondary" className="self-center font-mono text-xs py-1.5 px-3">
+                {latitude && longitude ? (
+                  <Badge variant="secondary" className="self-center font-mono text-xs py-1.5 px-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600 inline" />
                     GPS: {latitude.toFixed(5)}, {longitude.toFixed(5)}
                   </Badge>
+                ) : (
+                  <span className="self-center text-xs text-gray-400 italic">
+                    Coordinates auto-pin upon search or GPS lock.
+                  </span>
                 )}
               </div>
 
@@ -600,7 +870,7 @@ export default function NewChallengePage() {
                   <Input
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    placeholder="e.g., Bhopal, Patna, Jaipur"
+                    placeholder="e.g., Mathura, Bhopal, Patna"
                   />
                 </div>
                 <div>
@@ -610,7 +880,7 @@ export default function NewChallengePage() {
                   <Input
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    placeholder="e.g., Madhya Pradesh, Bihar, Rajasthan"
+                    placeholder="e.g., Uttar Pradesh, Madhya Pradesh"
                   />
                 </div>
               </div>
@@ -622,7 +892,7 @@ export default function NewChallengePage() {
                 <Input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g., Ward 12, near Government High School, Kolar Road"
+                  placeholder="e.g., Kosi, Ward 4, Near Bus Stand"
                 />
               </div>
             </CardContent>
@@ -631,8 +901,22 @@ export default function NewChallengePage() {
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   setErrorMessage(null);
+                  if (latitude === null && (address.trim() || district.trim())) {
+                    const geoQuery = [address.trim(), district.trim(), state.trim(), 'India'].filter(Boolean).join(', ');
+                    try {
+                      const geoRes = await apiClient.request<any[]>(`/api/v1/geospatial/search?q=${encodeURIComponent(geoQuery)}`);
+                      if (geoRes.success && Array.isArray(geoRes.data) && geoRes.data.length > 0) {
+                        setLatitude(geoRes.data[0].latitude);
+                        setLongitude(geoRes.data[0].longitude);
+                        if (!district && geoRes.data[0].district) setDistrict(geoRes.data[0].district);
+                        if (!state && geoRes.data[0].state) setState(geoRes.data[0].state);
+                      }
+                    } catch {
+                      // non-fatal
+                    }
+                  }
                   setCurrentStep(3);
                 }}
                 className="bg-blue-600 hover:bg-blue-700 text-white"

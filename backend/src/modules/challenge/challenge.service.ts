@@ -42,6 +42,8 @@ import { ImpactService } from '../../domain/impact/impact.service';
 import { ChallengeIntelligenceOrchestrator } from '../../domain/intelligence/challenge-intelligence.orchestrator';
 import { SpatialPolicyEngine } from '../../domain/intelligence/spatial-policy.engine';
 import { ProblemGroupingService } from '../../domain/intelligence/problem-grouping.service';
+import { CategoryResolutionEngine } from '../../domain/intelligence/category-resolution.engine';
+import { GeospatialService } from '../geospatial/geospatial.service';
 
 export class ChallengeService {
   public static async create(
@@ -67,13 +69,318 @@ export class ChallengeService {
       );
     }
 
+    // 1. Live Intelligence: Resolve canonical category, problem-type extent, and dynamic population
+    const resolution = CategoryResolutionEngine.resolve(
+      data.title,
+      data.description,
+      data.category,
+      data.affectedPopulation
+    );
+
+    const canonicalCategory = resolution.canonicalCategory;
+    const resolvedSeverity = resolution.severity;
+    const resolvedPriority = resolution.priority;
+    const resolvedPopulation = resolution.estimatedPopulation;
+
+    // 2. Fallback Forward Geocoding: Ensure coordinates are never null if address is entered
+    if ((data.latitude == null || data.longitude == null) && (data.address || data.district)) {
+      const geoQuery = [data.address, data.district, data.state, 'India'].filter(Boolean).join(', ');
+      try {
+        const hits = await GeospatialService.searchGeocode(geoQuery);
+        if (hits && hits.length > 0) {
+          data.latitude = hits[0].latitude;
+          data.longitude = hits[0].longitude;
+          if (!data.district && hits[0].district) data.district = hits[0].district;
+          if (!data.state && hits[0].state) data.state = hits[0].state;
+        }
+      } catch (err) {
+        logger.warn('Forward geocoding lookup failed during challenge creation', {
+          error: (err as Error).message,
+        });
+      }
+    }
+
+    // 3. Duplicate & Problem Group Merging Check
+    const activeCandidates = await prisma.challenge.findMany({
+      where: {
+        status: {
+          in: [
+            ChallengeStatus.SUBMITTED,
+            ChallengeStatus.UNDER_GOV_REVIEW,
+            ChallengeStatus.APPROVED,
+            ChallengeStatus.IN_RESEARCH,
+          ],
+        },
+        deletedAt: null,
+      },
+      include: {
+        problemGroups: {
+          include: {
+            members: true,
+          },
+        },
+      },
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let matchedChallenge: (typeof activeCandidates)[0] | null = null;
+    let highestMatchScore = 0;
+
+    for (const cand of activeCandidates) {
+      // Category compatibility: same canonical or matching domain
+      const candRes = CategoryResolutionEngine.resolve(cand.title, cand.description, cand.category);
+      const isDomainMatch =
+        candRes.domainKey === resolution.domainKey ||
+        cand.category.toLowerCase() === canonicalCategory.toLowerCase();
+
+      if (!isDomainMatch) continue;
+
+      // Geospatial proximity
+      const distKm = DuplicateClusteringService.calculateDistanceKm(
+        data.latitude,
+        data.longitude,
+        cand.latitude,
+        cand.longitude
+      );
+
+      const hasSameDistrict = Boolean(
+        data.district &&
+        cand.district &&
+        data.district.trim().toLowerCase() === cand.district.trim().toLowerCase()
+      );
+
+      const hasSameState = Boolean(
+        data.state &&
+        cand.state &&
+        data.state.trim().toLowerCase() === cand.state.trim().toLowerCase()
+      );
+
+      const addrTokensA = (data.address || '').toLowerCase().split(/[\s,]+/);
+      const addrTokensB = (cand.address || '').toLowerCase().split(/[\s,]+/);
+      const hasSharedLocality = addrTokensA.some(
+        t => t.length > 3 && addrTokensB.includes(t)
+      );
+
+      const isGeoMatch =
+        (distKm !== null && distKm <= 2.5) ||
+        (hasSameDistrict && (hasSameState || !data.state || !cand.state)) ||
+        hasSharedLocality;
+
+      if (!isGeoMatch) continue;
+
+      // Semantic Similarity
+      const titleSim = DuplicateClusteringService.calculateTokenSimilarity(data.title, cand.title);
+      const textSim = DuplicateClusteringService.calculateTokenSimilarity(
+        `${data.title} ${data.description}`,
+        `${cand.title} ${cand.description}`
+      );
+      const semanticScore = Math.max(titleSim, textSim);
+
+      const combinedScore = (distKm !== null && distKm <= 1.0 ? 0.35 : 0.2) + semanticScore * 0.8;
+      if (
+        semanticScore >= 0.38 ||
+        (semanticScore >= 0.25 && distKm !== null && distKm <= 1.0) ||
+        (semanticScore >= 0.28 && hasSharedLocality)
+      ) {
+        if (combinedScore > highestMatchScore) {
+          highestMatchScore = combinedScore;
+          matchedChallenge = cand;
+        }
+      }
+    }
+
+    // Branch A: Merging into Existing Challenge
+    if (matchedChallenge) {
+      let createdProblemId: string | null = null;
+      const targetChallengeId = matchedChallenge.id;
+
+      const mergedChallenge = await prisma.$transaction(async tx => {
+        // 1. Create the Citizen Problem record so citizen's report is preserved in full
+        const code = `PRB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const problem = await tx.problem.create({
+          data: {
+            code,
+            title: data.title,
+            description: data.description,
+            category: canonicalCategory,
+            status: 'CHALLENGE_CREATED',
+            latitude: data.latitude || matchedChallenge.latitude,
+            longitude: data.longitude || matchedChallenge.longitude,
+            locationName: data.address || matchedChallenge.address,
+            district: data.district || matchedChallenge.district,
+            state: data.state || matchedChallenge.state,
+            submitterId,
+            aiSeverity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
+            aiPriority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
+            aiAffectedPopulation: resolvedPopulation,
+            populationStatus: 'KNOWN',
+            populationProvenance: resolution.populationProvenance,
+          },
+        });
+        createdProblemId = problem.id;
+
+        // 2. Link Problem to matched Challenge
+        await tx.challengeProblem.upsert({
+          where: {
+            challengeId_problemId: {
+              challengeId: targetChallengeId,
+              problemId: problem.id,
+            },
+          },
+          update: {},
+          create: {
+            challengeId: targetChallengeId,
+            problemId: problem.id,
+          },
+        });
+
+        // 3. Find or Create ProblemGroup in matchedChallenge
+        let targetGroup = await tx.problemGroup.findFirst({
+          where: { challengeId: targetChallengeId },
+          orderBy: { createdAt: 'asc' },
+        });
+
+        if (!targetGroup) {
+          targetGroup = await tx.problemGroup.create({
+            data: {
+              title: `${canonicalCategory} Incident Cluster - ${matchedChallenge.district || 'Regional'}`,
+              canonicalCategory,
+              challengeId: targetChallengeId,
+              relationshipStrength: 0.95,
+            },
+          });
+        }
+
+        // Add problem to this ProblemGroup
+        await tx.problemGroupMember.create({
+          data: {
+            groupId: targetGroup.id,
+            problemId: problem.id,
+          },
+        });
+
+        await tx.problem.update({
+          where: { id: problem.id },
+          data: { groupId: targetGroup.id },
+        });
+
+        // 4. Save any evidence submitted with this report
+        if (data.evidence && data.evidence.length > 0) {
+          for (const ev of data.evidence) {
+            const fileKey = ev.fileKey || `evidence_${targetChallengeId}_${Date.now()}_${ev.originalName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            await tx.challengeEvidence.create({
+              data: {
+                challengeId: targetChallengeId,
+                fileKey,
+                originalName: ev.originalName,
+                mimeType: ev.mimeType,
+                sizeBytes: ev.sizeBytes || (ev.base64Data ? Math.round(ev.base64Data.length * 0.75) : 1024),
+                storageBucket: ev.storageBucket || 'challenge-evidence',
+                uploadedById: submitterId,
+              },
+            });
+          }
+        }
+
+        // 5. Count total citizen problems linked to this challenge
+        const totalProblems = await tx.challengeProblem.count({
+          where: { challengeId: targetChallengeId },
+        });
+
+        // 6. Recalculate priority score with updated problem count and population
+        const updatedPopulation = Math.max(
+          matchedChallenge.affectedPopulation || 0,
+          resolvedPopulation
+        );
+
+        const recomputedPriority = PriorityEngine.calculate({
+          severity: matchedChallenge.severity as SeverityLevel,
+          urgency: matchedChallenge.priority as PriorityLevel,
+          affectedPopulation: updatedPopulation,
+          durationMonths: matchedChallenge.durationMonths || 1,
+          communityVotesCount: totalProblems,
+          evidenceCount: 1,
+        });
+
+        // 7. Update matchedChallenge (heal category and coordinates if previously missing)
+        const updated = await tx.challenge.update({
+          where: { id: targetChallengeId },
+          data: {
+            category: canonicalCategory,
+            affectedPopulation: updatedPopulation,
+            priorityScore: recomputedPriority.score,
+            latitude: matchedChallenge.latitude || data.latitude,
+            longitude: matchedChallenge.longitude || data.longitude,
+            version: { increment: 1 },
+          },
+        });
+
+        // 8. Add timeline entry
+        await tx.challengeTimeline.create({
+          data: {
+            challengeId: targetChallengeId,
+            fromStatus: matchedChallenge.status,
+            toStatus: matchedChallenge.status,
+            actorId: submitterId,
+            reason: `Merged citizen report: "${data.title}" consolidated into Problem Group`,
+          },
+        });
+
+        return updated;
+      });
+
+      // Record audit
+      await AuditService.record({
+        actorId: submitterId,
+        action: AuditAction.CHALLENGE_UPDATE,
+        resource: 'Challenge',
+        resourceId: targetChallengeId,
+        newState: {
+          mergedProblemId: createdProblemId,
+          mergedProblemTitle: data.title,
+          challengeId: targetChallengeId,
+        },
+        requestId: context.requestId,
+        ipAddress: context.ipAddress,
+      });
+
+      return {
+        id: mergedChallenge.id,
+        title: mergedChallenge.title,
+        description: mergedChallenge.description,
+        category: mergedChallenge.category,
+        severity: mergedChallenge.severity as unknown as SeverityLevel,
+        priority: mergedChallenge.priority as unknown as PriorityLevel,
+        priorityScore: mergedChallenge.priorityScore,
+        status: mergedChallenge.status as unknown as ChallengeStatus,
+        submitterId: mergedChallenge.submitterId,
+        submitterOrgId: mergedChallenge.submitterOrgId,
+        latitude: mergedChallenge.latitude,
+        longitude: mergedChallenge.longitude,
+        address: mergedChallenge.address,
+        district: mergedChallenge.district,
+        state: mergedChallenge.state,
+        affectedPopulation: mergedChallenge.affectedPopulation,
+        durationMonths: mergedChallenge.durationMonths,
+        isSystemic: mergedChallenge.isSystemic,
+        systemicSummary: mergedChallenge.systemicSummary,
+        version: mergedChallenge.version,
+        createdAt: mergedChallenge.createdAt.toISOString(),
+        updatedAt: mergedChallenge.updatedAt.toISOString(),
+        problemId: createdProblemId || undefined,
+        isMerged: true,
+      } as any;
+    }
+
+    // Branch B: New Challenge Creation (No Duplicate Found)
     const priorityCalc = PriorityEngine.calculate({
-      severity: data.severity,
-      urgency: data.priority,
-      affectedPopulation: data.affectedPopulation,
-      durationMonths: data.durationMonths,
+      severity: resolvedSeverity,
+      urgency: resolvedPriority,
+      affectedPopulation: resolvedPopulation,
+      durationMonths: data.durationMonths || 1,
       communityVotesCount: 0,
-      evidenceCount: 0,
+      evidenceCount: (data.evidence || []).length,
     });
 
     let createdProblemId: string | null = null;
@@ -82,9 +389,9 @@ export class ChallengeService {
         data: {
           title: data.title,
           description: data.description,
-          category: data.category,
-          severity: data.severity as unknown as import('@prisma/client').$Enums.SeverityLevel,
-          priority: data.priority as unknown as import('@prisma/client').$Enums.PriorityLevel,
+          category: canonicalCategory,
+          severity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
+          priority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
           priorityScore: priorityCalc.score,
           status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
           submitterId,
@@ -94,7 +401,7 @@ export class ChallengeService {
           address: data.address || null,
           district: data.district || null,
           state: data.state || null,
-          affectedPopulation: data.affectedPopulation || null,
+          affectedPopulation: resolvedPopulation,
           durationMonths: data.durationMonths || null,
           version: 1,
         },
@@ -117,7 +424,7 @@ export class ChallengeService {
           code,
           title: data.title,
           description: data.description,
-          category: data.category,
+          category: canonicalCategory,
           status: 'CHALLENGE_CREATED',
           latitude: data.latitude || null,
           longitude: data.longitude || null,
@@ -125,9 +432,11 @@ export class ChallengeService {
           district: data.district || null,
           state: data.state || null,
           submitterId,
-          aiSeverity: (data.severity as any) || SeverityLevel.MODERATE,
-          aiPriority: (data.priority as any) || PriorityLevel.MEDIUM,
-          aiAffectedPopulation: data.affectedPopulation || null,
+          aiSeverity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
+          aiPriority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
+          aiAffectedPopulation: resolvedPopulation,
+          populationStatus: 'KNOWN',
+          populationProvenance: resolution.populationProvenance,
         },
       });
       createdProblemId = problem.id;
@@ -135,10 +444,10 @@ export class ChallengeService {
       // Create Problem Group and link
       const group = await tx.problemGroup.create({
         data: {
-          title: `${data.category} Incident Cluster - ${data.district || 'Regional'}`,
-          canonicalCategory: data.category,
+          title: `${canonicalCategory} Incident Cluster - ${data.district || 'Regional'}`,
+          canonicalCategory,
           challengeId: created.id,
-          relationshipStrength: 0.85,
+          relationshipStrength: 0.95,
         },
       });
 
