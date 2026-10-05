@@ -132,7 +132,7 @@ export default function LoginPage() {
 
   const [selectedPortal, setSelectedPortal] = useState<PortalKey>('citizen');
   const [email, setEmail] = useState('citizen@sicp.gov.in');
-  const [password, setPassword] = useState('Password@123');
+  const [password, setPassword] = useState('SICP@2026!secure');
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +141,7 @@ export default function LoginPage() {
   const handleSelectPreset = (preset: PortalPreset) => {
     setSelectedPortal(preset.key);
     setEmail(preset.email);
-    setPassword('Password@123');
+    setPassword('SICP@2026!secure');
     setError(null);
     setInfoMessage(null);
   };
@@ -369,9 +369,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                  <span>Development Password:</span>
+                  <span>Platform Secure Password:</span>
                   <span className="font-mono font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                    Password@123
+                    SICP@2026!secure
                   </span>
                 </div>
               </div>
@@ -404,6 +404,63 @@ export default function LoginPage() {
                 <Link href="/register" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
                   Register here
                 </Link>
+              </div>
+
+              {/* Quick Persona Fill */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 w-full space-y-1.5 text-center">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                  Quick University & Pilot Personas
+                </span>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('admin@gla.ac.in');
+                      setPassword('SICP@2026!secure');
+                      setSelectedPortal('university');
+                      setError(null);
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-700 dark:text-slate-300 hover:text-indigo-600 border border-slate-200 dark:border-slate-700 transition-colors"
+                  >
+                    GLA Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('arun.sharma@gla.ac.in');
+                      setPassword('SICP@2026!secure');
+                      setSelectedPortal('university');
+                      setError(null);
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-700 dark:text-slate-300 hover:text-indigo-600 border border-slate-200 dark:border-slate-700 transition-colors"
+                  >
+                    GLA Faculty
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('rahul.verma@gla.ac.in');
+                      setPassword('SICP@2026!secure');
+                      setSelectedPortal('university');
+                      setError(null);
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-700 dark:text-slate-300 hover:text-indigo-600 border border-slate-200 dark:border-slate-700 transition-colors"
+                  >
+                    GLA Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('anil.tiwari@gmail.com');
+                      setPassword('SICP@2026!secure');
+                      setSelectedPortal('citizen');
+                      setError(null);
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 hover:text-blue-600 border border-slate-200 dark:border-slate-700 transition-colors"
+                  >
+                    Citizen (Mathura)
+                  </button>
+                </div>
               </div>
             </CardFooter>
           </form>

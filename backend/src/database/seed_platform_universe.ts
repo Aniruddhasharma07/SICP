@@ -268,7 +268,71 @@ export async function seedPlatformUniverse() {
       isActive: true,
       emailVerified: true,
     },
-    update: {},
+    update: { passwordHash: defaultPassword, isActive: true },
+  });
+
+  // Canonical Persona Accounts (Aligned with Portal Presets)
+  await prisma.user.upsert({
+    where: { email: 'citizen@sicp.gov.in' },
+    create: {
+      id: 'usr-preset-citizen',
+      fullName: 'Aarav Sharma (Citizen)',
+      email: 'citizen@sicp.gov.in',
+      passwordHash: defaultPassword,
+      role: 'CITIZEN',
+      approvalStatus: 'APPROVED',
+      isActive: true,
+      emailVerified: true,
+    },
+    update: { passwordHash: defaultPassword, isActive: true },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'officer@sicp.gov.in' },
+    create: {
+      id: 'usr-preset-officer',
+      fullName: 'Sandeep Roy (Municipal Triage Officer)',
+      email: 'officer@sicp.gov.in',
+      passwordHash: defaultPassword,
+      role: 'GOVERNMENT_OFFICER',
+      organizationId: mmc.id,
+      approvalStatus: 'APPROVED',
+      isActive: true,
+      emailVerified: true,
+    },
+    update: { passwordHash: defaultPassword, isActive: true },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'university@sicp.gov.in' },
+    create: {
+      id: 'usr-preset-univ',
+      fullName: 'Dr. Sunita Bansal (University R&D Admin)',
+      email: 'university@sicp.gov.in',
+      passwordHash: defaultPassword,
+      role: 'UNIVERSITY_ADMIN',
+      organizationId: gla.id,
+      approvalStatus: 'APPROVED',
+      isActive: true,
+      emailVerified: true,
+    },
+    update: { passwordHash: defaultPassword, isActive: true },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'industry@sicp.gov.in' },
+    create: {
+      id: 'usr-preset-industry',
+      fullName: 'Vikram Malhotra (CSR & Industry Partner)',
+      email: 'industry@sicp.gov.in',
+      passwordHash: defaultPassword,
+      role: 'CSR_ORGANIZATION',
+      organizationId: cleanGrid.id,
+      approvalStatus: 'APPROVED',
+      isActive: true,
+      emailVerified: true,
+    },
+    update: { passwordHash: defaultPassword, isActive: true },
   });
 
   // Government Officers
