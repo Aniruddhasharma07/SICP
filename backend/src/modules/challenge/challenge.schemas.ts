@@ -66,13 +66,13 @@ export const mergeSystemicSchema = z.object({
 });
 
 export const analyzeChallengeSchema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters').max(200),
-  description: z.string().min(20, 'Description must be at least 20 characters'),
-  category: z.string().min(2, 'Category is required'),
-  district: z.string().optional(),
-  state: z.string().optional(),
-  affectedPopulation: z.number().int().min(0).optional(),
-  durationMonths: z.number().int().min(0).optional(),
+  title: z.string().min(3, 'Title must be at least 3 characters').max(200),
+  description: z.string().optional().default(''),
+  category: z.string().optional().default('General'),
+  district: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  affectedPopulation: z.number().int().min(0).optional().nullable(),
+  durationMonths: z.number().int().min(0).optional().nullable(),
   transcribedAudio: z.string().optional().nullable(),
   audioData: z.string().optional().nullable(),
   audioMimeType: z.string().optional().nullable(),

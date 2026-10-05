@@ -52,107 +52,17 @@ const CITIZEN_CATEGORIES = [
   'General Civic Issue',
 ];
 
-function detectCategoryFromText(titleText: string, descText: string) {
+function getInitialCategoryFallback(titleText: string, descText: string): string {
   const text = `${titleText} ${descText}`.toLowerCase();
-
-  if (
-    /\b(?:public\s+)?(?:washroom|toilet|urinal|latrine|restroom)s?\b/i.test(text) ||
-    /\b(?:sewer|drainage|sewage|open\s+defecation|nallah|gutter|manhole|foul\s+smell)\b/i.test(text)
-  ) {
-    return {
-      category: 'Sanitation & Drainage',
-      extentType: 'PUBLIC_FOOTFALL',
-      estimatedPopulation: 4500,
-      badgeText: '✨ AI Detected: Sanitation & Drainage',
-      reason: 'Public sanitation / washroom facilities — public footfall & locality extent',
-    };
-  }
-  if (
-    /\b(?:drinking\s+)?water\s+(?:supply|shortage|scarcity|pipeline|leak|tanker)\b/i.test(text) ||
-    /\b(?:borewell|handpump|tap\s+water)\b/i.test(text)
-  ) {
-    return {
-      category: 'Water Supply',
-      extentType: 'LOCALITY_RESIDENTS',
-      estimatedPopulation: 3500,
-      badgeText: '✨ AI Detected: Water Supply',
-      reason: 'Water scarcity / distribution — locality households extent',
-    };
-  }
-  if (
-    /\b(?:flood|inundat|waterlogg|submerg)\w*\b/i.test(text) ||
-    /\bwater\s+logged\b/i.test(text)
-  ) {
-    return {
-      category: 'Environment & Waste',
-      extentType: 'VILLAGE_FLOOD_EXPOSED',
-      estimatedPopulation: 1850,
-      badgeText: '✨ AI Detected: Flood & Environment',
-      reason: 'Inundation / flood risk — village & settlement extent',
-    };
-  }
-  if (
-    /\b(?:pothole|road\s+damage|asphalt|highway|flyover|bridge|traffic\s+jam|culvert|divider|footpath)\b/i.test(text)
-  ) {
-    return {
-      category: 'Roads & Transport',
-      extentType: 'ROAD_COMMUTERS',
-      estimatedPopulation: 12500,
-      badgeText: '✨ AI Detected: Roads & Transport',
-      reason: 'Road transit disruption — daily commuter corridor flow',
-    };
-  }
-  if (
-    /\b(?:street\s*light|power\s+cut|transformer|blackout|electric\s+pole)\b/i.test(text)
-  ) {
-    return {
-      category: 'Electricity & Lighting',
-      extentType: 'LOCALITY_RESIDENTS',
-      estimatedPopulation: 2800,
-      badgeText: '✨ AI Detected: Electricity & Lighting',
-      reason: 'Power / lighting outage — locality grid extent',
-    };
-  }
-  if (
-    /\b(?:hospital|health\s+centre|phc|chc|doctor|dengue|malaria)\b/i.test(text)
-  ) {
-    return {
-      category: 'Healthcare & Public Health',
-      extentType: 'LOCALITY_RESIDENTS',
-      estimatedPopulation: 6200,
-      badgeText: '✨ AI Detected: Healthcare & Public Health',
-      reason: 'Healthcare facility / vector outbreak — community extent',
-    };
-  }
-  if (
-    /\b(?:education|educational|school|schools|classroom|college|students?|teachers?|university|coaching|tuition|learning|anganwadi)\b/i.test(text)
-  ) {
-    return {
-      category: 'Education & Schools',
-      extentType: 'LOCALITY_RESIDENTS',
-      estimatedPopulation: 2500,
-      badgeText: '✨ AI Detected: Education & Schools',
-      reason: 'Educational institution deficit — student, child & family locality extent',
-    };
-  }
-  if (
-    /\b(?:crop|farmer|irrigation|canal)\b/i.test(text)
-  ) {
-    return {
-      category: 'Agriculture & Irrigation',
-      extentType: 'VILLAGE_FLOOD_EXPOSED',
-      estimatedPopulation: 2100,
-      badgeText: '✨ AI Detected: Agriculture & Irrigation',
-      reason: 'Agrarian / canal irrigation deficit — farming community extent',
-    };
-  }
-  return {
-    category: 'General Civic Issue',
-    extentType: 'GENERAL_CIVIC',
-    estimatedPopulation: 1500,
-    badgeText: '✨ AI Classification: General Civic',
-    reason: 'Civic facility issue — local municipal benchmark',
-  };
+  if (/\b(?:hospital|clinic|phc|chc|healthcare|health|doctor|medical|dispensary|ambulance)\b/i.test(text)) return 'Healthcare & Public Health';
+  if (/\b(?:school|college|education|teacher|student|classroom|university|tuition)\b/i.test(text)) return 'Education & Schools';
+  if (/\b(?:water|drinking|borewell|pipeline|tap|leak|scarcity)\b/i.test(text)) return 'Water Supply';
+  if (/\b(?:washroom|toilet|sewage|sewer|drainage|sanitation|gutter|nallah)\b/i.test(text)) return 'Sanitation & Drainage';
+  if (/\b(?:road|pothole|traffic|highway|bridge|asphalt|flyover|footpath)\b/i.test(text)) return 'Roads & Transport';
+  if (/\b(?:electricity|power|transformer|streetlight|blackout|voltage)\b/i.test(text)) return 'Electricity & Lighting';
+  if (/\b(?:flood|inundat|waterlog|waste|garbage|pollution)\b/i.test(text)) return 'Environment & Waste';
+  if (/\b(?:crop|farmer|irrigation|canal|farm|harvest)\b/i.test(text)) return 'Agriculture & Irrigation';
+  return 'General Civic Issue';
 }
 
 export default function NewChallengePage() {
@@ -201,16 +111,70 @@ export default function NewChallengePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submittedChallenge, setSubmittedChallenge] = useState<{ id: string; title: string } | null>(null);
 
-  // Live AI Category & Population Extent Detection
-  const detectedMeta = useMemo(() => {
-    return detectCategoryFromText(title, description);
-  }, [title, description]);
+  // Real Gemini AI Analysis State
+  const [aiStatus, setAiStatus] = useState<'IDLE' | 'ANALYZING' | 'RESOLVED'>('IDLE');
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<{
+    category: string;
+    confidenceScore: number;
+    normalizedStatement?: string;
+    reasoningSummary?: string;
+    rootCauses?: string[];
+  } | null>(null);
+  const [showWhyClassification, setShowWhyClassification] = useState(false);
 
+  // Debounced real Gemini AI call
   useEffect(() => {
-    if (!userHasOverriddenCategory && (title.trim().length >= 3 || description.trim().length >= 5)) {
-      setCategory(detectedMeta.category);
+    const trimmedTitle = title.trim();
+    const trimmedDesc = description.trim();
+    if (trimmedTitle.length < 3 && trimmedDesc.length < 5) {
+      setAiStatus('IDLE');
+      setAiAnalysisResult(null);
+      return;
     }
-  }, [detectedMeta, userHasOverriddenCategory, title, description]);
+
+    setAiStatus('ANALYZING');
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiClient.request<any>('/api/v1/challenges/analyze', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: trimmedTitle || 'Civic Problem',
+            description: trimmedDesc || '',
+            category: 'General',
+          }),
+        });
+
+        if (res.success && res.data) {
+          const canonical = res.data.category || 'General Civic Issue';
+          const conf = typeof res.data.confidenceScore === 'number' ? res.data.confidenceScore : 0.85;
+
+          setAiAnalysisResult({
+            category: canonical,
+            confidenceScore: conf,
+            normalizedStatement: res.data.normalizedStatement,
+            reasoningSummary: res.data.reasoningSummary,
+            rootCauses: res.data.rootCauseHypotheses || [],
+          });
+          setAiStatus('RESOLVED');
+
+          if (!userHasOverriddenCategory && canonical) {
+            setCategory(canonical);
+          }
+        } else {
+          const fallbackCat = getInitialCategoryFallback(trimmedTitle, trimmedDesc);
+          if (!userHasOverriddenCategory) setCategory(fallbackCat);
+          setAiStatus('IDLE');
+        }
+      } catch {
+        const fallbackCat = getInitialCategoryFallback(trimmedTitle, trimmedDesc);
+        if (!userHasOverriddenCategory) setCategory(fallbackCat);
+        setAiStatus('IDLE');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [title, description, userHasOverriddenCategory]);
 
   // Debounced forward geocoding search for precise manual location
   useEffect(() => {
@@ -312,64 +276,38 @@ export default function NewChallengePage() {
     setGpsError(null);
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const lat = Number(pos.coords.latitude.toFixed(6));
         const lng = Number(pos.coords.longitude.toFixed(6));
         setLatitude(lat);
         setLongitude(lng);
-        setGpsLoading(false);
 
-        // Immediate reverse geocode lookup
-        const doReverseLookup = async () => {
-          try {
-            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&addressdetails=1`;
-            const r = await fetch(url, {
-              headers: { Accept: 'application/json', 'Accept-Language': 'en' },
-            });
-            if (r.ok) {
-              const geoJson = await r.json();
-              const addr = geoJson.address || {};
-              const dist =
-                addr.state_district ||
-                addr.district ||
-                addr.county ||
-                addr.city ||
-                addr.town ||
-                '';
-              const st = addr.state || '';
-              const loc =
-                addr.suburb ||
-                addr.neighbourhood ||
-                addr.village ||
-                addr.town ||
-                addr.city_district ||
-                addr.road ||
-                '';
-              const fullAddr = geoJson.display_name || '';
+        try {
+          const res = await apiClient.request<any>(
+            `/api/v1/geospatial/reverse-geocode?latitude=${lat}&longitude=${lng}`
+          );
 
-              if (dist) setDistrict(dist.replace(/\s+District$/i, '').trim());
-              if (st) setState(st.trim());
-              setAddress(fullAddr || [loc, dist, st].filter(Boolean).join(', '));
-              return;
-            }
-          } catch {
-            // Fallback to backend API
+          if (res.success && res.data) {
+            const data = res.data;
+            if (data.district) setDistrict(data.district.replace(/\s+District$/i, '').trim());
+            if (data.state) setState(data.state.trim());
+
+            const resolvedAddr = data.formattedAddress || [data.locality, data.district, data.state].filter(Boolean).join(', ');
+            const finalAddr = resolvedAddr || `Coordinates: ${lat}, ${lng}`;
+            setAddress(finalAddr);
+            setSearchQuery(finalAddr);
+          } else {
+            const fallbackAddr = `GPS Coordinates: ${lat}, ${lng}`;
+            setAddress(fallbackAddr);
+            setSearchQuery(fallbackAddr);
           }
-
-          apiClient
-            .request<any>(`/api/v1/geospatial/reverse-geocode?latitude=${lat}&longitude=${lng}`)
-            .then((res) => {
-              if (res.data) {
-                if (res.data.district) setDistrict(res.data.district);
-                if (res.data.state) setState(res.data.state);
-                const full = res.data.formattedAddress || res.data.displayName || res.data.locality;
-                if (full) setAddress(full);
-              }
-            })
-            .catch(() => {});
-        };
-
-        doReverseLookup();
+        } catch {
+          const fallbackAddr = `GPS Coordinates: ${lat}, ${lng}`;
+          setAddress(fallbackAddr);
+          setSearchQuery(fallbackAddr);
+        } finally {
+          setGpsLoading(false);
+        }
       },
       (err) => {
         setGpsLoading(false);
@@ -463,6 +401,7 @@ export default function NewChallengePage() {
         address: address.trim() || null,
         district: finalDistrict,
         state: finalState,
+        aiAnalysisResult: aiAnalysisResult || undefined,
         evidence: evidenceList.map((e) => ({
           originalName: e.name,
           mimeType: e.mimeType,
@@ -717,19 +656,49 @@ export default function NewChallengePage() {
                 </span>
               </div>
 
-              {/* Live AI Category & Population Intelligence Pill */}
-              {detectedMeta && (title.trim().length >= 3 || description.trim().length >= 5) && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 shadow-sm">
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    <span className="font-semibold text-blue-700 dark:text-blue-300">{detectedMeta.badgeText}</span>
-                    <span className="text-gray-500 dark:text-gray-400 text-[11px] truncate">
-                      — {detectedMeta.reason}
-                    </span>
+              {/* Real-time Gemini AI Categorization Status & Confidence */}
+              {aiStatus === 'ANALYZING' && (
+                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400 animate-pulse">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                  <span>Analyzing problem statement with Gemini intelligence...</span>
+                </div>
+              )}
+
+              {aiStatus === 'RESOLVED' && aiAnalysisResult && (
+                <div className="rounded-lg border border-blue-100 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 p-3 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">
+                        Category: {aiAnalysisResult.category}
+                      </span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+                        {aiAnalysisResult.confidenceScore >= 0.85 ? 'High confidence' : 'Moderate confidence'} ({Math.round(aiAnalysisResult.confidenceScore * 100)}%)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowWhyClassification(!showWhyClassification)}
+                      className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-[11px] font-medium"
+                    >
+                      <span>{showWhyClassification ? 'Hide explanation' : 'Why this classification?'}</span>
+                      <ChevronRight className={`w-3 h-3 transition-transform ${showWhyClassification ? 'rotate-90' : ''}`} />
+                    </button>
                   </div>
-                  <Badge variant="outline" className="text-[11px] bg-blue-100/70 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-mono w-fit">
-                    ~{detectedMeta.estimatedPopulation.toLocaleString()} people benchmark
-                  </Badge>
+
+                  {showWhyClassification && (
+                    <div className="pt-2 border-t border-blue-100 dark:border-blue-900/40 text-slate-600 dark:text-slate-400 space-y-1 text-[11.5px] leading-relaxed">
+                      {aiAnalysisResult.normalizedStatement && (
+                        <p><strong className="text-slate-700 dark:text-slate-300">Technical definition:</strong> {aiAnalysisResult.normalizedStatement}</p>
+                      )}
+                      {aiAnalysisResult.reasoningSummary && (
+                        <p><strong className="text-slate-700 dark:text-slate-300">Reasoning:</strong> {aiAnalysisResult.reasoningSummary}</p>
+                      )}
+                      <p className="text-[11px] text-slate-500 dark:text-slate-500 pt-0.5">
+                        Population impact: <em>Unavailable (requires municipal census or citizen report)</em>
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -747,7 +716,7 @@ export default function NewChallengePage() {
                 >
                   {CITIZEN_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat} {cat === detectedMeta.category ? '✨ (AI Verified Domain)' : ''}
+                      {cat} {aiAnalysisResult && cat === aiAnalysisResult.category ? ' (AI Suggested)' : ''}
                     </option>
                   ))}
                 </select>

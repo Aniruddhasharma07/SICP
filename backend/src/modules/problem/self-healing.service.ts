@@ -2,6 +2,7 @@ import { prisma } from '../../database/prisma';
 import { SlaService } from '../../domain/sla/sla.service';
 import { SeverityLevel, PriorityLevel, ChallengeStatus } from '@sicp/shared';
 import { logger } from '../../utils/logger';
+import { CategoryResolutionEngine } from '../../domain/intelligence/category-resolution.engine';
 
 export class SelfHealingService {
   private static hasRunOnce = false;
@@ -323,9 +324,80 @@ export class SelfHealingService {
         );
       }
 
+      // 5. Auditable AI-driven re-analysis for any misclassified 'General Civic Issue' records
+      await this.healMisclassifiedRecords();
+
       this.hasRunOnce = true;
     } catch (err) {
       logger.warn(`Self-healing routine skipped or deferred: ${(err as Error).message}`);
+    }
+  }
+
+  /**
+   * Re-analyzes any challenges misclassified as 'General Civic Issue' through
+   * the real AI categorization pipeline without hardcoded string special cases.
+   */
+  public static async healMisclassifiedRecords(): Promise<void> {
+    try {
+      const candidates = await prisma.challenge.findMany({
+        where: {
+          category: { in: ['General Civic Issue', 'General', 'Civic Issue'] },
+          deletedAt: null,
+        },
+        include: {
+          challengeProblems: {
+            include: { problem: true },
+          },
+          problemGroups: true,
+        },
+      });
+
+      for (const ch of candidates) {
+        const resolution = await CategoryResolutionEngine.resolveWithAi(
+          ch.title,
+          ch.description,
+          null,
+          ch.affectedPopulation
+        );
+
+        if (resolution.canonicalCategory !== 'General Civic Issue') {
+          logger.info(
+            `[SELF_HEALING] Healing misclassified challenge #${ch.id.slice(0, 8).toUpperCase()}: "${ch.title}" from "${ch.category}" to "${resolution.canonicalCategory}" (confidence: ${resolution.confidenceScore})`
+          );
+
+          await prisma.challenge.update({
+            where: { id: ch.id },
+            data: {
+              category: resolution.canonicalCategory,
+              severity: resolution.severity as any,
+              priority: resolution.priority as any,
+            },
+          });
+
+          for (const cp of ch.challengeProblems) {
+            await prisma.problem.update({
+              where: { id: cp.problemId },
+              data: {
+                category: resolution.canonicalCategory,
+                aiSeverity: resolution.severity as any,
+                aiPriority: resolution.priority as any,
+              },
+            });
+          }
+
+          for (const pg of ch.problemGroups) {
+            await prisma.problemGroup.update({
+              where: { id: pg.id },
+              data: {
+                canonicalCategory: resolution.canonicalCategory,
+                title: `${resolution.canonicalCategory} Incident Cluster - ${ch.district || 'Regional'}`,
+              },
+            });
+          }
+        }
+      }
+    } catch (err) {
+      logger.warn(`Misclassified records re-analysis skipped: ${(err as Error).message}`);
     }
   }
 

@@ -12,7 +12,17 @@ interface PossibleCausesProps {
 }
 
 export function PossibleCauses({ challenge, intelligence }: PossibleCausesProps) {
-  const causes = intelligence?.hypotheses || [];
+  const causes = (intelligence?.hypotheses && intelligence.hypotheses.length > 0)
+    ? intelligence.hypotheses
+    : challenge.systemicSummary
+    ? [{
+        id: 'systemic-cause-hypothesis',
+        title: challenge.systemicSummary.replace(/^Possible Root Cause:\s*/i, '').replace(/\s*\(Not Yet Government Verified\)$/i, ''),
+        description: challenge.description,
+        status: 'Possible Root Cause (Not Yet Government Verified)',
+        falsificationCriteria: 'Municipal field verification and engineering audit'
+      } as any]
+    : [];
 
   return (
     <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 sm:p-7 shadow-sm">

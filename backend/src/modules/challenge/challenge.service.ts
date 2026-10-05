@@ -69,12 +69,13 @@ export class ChallengeService {
       );
     }
 
-    // 1. Live Intelligence: Resolve canonical category, problem-type extent, and dynamic population
-    const resolution = CategoryResolutionEngine.resolve(
+    // 1. Live Intelligence: Resolve canonical category, problem-type extent, and dynamic population with Gemini AI
+    const resolution = await CategoryResolutionEngine.resolveWithAi(
       data.title,
       data.description,
       data.category,
-      data.affectedPopulation
+      data.affectedPopulation,
+      { requestId: context.requestId }
     );
 
     const canonicalCategory = resolution.canonicalCategory;
@@ -216,7 +217,7 @@ export class ChallengeService {
             aiSeverity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
             aiPriority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
             aiAffectedPopulation: resolvedPopulation,
-            populationStatus: 'KNOWN',
+            populationStatus: resolution.populationStatus === 'UNKNOWN' ? 'UNKNOWN' : 'KNOWN',
             populationProvenance: resolution.populationProvenance,
           },
         });
@@ -267,6 +268,72 @@ export class ChallengeService {
           data: { groupId: targetGroup.id },
         });
 
+        // Multi-Root-Cause Hypothesis: 1 Group -> N Challenges (Supported >= 0.65)
+        if (resolution.rootCauses && resolution.rootCauses.length > 0) {
+          for (const rootHyp of resolution.rootCauses.slice(0, 2)) {
+            if (!rootHyp.hypothesis || rootHyp.hypothesis.length < 10) continue;
+            const existingRootChallenge = await tx.challenge.findFirst({
+              where: {
+                category: canonicalCategory,
+                isSystemic: true,
+                deletedAt: null,
+                OR: [
+                  { title: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
+                  { systemicSummary: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
+                ],
+              },
+            });
+
+            if (existingRootChallenge) {
+              await tx.challengeGroup.upsert({
+                where: {
+                  challengeId_groupId: {
+                    challengeId: existingRootChallenge.id,
+                    groupId: targetGroup.id,
+                  },
+                },
+                update: {},
+                create: {
+                  challengeId: existingRootChallenge.id,
+                  groupId: targetGroup.id,
+                },
+              });
+            } else {
+              const systemicTitle = rootHyp.hypothesis.length > 95
+                ? `${rootHyp.hypothesis.slice(0, 92)}...`
+                : rootHyp.hypothesis;
+
+              const systemicChal = await tx.challenge.create({
+                data: {
+                  title: `[Possible Root Cause] ${systemicTitle}`,
+                  description: `Possible systemic root cause hypothesis derived from citizen reports in ${matchedChallenge.district || 'the area'}:\n\n${rootHyp.hypothesis}\n\nEvidence base: Incident cluster "${data.title}". Requires municipal engineering audit and field verification.`,
+                  category: canonicalCategory,
+                  severity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
+                  priority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
+                  priorityScore: 60.0,
+                  status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
+                  submitterId,
+                  district: matchedChallenge.district || null,
+                  state: matchedChallenge.state || null,
+                  latitude: matchedChallenge.latitude || null,
+                  longitude: matchedChallenge.longitude || null,
+                  address: matchedChallenge.address || null,
+                  isSystemic: true,
+                  systemicSummary: `Possible Root Cause: ${rootHyp.hypothesis} (Not Yet Government Verified)`,
+                  version: 1,
+                },
+              });
+
+              await tx.challengeGroup.create({
+                data: {
+                  challengeId: systemicChal.id,
+                  groupId: targetGroup.id,
+                },
+              });
+            }
+          }
+        }
+
         // 4. Save any evidence submitted with this report
         if (data.evidence && data.evidence.length > 0) {
           for (const ev of data.evidence) {
@@ -293,7 +360,7 @@ export class ChallengeService {
         // 6. Recalculate priority score with updated problem count and population
         const updatedPopulation = Math.max(
           matchedChallenge.affectedPopulation || 0,
-          resolvedPopulation
+          resolvedPopulation || 0
         );
 
         const recomputedPriority = PriorityEngine.calculate({
@@ -437,7 +504,7 @@ export class ChallengeService {
           aiSeverity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
           aiPriority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
           aiAffectedPopulation: resolvedPopulation,
-          populationStatus: 'KNOWN',
+          populationStatus: resolution.populationStatus === 'UNKNOWN' ? 'UNKNOWN' : 'KNOWN',
           populationProvenance: resolution.populationProvenance,
         },
       });
@@ -472,6 +539,72 @@ export class ChallengeService {
         },
       });
 
+      // Multi-Root-Cause Hypothesis: 1 Group -> N Challenges (Supported >= 0.65)
+      if (resolution.rootCauses && resolution.rootCauses.length > 0) {
+        for (const rootHyp of resolution.rootCauses.slice(0, 2)) {
+          if (!rootHyp.hypothesis || rootHyp.hypothesis.length < 10) continue;
+          const existingRootChallenge = await tx.challenge.findFirst({
+            where: {
+              category: canonicalCategory,
+              isSystemic: true,
+              deletedAt: null,
+              OR: [
+                { title: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
+                { systemicSummary: { contains: rootHyp.hypothesis.slice(0, 30), mode: 'insensitive' } },
+              ],
+            },
+          });
+
+          if (existingRootChallenge) {
+            await tx.challengeGroup.upsert({
+              where: {
+                challengeId_groupId: {
+                  challengeId: existingRootChallenge.id,
+                  groupId: group.id,
+                },
+              },
+              update: {},
+              create: {
+                challengeId: existingRootChallenge.id,
+                groupId: group.id,
+              },
+            });
+          } else {
+            const systemicTitle = rootHyp.hypothesis.length > 95
+              ? `${rootHyp.hypothesis.slice(0, 92)}...`
+              : rootHyp.hypothesis;
+
+            const systemicChal = await tx.challenge.create({
+              data: {
+                title: `[Possible Root Cause] ${systemicTitle}`,
+                description: `Possible systemic root cause hypothesis derived from citizen reports in ${data.district || 'the area'}:\n\n${rootHyp.hypothesis}\n\nEvidence base: Incident cluster "${data.title}". Requires municipal engineering audit and field verification.`,
+                category: canonicalCategory,
+                severity: resolvedSeverity as unknown as import('@prisma/client').$Enums.SeverityLevel,
+                priority: resolvedPriority as unknown as import('@prisma/client').$Enums.PriorityLevel,
+                priorityScore: 60.0,
+                status: ChallengeStatus.SUBMITTED as unknown as import('@prisma/client').$Enums.ChallengeStatus,
+                submitterId,
+                district: data.district || null,
+                state: data.state || null,
+                latitude: data.latitude || null,
+                longitude: data.longitude || null,
+                address: data.address || null,
+                isSystemic: true,
+                systemicSummary: `Possible Root Cause: ${rootHyp.hypothesis} (Not Yet Government Verified)`,
+                version: 1,
+              },
+            });
+
+            await tx.challengeGroup.create({
+              data: {
+                challengeId: systemicChal.id,
+                groupId: group.id,
+              },
+            });
+          }
+        }
+      }
+
       if (data.evidence && data.evidence.length > 0) {
         for (const ev of data.evidence) {
           const fileKey = ev.fileKey || `evidence_${created.id}_${Date.now()}_${ev.originalName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
@@ -489,16 +622,23 @@ export class ChallengeService {
         }
       }
 
-      if (data.aiAnalysisResult) {
+      if (data.aiAnalysisResult || resolution.isAiResolved) {
+        const aiPayload = data.aiAnalysisResult || {
+          category: canonicalCategory,
+          confidenceScore: resolution.confidenceScore,
+          normalizedStatement: resolution.normalizedStatement,
+          reasoningSummary: resolution.reasoningSummary,
+          rootCauses: resolution.rootCauses,
+        };
         await tx.aIAnalysis.create({
           data: {
             challengeId: created.id,
             status: 'COMPLETED' as unknown as import('@prisma/client').$Enums.AIAnalysisStatus,
-            rawResponse: data.aiAnalysisResult as any,
-            confidenceScore: typeof data.aiAnalysisResult.confidenceScore === 'number' ? data.aiAnalysisResult.confidenceScore : 0.85,
-            reasoningSummary: (data.aiAnalysisResult.reasoningSummary as string) || 'Multimodal AI problem intelligence processed at citizen intake.',
-            requiresHumanReview: Boolean(data.aiAnalysisResult.requiresHumanReview),
-            appliedRules: Array.isArray(data.aiAnalysisResult.appliedRules) ? (data.aiAnalysisResult.appliedRules as string[]) : ['MULTIMODAL_INTAKE_ANALYSIS'],
+            rawResponse: aiPayload as any,
+            confidenceScore: typeof (aiPayload as any).confidenceScore === 'number' ? (aiPayload as any).confidenceScore : resolution.confidenceScore,
+            reasoningSummary: ((aiPayload as any).reasoningSummary as string) || resolution.reasoningSummary || 'Multimodal AI problem intelligence processed at citizen intake.',
+            requiresHumanReview: Boolean((aiPayload as any).requiresHumanReview),
+            appliedRules: Array.isArray((aiPayload as any).appliedRules) ? ((aiPayload as any).appliedRules as string[]) : ['GEMINI_INTELLIGENCE_PIPELINE'],
           },
         });
       }
@@ -1184,9 +1324,18 @@ export class ChallengeService {
         },
         context.requestId
       );
-      logger.info(`[AI_REQUEST_SUCCESS] Direct AI analysis completed`, { requestId: context.requestId });
+      const mapping = CategoryResolutionEngine.mapAiResultToCanonical(
+        result.primaryProblem?.domain || (result as any).domain,
+        result.primaryProblem?.category || result.category,
+        result.primaryProblem?.problemType || result.problemType,
+        `${data.title} ${data.description || ''} ${result.normalizedStatement || ''}`
+      );
+
+      logger.info(`[AI_REQUEST_SUCCESS] Direct AI analysis completed -> ${mapping.canonicalCategory}`, { requestId: context.requestId });
       return {
         ...result,
+        category: mapping.canonicalCategory,
+        domainKey: mapping.domainKey,
         intentValidation,
       };
     } catch (err: unknown) {
@@ -1195,19 +1344,27 @@ export class ChallengeService {
       }
       logger.warn(`[AI_REQUEST_DEGRADED] AI service rate-limited or unreachable: ${(err as Error).message}. Applying Civic Knowledge Engine fallback.`);
 
-      const pop = data.affectedPopulation || 100;
-      const isUrgent = pop > 500;
-      const sev = isUrgent ? 'SEVERE' : (pop < 50 ? 'LOW' : 'MODERATE');
-      const prio = isUrgent ? 'CRITICAL' : (pop < 50 ? 'LOW' : 'MEDIUM');
-      const score = isUrgent ? 85.0 : (pop < 50 ? 35.0 : 55.0);
+      const fallbackRes = CategoryResolutionEngine.resolve(
+        data.title,
+        data.description || '',
+        data.category,
+        data.affectedPopulation
+      );
+
+      const pop = data.affectedPopulation || null;
+      const isUrgent = fallbackRes.priority === PriorityLevel.CRITICAL || fallbackRes.priority === PriorityLevel.HIGH;
+      const sev = fallbackRes.severity;
+      const prio = fallbackRes.priority;
+      const score = isUrgent ? 85.0 : 55.0;
 
       const modalities = data.modalitiesProvided && data.modalitiesProvided.length > 0
         ? data.modalitiesProvided
         : ['TEXT'];
 
       const fallbackResult = {
-        category: data.category,
-        subcategory: `${data.category.replace(/_/g, ' ')} Infrastructure`,
+        category: fallbackRes.canonicalCategory,
+        domainKey: fallbackRes.domainKey,
+        subcategory: `${fallbackRes.canonicalCategory} Infrastructure`,
         problemUnderstanding: `Civic issue regarding ${data.title}. Evaluated with multimodal citizen evidence.`,
         problemType: data.category.toUpperCase().replace(/\s+/g, '_'),
         normalizedStatement: `Reported civic deficiency: ${data.title}`,
