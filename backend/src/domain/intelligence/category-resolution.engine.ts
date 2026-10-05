@@ -302,23 +302,183 @@ export class CategoryResolutionEngine {
     domainKey: ResolvedCategoryAndExtent['domainKey'];
     extentType: ResolvedCategoryAndExtent['extentType'];
   } {
-    const combined = `${rawDomain || ''} ${rawCategory || ''} ${rawProblemType || ''} ${normalizedText || ''}`.toUpperCase();
+    const typeUpper = (rawProblemType || '').trim().toUpperCase();
+    const catUpper = (rawCategory || '').trim().toUpperCase();
+    const domainUpper = (rawDomain || '').trim().toUpperCase();
 
-    // 1. Healthcare & Public Health
-    if (
-      combined.includes('HEALTH') ||
-      combined.includes('HOSPITAL') ||
-      combined.includes('CLINIC') ||
-      combined.includes('DOCTOR') ||
-      combined.includes('MEDICAL') ||
-      combined.includes('PHC') ||
-      combined.includes('CHC') ||
-      combined.includes('DISPENSARY') ||
-      combined.includes('MEDICINE') ||
-      combined.includes('EPIDEMIC') ||
-      combined.includes('VACCIN') ||
-      combined.includes('DISEASE')
-    ) {
+    // ─────────────────────────────────────────────────────────────
+    // TIER 1: Model's Explicit ProblemType Enum (Highest Precision)
+    // ─────────────────────────────────────────────────────────────
+    if (typeUpper === 'SANITATION_SERVICE') {
+      return {
+        canonicalCategory: 'Sanitation & Drainage',
+        domainKey: 'SANITATION',
+        extentType: 'PUBLIC_FOOTFALL',
+      };
+    }
+    if (typeUpper === 'ROAD_USAGE') {
+      return {
+        canonicalCategory: 'Roads & Transport',
+        domainKey: 'ROAD_TRANSPORT',
+        extentType: 'ROAD_COMMUTERS',
+      };
+    }
+    if (typeUpper === 'WATER_SUPPLY') {
+      return {
+        canonicalCategory: 'Water Supply',
+        domainKey: 'WATER_SUPPLY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (typeUpper === 'HEALTHCARE_SERVICE') {
+      return {
+        canonicalCategory: 'Healthcare & Public Health',
+        domainKey: 'HEALTHCARE',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (typeUpper === 'ELECTRICITY_NETWORK') {
+      return {
+        canonicalCategory: 'Electricity & Lighting',
+        domainKey: 'ELECTRICITY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (typeUpper === 'EDUCATION_SERVICE') {
+      return {
+        canonicalCategory: 'Education & Schools',
+        domainKey: 'EDUCATION',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (typeUpper === 'AGRICULTURE_DEPENDENCY') {
+      return {
+        canonicalCategory: 'Agriculture & Irrigation',
+        domainKey: 'AGRICULTURE',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+    if (typeUpper === 'FLOOD_ENVIRONMENTAL') {
+      return {
+        canonicalCategory: 'Environment & Waste',
+        domainKey: 'FLOOD_ENVIRONMENT',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TIER 2: Model's Explicit Category String
+    // ─────────────────────────────────────────────────────────────
+    if (/SANITATION|DRAINAGE|SEWER|SEWAGE|TOILET|WASHROOM|GUTTER|MANHOLE/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Sanitation & Drainage',
+        domainKey: 'SANITATION',
+        extentType: 'PUBLIC_FOOTFALL',
+      };
+    }
+    if (/ROAD|TRANSPORT|POTHOLE|HIGHWAY|BRIDGE|TRAFFIC|PAVEMENT|ASPHALT/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Roads & Transport',
+        domainKey: 'ROAD_TRANSPORT',
+        extentType: 'ROAD_COMMUTERS',
+      };
+    }
+    if (/WATER SUPPLY|POTABLE|DRINKING WATER|PIPELINE|BOREWELL|HANDPUMP/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Water Supply',
+        domainKey: 'WATER_SUPPLY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/HEALTHCARE|HOSPITAL|CLINIC|DISPENSARY|DOCTOR|PHC|CHC|HEALTH FACILIT/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Healthcare & Public Health',
+        domainKey: 'HEALTHCARE',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/ELECTRIC|LIGHTING|POWER|STREETLIGHT|TRANSFORMER|BLACKOUT/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Electricity & Lighting',
+        domainKey: 'ELECTRICITY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/EDUCATION|SCHOOL|COLLEGE|CLASSROOM|TEACHER|STUDENT/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Education & Schools',
+        domainKey: 'EDUCATION',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/AGRICULTUR|IRRIGATION|FARM|CROP|CANAL/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Agriculture & Irrigation',
+        domainKey: 'AGRICULTURE',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+    if (/FLOOD|ENVIRONMENT|DISASTER|HAZARD|POLLUTION/i.test(catUpper)) {
+      return {
+        canonicalCategory: 'Environment & Waste',
+        domainKey: 'FLOOD_ENVIRONMENT',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TIER 3: Model's Domain String
+    // ─────────────────────────────────────────────────────────────
+    if (/SANITATION/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Sanitation & Drainage',
+        domainKey: 'SANITATION',
+        extentType: 'PUBLIC_FOOTFALL',
+      };
+    }
+    if (/TRANSPORT/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Roads & Transport',
+        domainKey: 'ROAD_TRANSPORT',
+        extentType: 'ROAD_COMMUTERS',
+      };
+    }
+    if (/WATER RESOURCES/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Water Supply',
+        domainKey: 'WATER_SUPPLY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/ENERGY/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Electricity & Lighting',
+        domainKey: 'ELECTRICITY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/EDUCATION/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Education & Schools',
+        domainKey: 'EDUCATION',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+    if (/AGRICULTUR/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Agriculture & Irrigation',
+        domainKey: 'AGRICULTURE',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+    if (/ENVIRONMENT/i.test(domainUpper)) {
+      return {
+        canonicalCategory: 'Environment & Waste',
+        domainKey: 'FLOOD_ENVIRONMENT',
+        extentType: 'VILLAGE_FLOOD_EXPOSED',
+      };
+    }
+    if (/PUBLIC HEALTH/i.test(domainUpper) && !/SANITATION|DRAIN|SEWER/i.test(catUpper)) {
       return {
         canonicalCategory: 'Healthcare & Public Health',
         domainKey: 'HEALTHCARE',
@@ -326,57 +486,13 @@ export class CategoryResolutionEngine {
       };
     }
 
-    // 2. Education & Schools
-    if (
-      combined.includes('EDUCATION') ||
-      combined.includes('SCHOOL') ||
-      combined.includes('COLLEGE') ||
-      combined.includes('TEACHER') ||
-      combined.includes('STUDENT') ||
-      combined.includes('CLASSROOM') ||
-      combined.includes('UNIVERSITY') ||
-      combined.includes('ANGANWADI') ||
-      combined.includes('STUDY')
-    ) {
-      return {
-        canonicalCategory: 'Education & Schools',
-        domainKey: 'EDUCATION',
-        extentType: 'LOCALITY_RESIDENTS',
-      };
-    }
+    // ─────────────────────────────────────────────────────────────
+    // TIER 4: Semantic Problem Analysis Fallback (Physical Asset Priority)
+    // ─────────────────────────────────────────────────────────────
+    const textUpper = (normalizedText || '').toUpperCase();
 
-    // 3. Water Supply
-    if (
-      combined.includes('DRINKING WATER') ||
-      combined.includes('WATER SUPPLY') ||
-      combined.includes('PIPELINE') ||
-      combined.includes('BOREWELL') ||
-      combined.includes('HANDPUMP') ||
-      combined.includes('WATER TANKER') ||
-      combined.includes('POTABLE') ||
-      combined.includes('TAP WATER') ||
-      (combined.includes('WATER') && !combined.includes('WATERLOGGING') && !combined.includes('FLOOD'))
-    ) {
-      return {
-        canonicalCategory: 'Water Supply',
-        domainKey: 'WATER_SUPPLY',
-        extentType: 'LOCALITY_RESIDENTS',
-      };
-    }
-
-    // 4. Sanitation & Drainage
-    if (
-      combined.includes('SANITATION') ||
-      combined.includes('TOILET') ||
-      combined.includes('WASHROOM') ||
-      combined.includes('URINAL') ||
-      combined.includes('SEWER') ||
-      combined.includes('SEWAGE') ||
-      combined.includes('DRAIN') ||
-      combined.includes('GUTTER') ||
-      combined.includes('MANHOLE') ||
-      combined.includes('DEFECATION')
-    ) {
+    // Sanitation & Drainage: Physical drainage, sewers, toilets, washrooms
+    if (/\b(?:DRAIN|DRAINAGE|SEWER|SEWAGE|GUTTER|MANHOLE|TOILET|WASHROOM|URINAL|LATRINE|DEFECATION|SEPTIC)\b/i.test(textUpper)) {
       return {
         canonicalCategory: 'Sanitation & Drainage',
         domainKey: 'SANITATION',
@@ -384,19 +500,8 @@ export class CategoryResolutionEngine {
       };
     }
 
-    // 5. Roads & Transport
-    if (
-      combined.includes('ROAD') ||
-      combined.includes('TRANSPORT') ||
-      combined.includes('POTHOLE') ||
-      combined.includes('HIGHWAY') ||
-      combined.includes('BRIDGE') ||
-      combined.includes('TRAFFIC') ||
-      combined.includes('ASPHALT') ||
-      combined.includes('FLYOVER') ||
-      combined.includes('FOOTPATH') ||
-      combined.includes('COMMUTE')
-    ) {
+    // Roads & Transport: Carriageway, pavement, potholes, traffic
+    if (/\b(?:ROAD|POTHOLE|POTHOLES|HIGHWAY|CARRIAGEWAY|ASPHALT|PAVEMENT|BITUMEN|BRIDGE|FLYOVER|TRAFFIC)\b/i.test(textUpper)) {
       return {
         canonicalCategory: 'Roads & Transport',
         domainKey: 'ROAD_TRANSPORT',
@@ -404,17 +509,26 @@ export class CategoryResolutionEngine {
       };
     }
 
-    // 6. Electricity & Lighting
-    if (
-      combined.includes('ELECTRIC') ||
-      combined.includes('POWER') ||
-      combined.includes('STREETLIGHT') ||
-      combined.includes('LIGHTING') ||
-      combined.includes('TRANSFORMER') ||
-      combined.includes('BLACKOUT') ||
-      combined.includes('VOLTAGE') ||
-      combined.includes('GRID')
-    ) {
+    // Water Supply: Drinking/potable water, pipeline, tap water, borewell, handpump
+    if (/\b(?:DRINKING WATER|POTABLE|WATER SUPPLY|WATER PIPELINE|PIPE LEAK|PIPE BURST|TAP WATER|BOREWELL|HANDPUMP|WATER TANKER|WATER SCARCITY|WATER SHORTAGE)\b/i.test(textUpper)) {
+      return {
+        canonicalCategory: 'Water Supply',
+        domainKey: 'WATER_SUPPLY',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+
+    // Healthcare & Public Health: Medical facilities, clinics, hospitals, dispensaries, doctors
+    if (/\b(?:HEALTHCARE|HOSPITAL|CLINIC|DISPENSARY|PHC|CHC|DOCTOR|DOCTORS|NURSE|NURSES|AMBULANCE|MEDICINE|MEDICINES|VACCINE|EPIDEMIC|HEALTH FACILIT)\b/i.test(textUpper)) {
+      return {
+        canonicalCategory: 'Healthcare & Public Health',
+        domainKey: 'HEALTHCARE',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+
+    // Electricity & Lighting
+    if (/\b(?:ELECTRIC|ELECTRICITY|POWER CUT|BLACKOUT|STREETLIGHT|STREET LIGHT|TRANSFORMER|VOLTAGE|HANGING WIRE|POWER OUTAGE)\b/i.test(textUpper)) {
       return {
         canonicalCategory: 'Electricity & Lighting',
         domainKey: 'ELECTRICITY',
@@ -422,16 +536,17 @@ export class CategoryResolutionEngine {
       };
     }
 
-    // 7. Agriculture & Irrigation
-    if (
-      combined.includes('AGRICULTUR') ||
-      combined.includes('FARM') ||
-      combined.includes('CROP') ||
-      combined.includes('IRRIGATION') ||
-      combined.includes('CANAL') ||
-      combined.includes('FERTILIZER') ||
-      combined.includes('HARVEST')
-    ) {
+    // Education & Schools
+    if (/\b(?:SCHOOL|SCHOOLS|CLASSROOM|COLLEGE|TEACHER|TEACHERS|STUDENT|STUDENTS|ANGANWADI)\b/i.test(textUpper)) {
+      return {
+        canonicalCategory: 'Education & Schools',
+        domainKey: 'EDUCATION',
+        extentType: 'LOCALITY_RESIDENTS',
+      };
+    }
+
+    // Agriculture & Irrigation
+    if (/\b(?:CROP|CROPS|FARM|FARMER|FARMERS|IRRIGATION|CANAL|HARVEST)\b/i.test(textUpper)) {
       return {
         canonicalCategory: 'Agriculture & Irrigation',
         domainKey: 'AGRICULTURE',
@@ -439,16 +554,8 @@ export class CategoryResolutionEngine {
       };
     }
 
-    // 8. Environment & Waste
-    if (
-      combined.includes('FLOOD') ||
-      combined.includes('INUNDAT') ||
-      combined.includes('WATERLOG') ||
-      combined.includes('ENVIRONMENT') ||
-      combined.includes('WASTE') ||
-      combined.includes('GARBAGE') ||
-      combined.includes('POLLUTION')
-    ) {
+    // Environment & Waste
+    if (/\b(?:FLOOD|FLOODING|INUNDATION|WATERLOGGING|WATER LOGGING|GARBAGE DUMP|SOLID WASTE|POLLUTION)\b/i.test(textUpper)) {
       return {
         canonicalCategory: 'Environment & Waste',
         domainKey: 'FLOOD_ENVIRONMENT',

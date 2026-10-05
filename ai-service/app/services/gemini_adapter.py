@@ -146,8 +146,9 @@ class GeminiAdapter:
         is_school = any(w in title_text for w in ["school", "classroom", "student", "teacher", "education", "anganwadi", "campus"]) or \
                     any(w in raw_cat.lower() for w in ["school", "education"])
 
-        is_health = any(w in full_text for w in ["hospital", "clinic", "phc", "chc", "health", "healthcare", "doctor", "medicine", "ambulance", "patient", "dispensary", "medical", "swasthya", "medical facility", "health facility"]) or \
-                    any(w in raw_cat.lower() for w in ["health", "hospital", "medical", "clinic"])
+        is_health = any(w in title_text for w in ["hospital", "clinic", "phc", "chc", "healthcare", "doctor", "doctors", "nurse", "nurses", "medicine", "medicines", "dispensary", "medical", "swasthya", "medical facility", "health facility", "health centre", "health center"]) or \
+                    ("health" in title_text and not any(w in title_text for w in ["drain", "sewer", "water", "waste", "garbage", "sanitation", "toilet", "washroom"])) or \
+                    any(w in raw_cat.lower() for w in ["healthcare", "hospital", "clinic"])
 
         is_water_supply = any(w in title_text for w in ["drinking water", "potable water", "pipeline", "water supply", "water contamination", "tap water", "borewell", "handpump", "turbid water"]) or \
                           ("water" in full_text and any(w in full_text for w in ["drinking", "potable", "tap", "pipeline", "supply", "contamination", "borewell"])) or \
@@ -156,7 +157,7 @@ class GeminiAdapter:
         is_agri = any(w in title_text for w in ["crop", "farm", "paddy", "irrigation", "agriculture", "farmer", "canal sluice"]) or \
                   any(w in raw_cat.lower() for w in ["agri", "farm", "crop", "irrigation"])
 
-        has_drainage_blockage = any(w in title_text for w in ["drain", "sewer", "gutter", "drainage", "clog", "blockage", "waste", "garbage"]) or \
+        has_drainage_blockage = any(w in full_text for w in ["drain", "sewer", "gutter", "drainage", "clog", "blockage", "toilet", "washroom", "urinal", "latrine", "septic", "manhole"]) or \
                                 any(w in raw_cat.lower() for w in ["sanitation", "sewer", "drainage"])
 
         has_inundation = any(w in title_text for w in ["flood", "waterlog", "waterlogging", "submerged", "inundat"]) or \
@@ -171,8 +172,8 @@ class GeminiAdapter:
         is_road = not is_electric and not is_school and not is_health and not is_water_supply and not is_agri and not is_flood and \
                   (has_pavement_defect or any(w in raw_cat.lower() for w in ["road", "transport"]))
 
-        # Sanitation & Drainage: only when sewage/drain/waste is the primary problem, NOT a damaged road
-        is_sanitation = not is_road and not is_electric and not is_school and not is_health and not is_water_supply and not is_agri and \
+        # Sanitation & Drainage: when physical drainage, sewer, toilet, or waste is the primary problem
+        is_sanitation = not is_road and not is_electric and not is_school and not is_water_supply and not is_agri and \
                         (has_drainage_blockage or (not is_flood and (any(w in title_text for w in ["sewer", "drain", "gutter", "garbage", "kachra", "waste", "drainage overflow", "solid waste"]) or any(w in raw_cat.lower() for w in ["sanitation", "sewer", "drainage", "waste"]))))
 
         # Build Domain Knowledge & Output
@@ -422,7 +423,7 @@ class GeminiAdapter:
             affected_assets = ["Irrigation canals", "Tube-well feeder lines", "Field drainage channels"]
 
         elif is_sanitation:
-            domain = "Public Health & Sanitation"
+            domain = "Sanitation"
             category = "Sanitation & Drainage"
             problem_type = "SANITATION_SERVICE"
             subcategory = "Wastewater & Solid Waste Management"
@@ -722,10 +723,24 @@ HEALTHCARE & PUBLIC HEALTH DOMAIN POLICY:
 - Distinguish healthcare problems strictly from roads, transport, sanitation, drainage, streetlights, or water infrastructure.
 - For example, "Lack of Healthcare Facilities in my locality", "No healthcare facility", "Very less amount of healthcare facilities present", or absence of medical staff MUST resolve to Public Health -> Healthcare Facilities -> HEALTHCARE_SERVICE, and NEVER to Roads & Transport, Sanitation & Drainage, or General Civic Issue.
 
+SANITATION & DRAINAGE DOMAIN POLICY:
+- Shortage, absence, blockage, overflow, poor maintenance, or lack of facilities involving:
+  * drainage facilities, storm drains, gutters, nullahs, open sewers, culverts
+  * sewage lines, manholes, wastewater management, sewage backup
+  * public toilets, community latrines, washrooms, urinals, open defecation
+  * solid waste accumulation, garbage dumping, uncollected trash, street litter
+  MUST strictly resolve to:
+    domain: "Sanitation"
+    category: "Sanitation & Drainage"
+    problemType: "SANITATION_SERVICE"
+- Distinguish sanitation/drainage strictly from healthcare facilities and water supply:
+  * Even if a citizen mentions "disease risk", "illness", or "public health hazard" as a consequence of waterlogging, sewage overflow, or blocked drains, the PRIMARY INFRASTRUCTURE DOMAIN is Sanitation & Drainage (problemType: SANITATION_SERVICE, category: Sanitation & Drainage), NOT Healthcare.
+  * For example, "Lack of drainage facilities in my locality", "No drainage system", "Blocked sewer lines", "Open gutter overflowing" MUST resolve to Sanitation -> Sanitation & Drainage -> SANITATION_SERVICE, and NEVER to Healthcare & Public Health or Water Supply.
+
 CRITICAL MULTIMODAL EVIDENCE INSTRUCTIONS:
 - Audio Evidence: If audio is provided, listen to and analyze the citizen's audio recording directly.
 - Evidence Distinction: Explicitly distinguish WHAT THE CITIZEN SAID from WHAT THE AI INFERRED.
-- Domain Accuracy: Classify based on the primary infrastructure failure. Do NOT classify road/pavement damage as Sanitation merely because water accumulation or drainage is mentioned. Water accumulation on a damaged road is a contributing factor / symptom, NOT the primary category.
+- Domain Accuracy: Classify based on the primary infrastructure failure. Do NOT classify road/pavement damage as Sanitation merely because water accumulation or drainage is mentioned. Water accumulation on a damaged road is a contributing factor / symptom, NOT the primary category. Do NOT classify drainage or sewage issues as Healthcare merely because health risks or mosquitoes are mentioned.
 - In audioObservations: Explicitly summarize citizen observations vs AI technical inferences.
 
 <citizen_submission_data>
@@ -743,7 +758,7 @@ Submitted Modalities: {', '.join(modalities_analyzed)}
 Return JSON strictly adhering to this structure:
 {{
   "primaryProblem": {{
-    "domain": "Transportation" | "Public Health" | "Education" | "Energy & Public Infrastructure" | "Water Resources" | "Public Health & Sanitation" | "Agriculture & Rural Development" | "Environment & Disaster Management",
+    "domain": "Transportation" | "Public Health" | "Education" | "Energy & Public Infrastructure" | "Water Resources" | "Sanitation" | "Agriculture & Rural Development" | "Environment & Disaster Management",
     "category": "Road Infrastructure" | "Potable Water Supply" | "Healthcare Facilities" | "School Infrastructure" | "Electricity & Lighting" | "Sanitation & Drainage" | "Irrigation & Agrarian Systems" | "Flood & Environmental Hazard",
     "problemType": "WATER_SUPPLY" | "ROAD_USAGE" | "HEALTHCARE_SERVICE" | "EDUCATION_SERVICE" | "ELECTRICITY_NETWORK" | "AGRICULTURE_DEPENDENCY" | "SANITATION_SERVICE" | "FLOOD_ENVIRONMENTAL" | "UNKNOWN",
     "normalizedStatement": "concise, neutral technical formulation of the core societal problem",
@@ -803,7 +818,7 @@ Return JSON strictly adhering to this structure:
     "systemicConfidence": float between 0.5 and 0.95
   }},
   "problemUnderstanding": "concise, neutral technical formulation of the core societal problem synthesizing all submitted modalities",
-  "category": "{request.category or 'Infrastructure'}",
+  "category": "Sanitation & Drainage" | "Roads & Transport" | "Water Supply" | "Healthcare & Public Health" | "Electricity & Lighting" | "Education & Schools" | "Agriculture & Irrigation" | "Environment & Waste",
   "subcategory": "specific domain subcategory",
   "problemType": "WATER_SUPPLY" | "ROAD_USAGE" | "HEALTHCARE_SERVICE" | "EDUCATION_SERVICE" | "ELECTRICITY_NETWORK" | "AGRICULTURE_DEPENDENCY" | "SANITATION_SERVICE" | "FLOOD_ENVIRONMENTAL" | "UNKNOWN",
   "normalizedStatement": "concise, neutral technical formulation of the core societal problem",
@@ -1032,7 +1047,7 @@ Return JSON strictly adhering to this structure:
                 missingInformation=list(parsed.get("missingInformation", [])),
                 evidenceAssessment=ev_assm,
                 fieldConfidences=field_confs,
-                category=parsed.get("category", request.category or "Infrastructure"),
+                category=parsed.get("category") or (primary_prob.category if primary_prob and primary_prob.category else (request.category or "Sanitation & Drainage" if prob_type == "SANITATION_SERVICE" else (request.category or "Infrastructure"))),
                 subcategory=parsed.get("subcategory", "Civic Infrastructure"),
                 problemUnderstanding=prob_understanding,
                 problemType=prob_type,

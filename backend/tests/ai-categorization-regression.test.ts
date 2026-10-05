@@ -542,6 +542,40 @@ describe('AI Categorization & Governance Regression Suite', () => {
       expect(analyzeSpy).toHaveBeenCalledTimes(1);
     });
 
+    it('resolves "Lack of drainage facilities in my locality" to canonical Sanitation & Drainage and NEVER Healthcare', async () => {
+      const mockAiResponse: any = {
+        category: 'Sanitation & Drainage',
+        confidenceScore: 0.92,
+        estimatedSeverity: 'SEVERE',
+        preliminaryPriority: 'HIGH',
+        reasoningSummary: 'Absence of storm water drainage facilities causing sewage and wastewater stagnation.',
+        primaryProblem: {
+          domain: 'Sanitation',
+          category: 'Sanitation & Drainage',
+          problemType: 'SANITATION_SERVICE',
+          normalizedStatement: 'Lack of municipal drainage and wastewater evacuation facilities in locality',
+          confidence: 0.92,
+        },
+      };
+
+      const analyzeSpy = jest.spyOn(AiServiceClient, 'analyzeChallenge').mockResolvedValueOnce(mockAiResponse);
+
+      const result = await ChallengeService.analyzeProblemStatement(
+        {
+          title: 'Lack of drainage facilities in my locality',
+          description: 'Rain and sewage water collects on the road because there are no drainage lines or gutters built.',
+        },
+        { requestId: 'req-drainage-test' }
+      );
+
+      expect(result.isPartial).toBeFalsy();
+      expect(result.category).toBe('Sanitation & Drainage');
+      expect(result.category).not.toBe('Healthcare & Public Health');
+      expect((result as any).domainKey).toBe('SANITATION');
+      expect(result.confidenceScore).toBe(0.92);
+      expect(analyzeSpy).toHaveBeenCalledTimes(1);
+    });
+
     it('returns aiUnavailable: true and null category honestly when AI service fails without fake data', async () => {
       jest.spyOn(AiServiceClient, 'analyzeChallenge').mockRejectedValueOnce(
         new AiUnavailableError('AI service is currently unavailable or unconfigured.')
@@ -563,4 +597,5 @@ describe('AI Categorization & Governance Regression Suite', () => {
     });
   });
 });
+
 

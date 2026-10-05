@@ -224,3 +224,36 @@ def test_healthcare_facility_shortage_classification():
         assert res.category != "Sanitation & Drainage"
         assert res.category != "General Civic Issue"
 
+def test_drainage_facilities_shortage_classification():
+    """
+    Mandatory Sanitation & Drainage Domain Invariant:
+    'Lack of drainage facilities in my locality' and drainage absence statements
+    MUST be classified under Sanitation / Sanitation & Drainage (SANITATION_SERVICE),
+    and NEVER as Healthcare & Public Health, Roads & Transport, or General Civic Issue.
+    """
+    test_cases = [
+        "Lack of drainage facilities in my locality",
+        "No drainage system in our ward",
+        "Open gutters overflowing with wastewater and sewage",
+        "Lack of storm water drainage causing stagnant dirty water",
+        "Broken sewer line leaking into residential area",
+        "Lack of public toilet and sanitation facilities"
+    ]
+    for title in test_cases:
+        req = AnalysisRequest(
+            title=title,
+            description="Dirty wastewater and sewage accumulate on the streets because there is no underground or roadside drainage facility.",
+            category="General",
+            district="Kanpur",
+            state="Uttar Pradesh"
+        )
+        res: AnalysisResponse = GeminiAdapter._generate_civic_engine_fallback(req)
+        assert res.primaryProblem is not None
+        assert res.primaryProblem.domain == "Sanitation", f"Expected Sanitation domain for '{title}', got {res.primaryProblem.domain}"
+        assert res.primaryProblem.category == "Sanitation & Drainage", f"Expected Sanitation & Drainage for '{title}', got {res.primaryProblem.category}"
+        assert res.primaryProblem.problemType == "SANITATION_SERVICE", f"Expected SANITATION_SERVICE for '{title}', got {res.primaryProblem.problemType}"
+        assert res.category == "Sanitation & Drainage", f"Expected category Sanitation & Drainage for '{title}', got {res.category}"
+        assert res.category != "Healthcare & Public Health", f"CRITICAL: '{title}' must never leak into Healthcare"
+        assert res.category != "Roads & Transport"
+
+

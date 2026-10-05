@@ -104,7 +104,7 @@ export default function NewChallengePage() {
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [aiAnalysisResult, setAiAnalysisResult] = useState<{
     category: string;
-    confidenceScore: number;
+    confidenceScore: number | null;
     normalizedStatement?: string;
     reasoningSummary?: string;
     rootCauses?: string[];
@@ -165,9 +165,9 @@ export default function NewChallengePage() {
           }
 
           const canonical = data.category;
-          const conf = typeof data.confidenceScore === 'number' ? data.confidenceScore : 0.85;
+          const conf = typeof data.confidenceScore === 'number' && data.confidenceScore > 0 ? data.confidenceScore : null;
 
-          if (canonical && conf >= 0.65) {
+          if (canonical) {
             setAiAnalysisResult({
               category: canonical,
               confidenceScore: conf,
@@ -710,9 +710,27 @@ export default function NewChallengePage() {
                         <Sparkles className="w-3 h-3" />
                         {aiAnalysisResult.category}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                        {Math.round(aiAnalysisResult.confidenceScore * 100)}% Match
-                      </span>
+                      {aiAnalysisResult.confidenceScore !== null ? (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
+                            aiAnalysisResult.confidenceScore >= 0.8
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                              : aiAnalysisResult.confidenceScore >= 0.65
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                          }`}
+                        >
+                          {aiAnalysisResult.confidenceScore >= 0.8
+                            ? `High Confidence (${Math.round(aiAnalysisResult.confidenceScore * 100)}%)`
+                            : aiAnalysisResult.confidenceScore >= 0.65
+                            ? `Moderate Confidence (${Math.round(aiAnalysisResult.confidenceScore * 100)}%)`
+                            : `Preliminary (${Math.round(aiAnalysisResult.confidenceScore * 100)}%)`}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          Confidence unavailable
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"
