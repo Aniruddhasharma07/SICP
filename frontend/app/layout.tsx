@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../src/lib/auth-context';
-import { TeamCreditWidget } from '../src/components/common/TeamCreditWidget';
 
 export const metadata: Metadata = {
   title: 'SICP - Societal Innovation Collaboration Portal',
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body className="antialiased bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
         <AuthProvider>
           {children}
-          <TeamCreditWidget />
         </AuthProvider>
       </body>
     </html>
