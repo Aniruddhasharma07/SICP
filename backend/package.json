@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "db:restore": "node dist/database/restore_universe_backup.js"
   },
   "dependencies": {
     "@prisma/client": "^6.4.0",

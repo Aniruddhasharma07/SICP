@@ -17,10 +17,17 @@ async function bootstrap() {
     const existingChallenges = await prisma.challenge.count();
     const existingStudents = await prisma.user.count({ where: { role: 'STUDENT' } });
     if (existingChallenges < 6 || existingStudents < 10) {
-      logger.info(`[BOOTSTRAP] Platform universe check: ${existingChallenges} challenges, ${existingStudents} students. Running seedPlatformUniverse()...`);
-      const { seedPlatformUniverse } = await import('./database/seed_platform_universe');
-      const counts = await seedPlatformUniverse();
-      logger.info(`[BOOTSTRAP] Platform universe successfully seeded: ${JSON.stringify(counts)}`);
+      logger.info(`[BOOTSTRAP] Platform universe check: ${existingChallenges} challenges, ${existingStudents} students. Running restoreUniverseBackup()...`);
+      try {
+        const { restoreUniverseBackup } = await import('./database/restore_universe_backup');
+        const res = await restoreUniverseBackup();
+        logger.info(`[BOOTSTRAP] Platform universe backup restored: ${res.totalRestored} records across models.`);
+      } catch (backupErr: any) {
+        logger.warn('[BOOTSTRAP] Backup restore error: ' + backupErr.message + '. Falling back to seedPlatformUniverse()...');
+        const { seedPlatformUniverse } = await import('./database/seed_platform_universe');
+        const counts = await seedPlatformUniverse();
+        logger.info(`[BOOTSTRAP] Platform universe seeded via fallback: ${JSON.stringify(counts)}`);
+      }
     } else {
       logger.info(`[BOOTSTRAP] Platform universe fully populated (${existingChallenges} challenges, ${existingStudents} students).`);
     }

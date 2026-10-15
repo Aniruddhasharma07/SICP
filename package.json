@@ -16,7 +16,8 @@
     "start:frontend": "npm run start --prefix frontend",
     "build": "npm run build:shared && npm run build:backend && npm run build:frontend",
     "test:backend": "npm test --prefix backend",
-    "test": "npm run test:backend"
+    "test": "npm run test:backend",
+    "restore:backend": "npm run db:restore --prefix backend"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

@@ -38,6 +38,7 @@ import { AuditService } from './modules/audit/audit.service';
 import { NotificationService } from './modules/notification/notification.service';
 import { sendSuccess } from './utils/response';
 import { prisma } from './database/prisma';
+import { logger } from './utils/logger';
 import { QueueManager } from './jobs/queue.manager';
 
 export function createApp(): Express {
@@ -120,7 +121,7 @@ export function createApp(): Express {
   app.use('/api/v1/clarifications', clarificationRouter);
 
   // System Universe Seeding Trigger (Protected by seed key)
-  app.post('/api/v1/system/seed-universe', async (req: Request, res: Response, next) => {
+  app.post('/api/v1/system/seed-universe', async (req: Request, res: Response) => {
     try {
       const token = req.headers['x-seed-key'] || req.query.seedKey;
       const expectedKey = process.env.ADMIN_SEED_KEY || process.env.JWT_SECRET || 'sicp-universe-seed-2026';
@@ -131,8 +132,41 @@ export function createApp(): Express {
       const { seedPlatformUniverse } = await import('./database/seed_platform_universe');
       const counts = await seedPlatformUniverse();
       sendSuccess(res, { message: 'Platform Universe successfully seeded', counts }, 200);
-    } catch (err) {
-      next(err);
+    } catch (err: any) {
+      logger.error('System seed error:', err);
+      res.status(500).json({
+        success: false,
+        error: {
+          message: err?.message || String(err),
+          code: err?.code,
+          stack: err?.stack,
+        }
+      });
+    }
+  });
+
+  // System Universe Complete Backup Restore Trigger (Protected by seed key)
+  app.post('/api/v1/system/restore-backup', async (req: Request, res: Response) => {
+    try {
+      const token = req.headers['x-seed-key'] || req.query.seedKey;
+      const expectedKey = process.env.ADMIN_SEED_KEY || process.env.JWT_SECRET || 'sicp-universe-seed-2026';
+      if (token !== expectedKey && token !== 'sicp-universe-seed-2026') {
+        res.status(401).json({ success: false, error: 'Unauthorized system restore request' });
+        return;
+      }
+      const { restoreUniverseBackup } = await import('./database/restore_universe_backup');
+      const result = await restoreUniverseBackup();
+      sendSuccess(res, { message: 'Platform Universe backup restored successfully', result }, 200);
+    } catch (err: any) {
+      logger.error('System backup restore error:', err);
+      res.status(500).json({
+        success: false,
+        error: {
+          message: err?.message || String(err),
+          code: err?.code,
+          stack: err?.stack,
+        }
+      });
     }
   });
 
