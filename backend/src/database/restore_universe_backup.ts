@@ -13,8 +13,8 @@ const insertOrder = [
   'IndustryPartnerProfile',
   'RefreshSession',
   'Challenge',
-  'Problem',
   'ProblemGroup',
+  'Problem',
   'ProblemGroupMember',
   'ChallengeProblem',
   'ChallengeGroup',
@@ -66,18 +66,31 @@ export async function restoreUniverseBackup(): Promise<{
 
   let totalRestored = 0;
   const modelCounts: Record<string, number> = {};
-  // Reconcile placeholder organization slugs that conflict with canonical backup IDs
+  const errors: Record<string, string> = {};
+
+  // 1. Reconcile placeholder organization slugs that conflict with canonical backup IDs
   try {
-    await prisma.$executeRawUnsafe(`
-      UPDATE "Organization" SET "slug" = 'iit-bombay-seed' WHERE "id" = 'org-univ-iitb' AND "slug" = 'iit-bombay';
-      UPDATE "Organization" SET "slug" = 'iit-delhi-seed' WHERE "id" = 'org-univ-iitd' AND "slug" = 'iit-delhi';
-    `);
+    await prisma.$executeRawUnsafe(`UPDATE "Organization" SET "slug" = 'iit-bombay-seed' WHERE "id" = 'org-univ-iitb' AND "slug" = 'iit-bombay';`);
+    await prisma.$executeRawUnsafe(`UPDATE "Organization" SET "slug" = 'iit-delhi-seed' WHERE "id" = 'org-univ-iitd' AND "slug" = 'iit-delhi';`);
     logger.info('[RESTORE_BACKUP] Conflicting organization slugs successfully reconciled.');
   } catch (reconcileErr: any) {
     logger.debug('[RESTORE_BACKUP] Org slug reconciliation notice: ' + reconcileErr.message);
   }
 
-  const errors: Record<string, string> = {};
+  // 2. Align user IDs for demo personas to match canonical backup UUIDs
+  const backupUsers = backup.User || [];
+  for (const bUser of backupUsers) {
+    try {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "User" SET "id" = $1, "organizationId" = $2 WHERE "email" = $3;`,
+        bUser.id,
+        bUser.organizationId,
+        bUser.email
+      );
+    } catch (uAlignErr: any) {
+      // Ignored if user does not exist yet
+    }
+  }
 
   for (const modelName of insertOrder) {
     const key = modelName.charAt(0).toLowerCase() + modelName.slice(1);
@@ -106,6 +119,137 @@ export async function restoreUniverseBackup(): Promise<{
     }
 
     let restoredForModel = 0;
+
+    // Specialized upsert handling for core entities
+    if (modelName === 'Organization') {
+      for (const row of convertedRows) {
+        try {
+          await prisma.organization.upsert({
+            where: { id: row.id },
+            create: row,
+            update: {
+              name: row.name,
+              slug: row.slug,
+              type: row.type,
+              status: row.status,
+              verificationStatus: row.verificationStatus,
+            }
+          });
+          restoredForModel++;
+        } catch (orgErr: any) {
+          logger.warn(`[RESTORE_BACKUP] Org upsert error for ${row.slug}: ${orgErr.message}`);
+          errors['Organization'] = orgErr.message;
+        }
+      }
+      modelCounts[modelName] = restoredForModel;
+      totalRestored += restoredForModel;
+      logger.info(`[RESTORE_BACKUP] ✅ Organization: Restored ${restoredForModel} records via upsert`);
+      continue;
+    }
+
+    if (modelName === 'User') {
+      for (const row of convertedRows) {
+        try {
+          await prisma.user.upsert({
+            where: { id: row.id },
+            create: row,
+            update: {
+              organizationId: row.organizationId,
+              role: row.role,
+              fullName: row.fullName,
+              approvalStatus: row.approvalStatus || 'APPROVED',
+              isActive: row.isActive ?? true,
+              emailVerified: row.emailVerified ?? true,
+            }
+          });
+          restoredForModel++;
+        } catch (uErr: any) {
+          logger.warn(`[RESTORE_BACKUP] User upsert error for ${row.email}: ${uErr.message}`);
+          errors['User'] = uErr.message;
+        }
+      }
+      modelCounts[modelName] = restoredForModel;
+      totalRestored += restoredForModel;
+      logger.info(`[RESTORE_BACKUP] ✅ User: Restored ${restoredForModel} records via upsert`);
+      continue;
+    }
+
+    if (modelName === 'Challenge') {
+      for (const row of convertedRows) {
+        try {
+          await prisma.challenge.upsert({
+            where: { id: row.id },
+            create: row,
+            update: {
+              title: row.title,
+              description: row.description,
+              status: row.status,
+              category: row.category,
+              isSystemic: row.isSystemic ?? false,
+            }
+          });
+          restoredForModel++;
+        } catch (cErr: any) {
+          logger.warn(`[RESTORE_BACKUP] Challenge upsert error for ${row.title}: ${cErr.message}`);
+          errors['Challenge'] = cErr.message;
+        }
+      }
+      modelCounts[modelName] = restoredForModel;
+      totalRestored += restoredForModel;
+      logger.info(`[RESTORE_BACKUP] ✅ Challenge: Restored ${restoredForModel} records via upsert`);
+      continue;
+    }
+
+    if (modelName === 'ProblemGroup') {
+      for (const row of convertedRows) {
+        try {
+          await prisma.problemGroup.upsert({
+            where: { id: row.id },
+            create: row,
+            update: {
+              title: row.title,
+              canonicalCategory: row.canonicalCategory,
+              challengeId: row.challengeId,
+            }
+          });
+          restoredForModel++;
+        } catch (pgErr: any) {
+          logger.warn(`[RESTORE_BACKUP] ProblemGroup upsert error: ${pgErr.message}`);
+          errors['ProblemGroup'] = pgErr.message;
+        }
+      }
+      modelCounts[modelName] = restoredForModel;
+      totalRestored += restoredForModel;
+      logger.info(`[RESTORE_BACKUP] ✅ ProblemGroup: Restored ${restoredForModel} records via upsert`);
+      continue;
+    }
+
+    if (modelName === 'Problem') {
+      for (const row of convertedRows) {
+        try {
+          await prisma.problem.upsert({
+            where: { id: row.id },
+            create: row,
+            update: {
+              title: row.title,
+              description: row.description,
+              category: row.category,
+              status: row.status,
+              groupId: row.groupId,
+            }
+          });
+          restoredForModel++;
+        } catch (pErr: any) {
+          logger.warn(`[RESTORE_BACKUP] Problem upsert error: ${pErr.message}`);
+          errors['Problem'] = pErr.message;
+        }
+      }
+      modelCounts[modelName] = restoredForModel;
+      totalRestored += restoredForModel;
+      logger.info(`[RESTORE_BACKUP] ✅ Problem: Restored ${restoredForModel} records via upsert`);
+      continue;
+    }
+
     try {
       if (typeof prismaModel.createMany === 'function') {
         const res = await prismaModel.createMany({
