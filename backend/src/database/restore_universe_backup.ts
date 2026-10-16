@@ -66,6 +66,17 @@ export async function restoreUniverseBackup(): Promise<{
 
   let totalRestored = 0;
   const modelCounts: Record<string, number> = {};
+  // Reconcile placeholder organization slugs that conflict with canonical backup IDs
+  try {
+    await prisma.$executeRawUnsafe(`
+      UPDATE "Organization" SET "slug" = 'iit-bombay-seed' WHERE "id" = 'org-univ-iitb' AND "slug" = 'iit-bombay';
+      UPDATE "Organization" SET "slug" = 'iit-delhi-seed' WHERE "id" = 'org-univ-iitd' AND "slug" = 'iit-delhi';
+    `);
+    logger.info('[RESTORE_BACKUP] Conflicting organization slugs successfully reconciled.');
+  } catch (reconcileErr: any) {
+    logger.debug('[RESTORE_BACKUP] Org slug reconciliation notice: ' + reconcileErr.message);
+  }
+
   const errors: Record<string, string> = {};
 
   for (const modelName of insertOrder) {

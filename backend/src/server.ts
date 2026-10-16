@@ -16,7 +16,7 @@ async function bootstrap() {
   try {
     const existingChallenges = await prisma.challenge.count();
     const existingStudents = await prisma.user.count({ where: { role: 'STUDENT' } });
-    if (existingChallenges < 6 || existingStudents < 10) {
+    if (existingChallenges < 40 || existingStudents < 20) {
       logger.info(`[BOOTSTRAP] Platform universe check: ${existingChallenges} challenges, ${existingStudents} students. Running restoreUniverseBackup()...`);
       try {
         const { restoreUniverseBackup } = await import('./database/restore_universe_backup');
