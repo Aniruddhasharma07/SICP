@@ -44,6 +44,7 @@ logs/
 
 # Scratch and temporary testing files
 scratch/
+architecture-output/
 
 # Operating system and IDE files
 .DS_Store

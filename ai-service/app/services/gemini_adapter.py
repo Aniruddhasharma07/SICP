@@ -58,9 +58,10 @@ class GeminiAdapter:
     def _generate_with_failover(client, prompt: str = None, config: dict = None, is_json: bool = True, contents=None):
         models = [
             settings.GEMINI_MODEL,
-            "gemini-3.1-flash-lite",
-            "gemini-3.6-flash",
-            "gemini-3-flash-preview",
+            "gemini-flash-latest",
+            "gemini-flash-lite-latest",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
         ]
         unique_models = []
         for m in models:
