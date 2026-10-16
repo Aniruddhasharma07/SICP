@@ -13,6 +13,32 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
       logger.warn('[SCHEMA_SYNC] PostGIS extension activation notice: ' + err.message);
     }
 
+    // Programmatic Prisma DB Push to ensure all core tables (AuditLog, Challenge, Problem, etc.) exist
+    try {
+      const { execSync } = await import('child_process');
+      const path = await import('path');
+      const fs = await import('fs');
+
+      const candidateSchemas = [
+        path.join(process.cwd(), 'prisma', 'schema.prisma'),
+        path.join(process.cwd(), 'backend', 'prisma', 'schema.prisma'),
+        path.join(__dirname, '../../../prisma/schema.prisma'),
+        path.join(__dirname, '../../prisma/schema.prisma'),
+      ];
+      const schemaFile = candidateSchemas.find(p => fs.existsSync(p));
+      if (schemaFile) {
+        logger.info(`[SCHEMA_SYNC] Pushing Prisma database schema from: ${schemaFile}`);
+        execSync(`npx prisma db push --schema="${schemaFile}" --accept-data-loss`, {
+          stdio: 'pipe',
+          timeout: 60000,
+          env: { ...process.env },
+        });
+        logger.info('[SCHEMA_SYNC] Prisma database schema tables successfully pushed!');
+      }
+    } catch (pushErr: any) {
+      logger.warn('[SCHEMA_SYNC] Prisma db push execution notice: ' + (pushErr.stdout?.toString() || pushErr.message));
+    }
+
     logger.info('[SCHEMA_SYNC] Synchronizing forward database schema for Problem & Geospatial architecture...');
 
     // 1. Enums
