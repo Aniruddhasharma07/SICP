@@ -17,6 +17,7 @@
     "build": "npm run build:shared && npm run build:backend && npm run build:frontend",
     "test:backend": "npm test --prefix backend",
     "test": "npm run test:backend",
+    "db:push": "node backend/scripts/prepare-db.js && npx --prefix backend prisma db push --schema=backend/prisma/schema.prisma --accept-data-loss",
     "restore:backend": "npm run db:restore --prefix backend"
   },
   "devDependencies": {

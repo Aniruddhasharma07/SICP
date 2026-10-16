@@ -5,7 +5,14 @@ export async function ensureDatabaseSchemaSynchronized(): Promise<void> {
   try {
     logger.info('[SCHEMA_SYNC] Verifying database schema integrity...');
 
-    // 0. Ensure PostGIS Extension
+    // 0. Ensure pgvector & PostGIS Extensions
+    try {
+      await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS vector;`);
+      logger.info('[SCHEMA_SYNC] pgvector extension verified/activated.');
+    } catch (err: any) {
+      logger.warn('[SCHEMA_SYNC] pgvector extension activation notice: ' + err.message);
+    }
+
     try {
       await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS postgis;`);
       logger.info('[SCHEMA_SYNC] PostGIS extension verified/activated.');

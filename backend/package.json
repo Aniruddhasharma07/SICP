@@ -10,6 +10,7 @@
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "db:push": "node scripts/prepare-db.js && prisma db push --accept-data-loss",
     "db:restore": "node dist/database/restore_universe_backup.js"
   },
   "dependencies": {
