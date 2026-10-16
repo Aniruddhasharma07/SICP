@@ -1,12 +1,17 @@
-const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-
-const prisma = new PrismaClient();
+let prisma = null;
+try {
+  const { PrismaClient } = require('@prisma/client');
+  prisma = new PrismaClient();
+} catch (e) {
+  console.warn('[PREPARE_DB] PrismaClient load notice:', e.message);
+}
 
 async function prepare() {
   console.log('[PREPARE_DB] Starting database preparation and extension verification...');
+  if (!prisma) {
+    console.log('[PREPARE_DB] PrismaClient not loaded, skipping extension checks.');
+    return;
+  }
 
   // 1. Try activating pgvector extension
   let hasVector = false;
@@ -74,4 +79,8 @@ prepare()
     console.error('[PREPARE_DB] Preparation error:', err);
     process.exit(0); // Exit 0 so execution chain does not halt
   })
-  .finally(() => prisma.$disconnect());
+  .finally(() => {
+    if (prisma) {
+      prisma.$disconnect().catch(() => {});
+    }
+  });

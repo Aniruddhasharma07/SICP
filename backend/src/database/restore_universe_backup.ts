@@ -79,6 +79,7 @@ export async function restoreUniverseBackup(): Promise<{
     const dtFields = dateTimeFieldsByModel[modelName] || new Set();
     const convertedRows = rows.map(row => {
       const copy = { ...row };
+      delete (copy as any).embedding;
       for (const field of dtFields) {
         if (copy[field] && typeof copy[field] === 'string') {
           copy[field] = new Date(copy[field]);

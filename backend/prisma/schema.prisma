@@ -1247,7 +1247,7 @@ model SolutionMemory {
   status                 SolutionMemoryStatus @default(DRAFT)
   outcomeStatus          MemoryOutcomeStatus  @default(SUCCESSFUL)
   canonicalText          String?
-  embedding              Unsupported("vector(768)")?
+  // embedding              Unsupported("vector(768)")?
   embeddingModel         String?
   embeddingVersion       String?
   embeddingStatus        EmbeddingStatus      @default(PENDING)
