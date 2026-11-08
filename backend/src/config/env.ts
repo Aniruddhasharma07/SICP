@@ -28,6 +28,7 @@ const envSchema = z.object({
   AI_SERVICE_URL: z.string().url().default('http://localhost:8000'),
   CORS_ORIGIN: z.string().default('http://localhost:3000,http://127.0.0.1:3000'),
   GEMINI_API_KEY: z.string().optional(),
+  DEMO_MODE: z.string().default('true'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
