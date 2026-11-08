@@ -12,6 +12,8 @@ import {
   SeverityLevel,
   PriorityLevel,
   UserRole,
+  ProblemIntentClassification,
+  IntentNextAction,
 } from '@sicp/shared';
 import { PriorityEngine } from '../src/domain/intelligence/priority.engine';
 import { DuplicateClusteringService } from '../src/domain/intelligence/duplicate-clustering.service';
@@ -480,6 +482,27 @@ describe('AI Categorization & Governance Regression Suite', () => {
   });
 
   describe('Pre-Submit Interactive Analysis & Input Guard', () => {
+    beforeEach(() => {
+      jest.spyOn(AiServiceClient, 'validateProblemIntent').mockResolvedValue({
+        classification: ProblemIntentClassification.VALID_PROBLEM,
+        confidence: 0.95,
+        problemIntent: true,
+        qualityScore: 0.9,
+        reason: 'Valid civic problem statement',
+        missingContext: [],
+        validationMode: 'ai',
+        signals: {
+          meaningfulLanguage: true,
+          societalContext: true,
+          problemStatement: true,
+          affectedPopulation: true,
+          locationContext: true,
+          actionableIssue: true,
+        },
+        nextAction: IntentNextAction.CONTINUE_ANALYSIS,
+      });
+    });
+
     afterEach(() => {
       jest.restoreAllMocks();
     });

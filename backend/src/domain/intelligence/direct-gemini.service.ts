@@ -400,22 +400,44 @@ Return strictly valid JSON adhering to this schema:
       const { text, model } = await this.callGeminiWithFailover(prompt);
       const parsed = JSON.parse(text);
 
-      const precedents: PrecedentEvaluationItemDto[] = (parsed.precedents || []).map((item: any) => ({
-        memoryId: String(item.memoryId || ''),
-        verdict: (['RECOMMEND', 'WARN', 'CAUTION'].includes(item.verdict) ? item.verdict : 'CAUTION') as 'RECOMMEND' | 'WARN' | 'CAUTION',
-        whySimilar: String(item.whySimilar || 'Contextually relevant precedent in SICP memory bank.'),
-        whatPreviouslyWorked: item.whatPreviouslyWorked || null,
-        underWhatConditions: item.underWhatConditions || 'Standard field operational conditions',
-        impactAchieved: item.impactAchieved || null,
-        whyFailed: item.whatFailed || item.whyFailed || null,
-        conditionsCausingFailure: item.conditionsCausingFailure || null,
-        knownRisks: item.knownRisks || null,
-        applicabilityAssessment: String(item.applicabilityAssessment || 'Verified against platform precedent memory.'),
-        recommendedPrerequisites: Array.isArray(item.recommendedPrerequisites) ? item.recommendedPrerequisites : ['Verify operational feasibility.'],
-      }));
+      const precedents: PrecedentEvaluationItemDto[] = (parsed.precedents || []).map((item: any) => {
+        const origMem = (payload.retrievedMemories || []).find((m: any) => String(m.id || m.memoryId) === String(item.memoryId));
+        const whyFailed = item.whatFailed || item.whyFailed || origMem?.whatFailed || origMem?.failureReason || null;
+        const verdict = (['RECOMMEND', 'WARN', 'CAUTION'].includes(item.verdict) ? item.verdict : 'CAUTION') as 'RECOMMEND' | 'WARN' | 'CAUTION';
+        const knownRisks = item.knownRisks || (verdict === 'WARN' || whyFailed ? `Risk of repeating failure mode: ${whyFailed || 'operational failure'}` : null);
+
+        return {
+          memoryId: String(item.memoryId || ''),
+          verdict,
+          whySimilar: String(item.whySimilar || 'Contextually relevant precedent in SICP memory bank.'),
+          whatPreviouslyWorked: item.whatPreviouslyWorked || origMem?.whatWorked || origMem?.observedImpact || null,
+          underWhatConditions: item.underWhatConditions || 'Standard field operational conditions',
+          impactAchieved: item.impactAchieved || origMem?.impactSummary || null,
+          whyFailed,
+          conditionsCausingFailure: item.conditionsCausingFailure || (verdict === 'WARN' ? origMem?.limitations || null : null),
+          knownRisks,
+          applicabilityAssessment: String(item.applicabilityAssessment || 'Verified against platform precedent memory.'),
+          recommendedPrerequisites: Array.isArray(item.recommendedPrerequisites) ? item.recommendedPrerequisites : ['Verify operational feasibility.'],
+        };
+      });
+
+      const hasWarn = precedents.some((p) => p.verdict === 'WARN');
+      const hasRecommend = precedents.some((p) => p.verdict === 'RECOMMEND');
+      let guidanceVerdict: 'RECOMMEND' | 'WARN' | 'CAUTION' | 'NO_MEMORY' =
+        (['RECOMMEND', 'WARN', 'CAUTION', 'NO_MEMORY'].includes(parsed.guidanceVerdict)
+          ? parsed.guidanceVerdict
+          : 'CAUTION') as any;
+
+      if (hasWarn && hasRecommend) {
+        guidanceVerdict = 'CAUTION';
+      } else if (hasWarn && !hasRecommend && guidanceVerdict === 'RECOMMEND') {
+        guidanceVerdict = 'WARN';
+      } else if (hasRecommend && !hasWarn && guidanceVerdict === 'WARN') {
+        guidanceVerdict = 'RECOMMEND';
+      }
 
       return {
-        guidanceVerdict: (['RECOMMEND', 'WARN', 'CAUTION', 'NO_MEMORY'].includes(parsed.guidanceVerdict) ? parsed.guidanceVerdict : 'CAUTION') as any,
+        guidanceVerdict,
         precedents,
         comparativeAnalysis: parsed.comparativeAnalysis || null,
         executiveSummary: parsed.executiveSummary || 'Precedent analysis synthesized from SICP Solution Memory.',
