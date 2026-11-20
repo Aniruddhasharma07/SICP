@@ -8,11 +8,13 @@ function getApiBaseUrl(): string {
     const hostname = window.location.hostname;
     if (hostname === '127.0.0.1') {
       url = 'http://127.0.0.1:5000';
-    } else {
+    } else if (hostname === 'localhost') {
       url = 'http://localhost:5000';
+    } else {
+      url = 'https://sicp-production-9c2a1b12.up.railway.app';
     }
   } else {
-    url = 'http://localhost:5000';
+    url = 'https://sicp-production-9c2a1b12.up.railway.app';
   }
   return url.replace(/\/+$/, '');
 }
