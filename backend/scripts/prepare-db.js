@@ -1,3 +1,7 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
 let prisma = null;
 try {
   const { PrismaClient } = require('@prisma/client');
