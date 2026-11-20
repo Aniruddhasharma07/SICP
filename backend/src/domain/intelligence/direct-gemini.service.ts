@@ -660,42 +660,152 @@ Return JSON:
     const rawCat = (data.category || '').toLowerCase();
     const title = (data.title || '').toLowerCase();
     const desc = (data.description || '').toLowerCase();
-    const fullText = `${rawCat} ${title} ${desc}`;
+    const fullText = `${rawCat} ${title} ${desc}`.toLowerCase();
 
-    let category = 'Roads & Transport';
-    let problemType = 'ROAD_USAGE';
+    let category = 'Public Amenities & Infrastructure';
+    let problemType = 'PUBLIC_INFRASTRUCTURE';
     let rootCauses = [
-      'Subbase waterlogging and inadequate stormwater runoff gradient leading to asphalt stripping',
-      'Axle loads exceeding the design structural bearing capacity of carriageway',
+      'Civic service deficiency and lack of routine municipal maintenance in the sector',
+      'Community resource allocation gap requiring inter-departmental intervention',
     ];
 
-    if (fullText.includes('water') && (fullText.includes('drinking') || fullText.includes('contamin') || fullText.includes('tap') || fullText.includes('pipe') || fullText.includes('leak'))) {
+    if (
+      fullText.includes('hospital') ||
+      fullText.includes('clinic') ||
+      fullText.includes('doctor') ||
+      fullText.includes('medicine') ||
+      fullText.includes('medic') ||
+      fullText.includes('health') ||
+      fullText.includes('dispensary') ||
+      fullText.includes('ambulance') ||
+      fullText.includes('patient') ||
+      fullText.includes('treatment') ||
+      fullText.includes('nurse') ||
+      fullText.includes('phc') ||
+      fullText.includes('chc')
+    ) {
+      category = 'Healthcare Facilities';
+      problemType = 'HEALTHCARE_SERVICE';
+      rootCauses = [
+        'Shortage of medical personnel, diagnostic supplies, or emergency facilities in the designated locality',
+        'Logistical supply chain disruption and public health infrastructure maintenance gap',
+      ];
+    } else if (
+      fullText.includes('school') ||
+      fullText.includes('college') ||
+      fullText.includes('educat') ||
+      fullText.includes('student') ||
+      fullText.includes('teacher') ||
+      fullText.includes('classroom') ||
+      fullText.includes('university') ||
+      fullText.includes('coaching') ||
+      fullText.includes('anganwadi')
+    ) {
+      category = 'Education & Schools';
+      problemType = 'EDUCATION_FACILITY';
+      rootCauses = [
+        'Inadequate institutional teaching capacity and delayed academic infrastructure maintenance',
+        'Shortage of learning materials and primary educational facility resources',
+      ];
+    } else if (
+      fullText.includes('water') &&
+      (fullText.includes('drinking') ||
+        fullText.includes('contamin') ||
+        fullText.includes('tap') ||
+        fullText.includes('pipe') ||
+        fullText.includes('leak') ||
+        fullText.includes('supply') ||
+        fullText.includes('tanker') ||
+        fullText.includes('borewell') ||
+        fullText.includes('handpump'))
+    ) {
       category = 'Water Supply';
       problemType = 'WATER_SUPPLY';
       rootCauses = [
         'Subsurface distribution pipeline breach or pipe wall corrosion causing pressure loss and ingress',
         'Inadequate chlorination or filtration capacity at the local treatment facility',
       ];
-    } else if (fullText.includes('drain') || fullText.includes('sewer') || fullText.includes('gutter') || fullText.includes('toilet') || fullText.includes('kachra') || fullText.includes('waste')) {
+    } else if (
+      fullText.includes('drain') ||
+      fullText.includes('sewer') ||
+      fullText.includes('sewage') ||
+      fullText.includes('gutter') ||
+      fullText.includes('toilet') ||
+      fullText.includes('washroom') ||
+      fullText.includes('kachra') ||
+      fullText.includes('waste') ||
+      fullText.includes('garbage') ||
+      fullText.includes('dump') ||
+      fullText.includes('nallah')
+    ) {
       category = 'Sanitation & Drainage';
       problemType = 'SANITATION_SERVICE';
       rootCauses = [
         'Unregulated solid waste disposal obstructing stormwater and sewage gravity flow',
         'Insufficient trunk sewer gradient and lack of regular pre-monsoon desilting',
       ];
-    } else if (fullText.includes('hospital') || fullText.includes('clinic') || fullText.includes('doctor') || fullText.includes('medicine') || fullText.includes('nurse') || fullText.includes('phc')) {
-      category = 'Healthcare Facilities';
-      problemType = 'HEALTHCARE_SERVICE';
-      rootCauses = [
-        'Shortage of medical personnel and diagnostic supplies at primary healthcare facility',
-        'Logistical supply chain disruption delaying essential drug and vaccine delivery',
-      ];
-    } else if (fullText.includes('light') || fullText.includes('power') || fullText.includes('electric') || fullText.includes('transformer') || fullText.includes('voltage')) {
+    } else if (
+      fullText.includes('light') ||
+      fullText.includes('power') ||
+      fullText.includes('electric') ||
+      fullText.includes('transformer') ||
+      fullText.includes('voltage') ||
+      fullText.includes('blackout') ||
+      fullText.includes('pole') ||
+      fullText.includes('wire')
+    ) {
       category = 'Electricity & Lighting';
       problemType = 'ELECTRICITY_NETWORK';
       rootCauses = [
         'Distribution transformer overload during peak hours without adequate feeder balancing',
         'Feeder line insulation breakdown or short circuit tripping local breakers',
+      ];
+    } else if (
+      fullText.includes('pothole') ||
+      fullText.includes('road') ||
+      fullText.includes('traffic') ||
+      fullText.includes('highway') ||
+      fullText.includes('expressway') ||
+      fullText.includes('flyover') ||
+      fullText.includes('bridge') ||
+      fullText.includes('street') ||
+      fullText.includes('transport') ||
+      fullText.includes('asphalt') ||
+      fullText.includes('bus')
+    ) {
+      category = 'Roads & Transport';
+      problemType = 'ROAD_USAGE';
+      rootCauses = [
+        'Subbase waterlogging and inadequate stormwater runoff gradient leading to asphalt stripping',
+        'Axle loads exceeding the design structural bearing capacity of carriageway',
+      ];
+    } else if (
+      fullText.includes('flood') ||
+      fullText.includes('inundat') ||
+      fullText.includes('waterlog') ||
+      fullText.includes('submerg') ||
+      fullText.includes('pollution') ||
+      fullText.includes('smog') ||
+      fullText.includes('air quality')
+    ) {
+      category = 'Environment & Waste';
+      problemType = 'ENVIRONMENTAL_HAZARD';
+      rootCauses = [
+        'Inadequate natural runoff absorption capacity and localized stormwater overflow',
+        'Industrial or vehicular emission concentrations exceeding regional permissible ambient thresholds',
+      ];
+    } else if (
+      fullText.includes('crop') ||
+      fullText.includes('farm') ||
+      fullText.includes('farmer') ||
+      fullText.includes('irrigation') ||
+      fullText.includes('canal')
+    ) {
+      category = 'Agriculture & Irrigation';
+      problemType = 'AGRICULTURE_CIVIC';
+      rootCauses = [
+        'Irrigation canal siltation restricting downstream agricultural water discharge',
+        'Suboptimal agricultural drainage gradient causing localized crop inundation',
       ];
     }
 
