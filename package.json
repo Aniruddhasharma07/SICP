@@ -18,7 +18,8 @@
     "test:backend": "npm test --prefix backend",
     "test": "npm run test:backend",
     "db:push": "node backend/scripts/prepare-db.js && npx --prefix backend prisma db push --schema=backend/prisma/schema.prisma --accept-data-loss",
-    "restore:backend": "npm run db:restore --prefix backend"
+    "restore:backend": "npm run db:restore --prefix backend",
+    "db:restore:remote": "node scripts/restore-remote-db.js"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
