@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { apiClient } from '../../src/lib/api-client';
+import { apiClient, getApiBaseUrl } from '../../src/lib/api-client';
 import { AppLayout } from '../../src/components/layout/AppLayout';
 import { useAuth } from '../../src/lib/auth-context';
 import { Button } from '../../src/components/ui/Button';
@@ -166,7 +166,7 @@ function SearchContent() {
           : 'challenges';
 
       const token = apiClient.getToken();
-      const exportUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/reports/export?type=${exportType}${
+      const exportUrl = `${getApiBaseUrl()}/api/v1/reports/export?type=${exportType}${
         categoryParam ? `&category=${encodeURIComponent(categoryParam)}` : ''
       }${statusParam ? `&status=${encodeURIComponent(statusParam)}` : ''}`;
 

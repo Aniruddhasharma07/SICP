@@ -1,22 +1,24 @@
 import { ApiResponse, ApiError, StandardErrorCode } from '@sicp/shared';
 
-function getApiBaseUrl(): string {
-  let url = '';
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    url = process.env.NEXT_PUBLIC_API_URL;
-  } else if (typeof window !== 'undefined') {
+export function getApiBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL;
+  if (
+    configured &&
+    !configured.includes('sicp-production.up.railway.app') &&
+    !configured.includes('sicp-backend-production.up.railway.app')
+  ) {
+    return configured.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname === '127.0.0.1') {
-      url = 'http://127.0.0.1:5000';
-    } else if (hostname === 'localhost') {
-      url = 'http://localhost:5000';
-    } else {
-      url = 'https://sicp-production-9c2a1b12.up.railway.app';
+      return 'http://127.0.0.1:5000';
     }
-  } else {
-    url = 'https://sicp-production-9c2a1b12.up.railway.app';
+    if (hostname === 'localhost') {
+      return 'http://localhost:5000';
+    }
   }
-  return url.replace(/\/+$/, '');
+  return 'https://sicp-production-9c2a1b12.up.railway.app';
 }
 
 class ApiClient {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { apiClient } from '../../src/lib/api-client';
+import { apiClient, getApiBaseUrl } from '../../src/lib/api-client';
 import { AppLayout } from '../../src/components/layout/AppLayout';
 import { useAuth } from '../../src/lib/auth-context';
 import { Button } from '../../src/components/ui/Button';
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
     setExportingType(type);
     try {
       const token = apiClient.getToken();
-      const exportUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/reports/export?type=${type}`;
+      const exportUrl = `${getApiBaseUrl()}/api/v1/reports/export?type=${type}`;
       const res = await fetch(exportUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
