@@ -21,7 +21,7 @@
     "restore:backend": "npm run db:restore --prefix backend",
     "db:restore:remote": "node scripts/restore-remote-db.js"
   },
-  "devDependencies": {
+  "dependencies": {
     "typescript": "^5.7.0"
   }
 }
