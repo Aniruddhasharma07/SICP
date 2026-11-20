@@ -23,10 +23,11 @@ import {
 
 export class DirectGeminiService {
   private static readonly MODELS = [
-    'gemini-flash-latest',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
     'gemini-flash-lite-latest',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
+    'gemini-flash-latest',
+    'gemini-3.8-flash',
   ];
 
   private static get apiKey(): string {
